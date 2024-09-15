@@ -11,8 +11,4 @@ window.setTimeout(() => {
 			}, 300 * 1000)
 
 
-3.修改攻击结果回调
-位置: __proto.onS2C_AttackResultMessage=function(cmd){
-添加: SamiraFight.kuafuBossHpAttackResultMessage(cmd);
-
-4.最后添加samirafight
+3.最后添加samirafight
