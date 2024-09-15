@@ -11,7 +11,7 @@
 刷新修罗天界: ZoneTowerCenter.sendC2S_WushenZoneInfoMessage(200000);
 
 武道会体力: com.logic.data.MoneyCenter.getMoney(EnumMoney.JINGJI) == com.logic.data.MoneyCenter.getMoney(-51)
-体力: com.logic.data.zone.boss.BossDataCenter.instance._tiliTypeDic
+boss次数: com.logic.data.zone.boss.BossDataCenter.instance._tiliTypeDic
 
 玩家Id小号: 1288078809323859864
 跨服战场mapId: 300011
@@ -22,7 +22,7 @@ boss次数:
 168-战骑祭坛
 176-福利
 177-暗之神殿
-178-
+178-神魔boss
 179-战场遗迹
 180-
 181-
