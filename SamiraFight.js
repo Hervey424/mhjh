@@ -4,7 +4,7 @@ var SamiraFight = (function () {
 
   SamiraFight.personId = '';
   SamiraFight.running = false;
-  // 当前状态 search-搜索boss, fight-战斗, fight-xiuluo-正在攻击修罗天界, wudao-武道会, kuafuboss-跨服boss, xukongliehen-虚空裂痕, yabiao-押镖
+  // 当前状态 search-搜索boss, fight-战斗, fight-xiuluo-正在攻击修罗天界, wudao-武道会, kuafuboss-跨服boss, xukongliehen-虚空裂痕, yabiao-押镖, kuafuxiaoguai-跨服小怪
   SamiraFight.currentStatus = 'search';
   // 当前boss
   SamiraFight.currentBoss = null;
@@ -29,6 +29,12 @@ var SamiraFight = (function () {
   SamiraFight.kuafuBossData = [];
   SamiraFight.kuafuBossHpStatus = false;
   SamiraFight.kuafuBossHpDic = {};
+  SamiraFight.kuafuXiaoGuai = {
+    taskId: 60005,
+    points: [{ x: 206, y: 222 }, { x: 237, y: 306 }, { x: 160, y: 324 }, { x: 127, y: 314 }],
+    pointIndex: 0,
+    target: null
+  }
 
   // 开启内挂
   SamiraFight.start = function () {
@@ -219,8 +225,9 @@ var SamiraFight = (function () {
     config.zhanchangBoss = config.zhanchangBoss || '1';
     config.zhanchangBossMinHp = config.zhanchangBossMinHp || 0;
     config.shenmoBoss = config.shenmoBoss || '1';
-    config.xukongliehen = config.xukongliehen || '1'
-    config.yabiao = config.yabiao || '1'
+    config.xukongliehen = config.xukongliehen || '1';
+    config.yabiao = config.yabiao || '1';
+    config.xiaoguai = config.xiaoguai || '1'
 
     // 弄到ui上
     if ((config.xiuluoCengshu || []).includes(1)) {
@@ -251,6 +258,7 @@ var SamiraFight = (function () {
     $('.samira-map').val(config.mapIds.join('|'));
     $('.samira-xukongliehen').prop('checked', config.xukongliehen === '1');
     $('.samira-yabiao').prop('checked', config.yabiao === '1');
+    $('.samira-xiaoguai').prop('checked', config.xiaoguai === '1');
   };
 
   // 从ui获取配置
@@ -285,6 +293,8 @@ var SamiraFight = (function () {
     const xukongliehen = $('.samira-xukongliehen').prop('checked') ? '1' : '0';
     // 押镖
     const yabiao = $('.samira-yabiao').prop('checked') ? '1' : '0';
+    // 跨服战场小怪
+    const xiaoguai = $('.samira-xiaoguai').prop('checked') ? '1' : '0';
 
     return {
       xiuluoCengshu: xiuluoCengshu,
@@ -303,7 +313,8 @@ var SamiraFight = (function () {
       shenmoBoss: shenmoBoss,
       shenmoBossWaitTime: 60,
       xukongliehen: xukongliehen,
-      yabiao: yabiao
+      yabiao: yabiao,
+      xiaoguai: xiaoguai
     }
   };
 
@@ -348,6 +359,11 @@ var SamiraFight = (function () {
     const hours = (new Date()).getHours();
     const minutes = (new Date()).getMinutes();
     const yabiaoTili = com.modules.escort.EscortCenter.getData().remainCount;
+    // 小怪任务
+    const dayXiaoguaiTask = com.App.dataMgr.q_jitanContainer.getList().find(x => x.q_id === SamiraFight.kuafuXiaoGuai.taskId);
+    const dayXiaoGuaiData = com.logic.data.jitian.JitanCenter.getJiTianTaskData(SamiraFight.kuafuXiaoGuai.taskId);
+    const dayXiaoGuaiTaskTimes = dayXiaoguaiTask ? dayXiaoguaiTask.q_time : 0;
+    const dayXiaoGuaiTaskComplateTimes = dayXiaoGuaiData ? dayXiaoGuaiData.times : 0;
 
     // 恢复武道会
     if (ts > SamiraFight.wudaoResumeTs) {
@@ -415,7 +431,7 @@ var SamiraFight = (function () {
           return;
         }
 
-        if(SamiraFight.kuafuBossData.some(x => x.remainTime > 0 || x.curHp == 0)){
+        if (SamiraFight.kuafuBossData.some(x => x.remainTime > 0 || x.curHp == 0)) {
           console.log('[samira]等待跨服boss奖励');
           SamiraFight.currentStatus = 'search';
           return;
@@ -423,7 +439,7 @@ var SamiraFight = (function () {
       }
 
       // 押镖
-      if (yabiaoTili > 0 && SamiraFight.config.yabiao == '1') {
+      if (yabiaoTili > 0 && (hours == 11 || hours == 16 || hours == 21) && SamiraFight.config.yabiao == '1') {
         console.log('[samira]准备押镖');
         SamiraFight.currentStatus = 'yabiao';
         return;
@@ -437,6 +453,15 @@ var SamiraFight = (function () {
         SamiraFight.currentWudaocheckTimes = 0;
         // 开始匹配
         PanelManager.openByClass(WulingdahuiPipeiPanel, '最强王者');
+        return;
+      }
+
+      // 跨服小怪
+      if (SamiraFight.config.xiaoguai == '1' && dayXiaoGuaiTaskComplateTimes < dayXiaoGuaiTaskTimes) {
+        console.log('[samira]准备攻击跨服小怪');
+        SamiraFight.kuafuXiaoGuai.pointTimes = 0;
+        SamiraFight.kuafuXiaoGuai.pointIndex = 0;
+        SamiraFight.currentStatus = 'xiaoguai';
         return;
       }
 
@@ -590,7 +615,7 @@ var SamiraFight = (function () {
         const bosses = [];
         const bossFilterFunc = boss => boss.bean.q_type == 16 && (boss.owner === playerName || boss.owner == '' || boss.owner == null) && boss.remainTime === 0;
         // 如果玩家当前所在地图在挂机地图中, 优先获取玩家当前所在地图的boss
-        if(mapIds.includes(playerMapId)){
+        if (mapIds.includes(playerMapId)) {
           // 获取当前地图活着的boss
           const currentMapBossesObject = BossDataCenter.instance._mapbossDic[playerMapId];
           const currentMapBosses = []
@@ -605,17 +630,17 @@ var SamiraFight = (function () {
         }
 
         // 获取当前地图最近的一个boss
-        if(bosses.length > 0){
+        if (bosses.length > 0) {
           // 获取每个boss的距离
-          for(const b of bosses){
-            b.distance = GameMathUtil.getDistance(App.role.nodex,App.role.nodey,b.monsterX,b.monsterY);
+          for (const b of bosses) {
+            b.distance = GameMathUtil.getDistance(App.role.nodex, App.role.nodey, b.monsterX, b.monsterY);
           }
           // 获取最近的一个
-          const sortedBosses = bosses.sort((a,b) => a.distance - b.distance);
+          const sortedBosses = bosses.sort((a, b) => a.distance - b.distance);
           selectBoss = sortedBosses[0];
-        } 
+        }
         // 如果当前地图没有boss, 就获取所有地图的
-        else{
+        else {
           const allMapBosses = [];
           for (const mapId of mapIds) {
             const mapBosses = BossDataCenter.instance._mapbossDic[mapId];
@@ -634,9 +659,9 @@ var SamiraFight = (function () {
               return b.level - a.level;
             });
 
-            bosses.push(...allMapFilterdBosses);
+          bosses.push(...allMapFilterdBosses);
 
-          if(bosses.length > 0){
+          if (bosses.length > 0) {
             selectBoss = bosses[0];
           }
         }
@@ -709,13 +734,13 @@ var SamiraFight = (function () {
       // 检查超时
       SamiraFight.currentcheckTimes += 1;
       if (SamiraFight.currentcheckTimes >= SamiraFight.config.bossTimeOut) {
-        console.log('[samira]当前boss'+ SamiraFight.currentcheckTimes +'秒未死亡, 重新进行寻路');
+        console.log('[samira]当前boss' + SamiraFight.currentcheckTimes + '秒未死亡, 重新进行寻路');
         SamiraFight.currentStatus = 'search';
       }
 
       // 如果不在地图内, 就进入地图
       if (playerMapId !== SamiraFight.currentBoss.mapModelId) {
-        if (SamiraFight.currentBoss.mapModelId == SamiraFight.kuafuBossMapId) { 
+        if (SamiraFight.currentBoss.mapModelId == SamiraFight.kuafuBossMapId) {
           GameServer.sendCommand(new C2S_PlayerEnterNationWarMessage());
         } else {
           var cmd = new C2S_TransmitToServerMessage();
@@ -851,7 +876,7 @@ var SamiraFight = (function () {
       }
     }
     else if (SamiraFight.currentStatus === 'xukongliehen') {
-      if (minutes >= 55) { 
+      if (minutes >= 55) {
         console.log('[samira]虚空裂痕已经结束, 重新寻找boss');
         SamiraFight.currentStatus = 'search';
         return;
@@ -859,10 +884,10 @@ var SamiraFight = (function () {
       
       // 传送到boss地图
       if (playerMapId != 23001) {
-        var cmd=new C2S_JoinActivityMessage();
-        cmd.activityId=100080;
-        cmd.count=1;
-        cmd.extendMap='';
+        var cmd = new C2S_JoinActivityMessage();
+        cmd.activityId = 100080;
+        cmd.count = 1;
+        cmd.extendMap = '';
         GameServer.sendCommand(cmd);
       }
 
@@ -871,13 +896,13 @@ var SamiraFight = (function () {
     }
     else if (SamiraFight.currentStatus === 'yabiao') {
       const data = com.modules.escort.EscortCenter.getData();
-      if (!data || !data.taskData) { 
+      if (!data || !data.taskData) {
         return;
       }
 
       const status = data.taskState;
       // 未接任务
-      if (status == 0) { 
+      if (status == 0) {
         EventMgr.dispatch("TE.taskTransfer", com.modules.escort.EscortCenter.getData().taskData.getConditionData(), JSON.stringify({ "npcid": 2086 }), 1, true);
         TaskCommandSender.sendAccpetTask(data.taskID, data.taskType);
         PanelManager.removePanel(PanelRegister.ESCORT_ACCEPT);
@@ -895,6 +920,78 @@ var SamiraFight = (function () {
       else {
         console.log('[samira]押镖状态异常:', status);
         SamiraFight.currentStatus = 'search';
+      }
+    }
+    else if (SamiraFight.currentStatus === 'xiaoguai') {
+      if (dayXiaoGuaiTaskComplateTimes >= dayXiaoGuaiTaskTimes) {
+        console.log('[samira]跨服小怪任务已完成, 重新寻找boss');
+        SamiraFight.currentStatus = 'search';
+        return;
+      }
+
+      // 如果不在地图内, 就进入地图
+      if (playerMapId != this.kuafuBossMapId) {
+        GameServer.sendCommand(new C2S_PlayerEnterNationWarMessage());
+        return;
+      }
+
+      console.log('[samira]跨服小怪任务打怪中...('+ dayXiaoGuaiTaskComplateTimes +'/'+ dayXiaoGuaiTaskTimes +')');
+
+      // 重新寻找目标
+      const monsters = com.App.mapScene.mapAvatarContainer._avatarList.filter(x => {
+        // 没有roledata
+        if (!x._roleData) {
+          return false;
+        }
+        // 必须是怪物
+        if (!(x._roleData instanceof com.logic.data.role.MapMonsterRoleData)) {
+          return false;
+        }
+        if (x._roleData._monsterModelId != 30001115) {
+          return false;
+        }
+        if (x._roleData._isDead || x._roleData._hp <= 0) {
+          return false;
+        }
+        return true;
+      });
+
+      // 如果有目标, 并且目标活着, 就去攻击, 否则重新寻找目标
+      if (SamiraFight.kuafuXiaoGuai.target && monsters.indexOf(SamiraFight.kuafuXiaoGuai.target) != -1 && SamiraFight.kuafuXiaoGuai.target._roleData._hp > 0) { 
+        const playerPosition = SamiraFight.getPlayerPositionNode();
+        const targetNode = { x: SamiraFight.kuafuXiaoGuai.target._roleData.nodex, y: SamiraFight.kuafuXiaoGuai.target._roleData.nodey };
+        if (playerPosition.x >= targetNode.x - 2 && playerPosition.x <= targetNode.x + 2 && playerPosition.y >= targetNode.y - 2 && playerPosition.y <= targetNode.y + 2) {
+          com.App.openAutoFight();
+        }
+        else {
+          (new com.modules.kmap.view.MapView()).gotoWhere(targetNode.x, targetNode.y, GameHandler.create(com.App, com.App.openAutoFight))
+        }
+        return;
+      }
+      else {
+        SamiraFight.kuafuXiaoGuai.target = null;
+      }
+    
+      // 如果周围有怪物, 就确定目标
+      if (monsters.length > 0) { 
+        const monster = monsters[0];
+        SamiraFight.kuafuXiaoGuai.target = monster;
+        return;
+      } 
+      // 如果周围没有怪物, 就去目标地点
+      else {
+        // 移动到指定坐标
+        const point = SamiraFight.kuafuXiaoGuai.points[SamiraFight.kuafuXiaoGuai.pointIndex];
+        const playerPosition = SamiraFight.getPlayerPositionNode();
+        if (playerPosition.x >= point.x - 2 && playerPosition.x <= point.x + 2 && playerPosition.y >= point.y - 2 && playerPosition.y <= point.y + 2) {
+          SamiraFight.kuafuXiaoGuai.pointIndex += 1;
+          if (SamiraFight.kuafuXiaoGuai.pointIndex >= SamiraFight.kuafuXiaoGuai.points.length) {
+            SamiraFight.kuafuXiaoGuai.pointIndex = 0;
+          }
+        }
+        else {
+          (new com.modules.kmap.view.MapView()).gotoWhere(point.x, point.y, GameHandler.create(com.App, com.App.openAutoFight))
+        }
       }
     }
   };
@@ -1063,6 +1160,7 @@ var SamiraFight = (function () {
             </div>
             <div style='display: flex; align-items: center; margin-bottom: 10px;'>
               <div><input type="checkbox" class="samira-zhanchang-boss" />跨服BOSS</div>
+              <div><input type="checkbox" class="samira-xiaoguai" />跨服战场小怪</div>
               <div><input type="checkbox" class="samira-yabiao" />押镖</div>
             </div>
             <div style='display: none; align-items: center; margin-bottom: 10px;'>
@@ -1147,7 +1245,7 @@ var SamiraFight = (function () {
 
     FunctionManager.isFunctionOpen=function(functionId,needNotice,noticeType,noticeColor){
       // 修改巡航自动合成
-      if(functionId == 105){
+      if([105].includes(functionId)){
         return true;
       }
 

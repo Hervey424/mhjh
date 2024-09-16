@@ -9,6 +9,8 @@
 走路： com.App.mapModule.mapMoveModel.walkToMap(80711,monsterX,monsterY, true);
 自动合成: SetupCenter.instance.setGouFuse(EnumDuanzao.AUTO_3,this.hecheng_ck.selected);
 刷新修罗天界: ZoneTowerCenter.sendC2S_WushenZoneInfoMessage(200000);
+获取日常任务列表: com.App.dataMgr.q_jitanContainer.getList()
+获取日常任务数据: com.logic.data.jitian.JitanCenter.getJiTianTaskData(id)
 
 武道会体力: com.logic.data.MoneyCenter.getMoney(EnumMoney.JINGJI) == com.logic.data.MoneyCenter.getMoney(-51)
 boss次数: com.logic.data.zone.boss.BossDataCenter.instance._tiliTypeDic
