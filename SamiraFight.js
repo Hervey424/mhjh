@@ -5,6 +5,7 @@ var SamiraFight = (function () {
   SamiraFight.personId = '';
   SamiraFight.running = false;
   // 当前状态 search-搜索boss, fight-战斗, fight-xiuluo-正在攻击修罗天界, wudao-武道会, kuafuboss-跨服boss, xukongliehen-虚空裂痕, yabiao-押镖, kuafuxiaoguai-跨服小怪
+  // zhenyingzhan-阵营攻防战
   SamiraFight.currentStatus = 'search';
   // 当前boss
   SamiraFight.currentBoss = null;
@@ -216,6 +217,7 @@ var SamiraFight = (function () {
     config.mapIds = config.mapIds || [];
     config.fuli = config.fuli || '1';
     config.shanggu = config.shanggu || '1';
+    config.shangguxiaoguai = config.shangguxiaoguai || '1';
     config.shangguWaitTime = config.shangguWaitTime || 60;
     config.shangguMapCount = config.shangguMapCount || 1;
     config.zhanqi = config.zhanqi || '1';
@@ -227,7 +229,8 @@ var SamiraFight = (function () {
     config.shenmoBoss = config.shenmoBoss || '1';
     config.xukongliehen = config.xukongliehen || '1';
     config.yabiao = config.yabiao || '1';
-    config.xiaoguai = config.xiaoguai || '1'
+    config.xiaoguai = config.xiaoguai || '1';
+    config.zhenyingzhan = config.zhenyingzhan || '1';
 
     // 弄到ui上
     if ((config.xiuluoCengshu || []).includes(1)) {
@@ -245,6 +248,7 @@ var SamiraFight = (function () {
 
     $('.samira-fuli').prop('checked', config.fuli === '1');
     $('.samira-shanggu').prop('checked', config.shanggu === '1');
+    $('.samira-shanggu-xiaoguai').prop('checked', config.shangguxiaoguai === '1');
     $('.samira-shanggu-wait-time').val(config.shangguWaitTime);
     $('.samira-shanggu-map-count').val(config.shangguMapCount);
     $('.samira-zhanqi').prop('checked', config.zhanqi === '1');
@@ -259,6 +263,7 @@ var SamiraFight = (function () {
     $('.samira-xukongliehen').prop('checked', config.xukongliehen === '1');
     $('.samira-yabiao').prop('checked', config.yabiao === '1');
     $('.samira-xiaoguai').prop('checked', config.xiaoguai === '1');
+    $('.samira-zhenyingzhan').prop('checked', config.zhenyingzhan === '1');
   };
 
   // 从ui获取配置
@@ -274,6 +279,7 @@ var SamiraFight = (function () {
     const fuli = $('.samira-fuli').prop('checked') ? '1' : '0';
     // 上古禁地
     const shanggu = $('.samira-shanggu').prop('checked') ? '1' : '0';
+    const shangguxiaoguai = $('.samira-shanggu-xiaoguai').prop('checked') ? '1' : '0';
     const shangguWaitTime = parseInt($('.samira-shanggu-wait-time').val().trim());
     const shangguMapCount = parseInt($('.samira-shanggu-map-count').val().trim());
     // 战骑祭坛
@@ -295,6 +301,8 @@ var SamiraFight = (function () {
     const yabiao = $('.samira-yabiao').prop('checked') ? '1' : '0';
     // 跨服战场小怪
     const xiaoguai = $('.samira-xiaoguai').prop('checked') ? '1' : '0';
+    // 阵营战
+    const zhenyingzhan = $('.samira-zhenyingzhan').prop('checked') ? '1' : '0';
 
     return {
       xiuluoCengshu: xiuluoCengshu,
@@ -302,6 +310,7 @@ var SamiraFight = (function () {
       mapIds: [],
       fuli: fuli,
       shanggu: shanggu,
+      shangguxiaoguai: shangguxiaoguai,
       zhanqi: zhanqi,
       anzhishendian: anzhishendian,
       yiji: yiji,
@@ -314,7 +323,8 @@ var SamiraFight = (function () {
       shenmoBossWaitTime: 60,
       xukongliehen: xukongliehen,
       yabiao: yabiao,
-      xiaoguai: xiaoguai
+      xiaoguai: xiaoguai,
+      zhenyingzhan: zhenyingzhan
     }
   };
 
@@ -358,6 +368,7 @@ var SamiraFight = (function () {
     const ts = Math.floor(Date.now() / 1000);
     const hours = (new Date()).getHours();
     const minutes = (new Date()).getMinutes();
+    const dayOfweek = (new Date()).getDay();
     const yabiaoTili = com.modules.escort.EscortCenter.getData().remainCount;
     // 小怪任务
     const dayXiaoguaiTask = com.App.dataMgr.q_jitanContainer.getList().find(x => x.q_id === SamiraFight.kuafuXiaoGuai.taskId);
@@ -397,6 +408,12 @@ var SamiraFight = (function () {
       return;
     }
 
+    // 如果是星期一到星期五, 8点整进入跨服阵营战
+    if (dayOfweek >= 1 && dayOfweek <= 5 && hours == 20 && minutes >= 0 && minutes <= 5 && SamiraFight.config.zhenyingzhan == '1' && SamiraFight.currentStatus != 'zhenyingzhan') {
+      SamiraFight.currentStatus = 'zhenyingzhan';
+      return;
+    }
+
     console.log('[samira]currentStatus:' + SamiraFight.currentStatus, 'player: ' + playerName)
     if (SamiraFight.currentStatus === 'search') {
       // 关闭武道会界面
@@ -431,7 +448,7 @@ var SamiraFight = (function () {
           return;
         }
 
-        if (SamiraFight.kuafuBossData.some(x => x.remainTime > 0 || x.curHp == 0)) {
+        if (SamiraFight.kuafuBossData.some(x => x.remainTime == 0 || x.curHp > 0)) {
           console.log('[samira]等待跨服boss奖励');
           SamiraFight.currentStatus = 'search';
           return;
@@ -549,35 +566,6 @@ var SamiraFight = (function () {
         }
       }
 
-      // 处理上古禁地
-      if (SamiraFight.config.shanggu == '1') {
-        const bosses = [];
-        const shangguMapIds = SamiraFight.getMaxLevelShangguBossMapIds();
-        for (const mapId of shangguMapIds) {
-          const mapBosses = BossDataCenter.instance._mapbossDic[mapId];
-          for (const bossId in mapBosses) {
-            const bs = mapBosses[bossId];
-            for (const b in bs) {
-              bosses.push(bs[b]);
-            }
-          }
-        }
-        const filterShanguBoss = bosses.filter(x => x.bean.q_type == 16)
-          .filter(boss => ((boss.owner === playerName || boss.owner == '' || boss.owner == null) && boss.remainTime === 0) || (boss.remainTime != 0 && boss.remainTime <= ts + SamiraFight.config.shangguWaitTime))
-          .sort((a, b) => {
-            return b.level - a.level;
-          });
-
-        if (filterShanguBoss.length > 0) {
-          const boss = filterShanguBoss[0];
-          SamiraFight.currentBoss = boss;
-          console.log('[samira]找到上古禁地boss:', boss);
-          SamiraFight.currentcheckTimes = 0;
-          SamiraFight.currentStatus = 'fight';
-          return;
-        }
-      }
-
       // 处理战场遗迹
       if (com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(179) > 0 && SamiraFight.config.yiji == '1') {
         const yijiMapId = SamiraFight.getMaxLevelYijiBossMapId();
@@ -603,6 +591,64 @@ var SamiraFight = (function () {
           const boss = zhanqiBosses[0];
           SamiraFight.currentBoss = boss;
           console.log('[samira]找到战骑boss:', boss);
+          SamiraFight.currentcheckTimes = 0;
+          SamiraFight.currentStatus = 'fight';
+          return;
+        }
+      }
+    
+      // 处理上古禁地小怪
+      if (SamiraFight.config.shangguxiaoguai == '1') {
+        const bosses = [];
+        const shangguMapIds = SamiraFight.getMaxLevelShangguBossMapIds();
+        for (const mapId of shangguMapIds) {
+          const mapBosses = BossDataCenter.instance._mapbossDic[mapId];
+          for (const bossId in mapBosses) {
+            const bs = mapBosses[bossId];
+            for (const b in bs) {
+              bosses.push(bs[b]);
+            }
+          }
+        }
+        const filterShanguBoss = bosses.filter(x => x.bean.q_type == 4)
+          .filter(boss => ((boss.owner === playerName || boss.owner == '' || boss.owner == null) && boss.remainTime === 0))
+          .sort((a, b) => {
+            return b.level - a.level;
+          });
+
+        if (filterShanguBoss.length > 0) {
+          const boss = filterShanguBoss[0];
+          SamiraFight.currentBoss = boss;
+          console.log('[samira]找到上古禁地小怪:', boss);
+          SamiraFight.currentcheckTimes = 0;
+          SamiraFight.currentStatus = 'fight';
+          return;
+        }
+      }
+
+      // 处理上古禁地
+      if (SamiraFight.config.shanggu == '1') {
+        const bosses = [];
+        const shangguMapIds = SamiraFight.getMaxLevelShangguBossMapIds();
+        for (const mapId of shangguMapIds) {
+          const mapBosses = BossDataCenter.instance._mapbossDic[mapId];
+          for (const bossId in mapBosses) {
+            const bs = mapBosses[bossId];
+            for (const b in bs) {
+              bosses.push(bs[b]);
+            }
+          }
+        }
+        const filterShanguBoss = bosses.filter(x => x.bean.q_type == 16)
+          .filter(boss => ((boss.owner === playerName || boss.owner == '' || boss.owner == null) && boss.remainTime === 0) || (boss.remainTime != 0 && boss.remainTime <= ts + SamiraFight.config.shangguWaitTime))
+          .sort((a, b) => {
+            return b.level - a.level;
+          });
+
+        if (filterShanguBoss.length > 0) {
+          const boss = filterShanguBoss[0];
+          SamiraFight.currentBoss = boss;
+          console.log('[samira]找到上古禁地boss:', boss);
           SamiraFight.currentcheckTimes = 0;
           SamiraFight.currentStatus = 'fight';
           return;
@@ -789,6 +835,9 @@ var SamiraFight = (function () {
       }
     }
     else if (SamiraFight.currentStatus === 'wudao') {
+      // 先回城在匹配, 要不然会出问题
+      com.App.returnCity()
+
       // 因为匹配和进入地图需要时间, 30秒后, 判断地图是不是在武道会, 如果不在说明已经结束
       if (SamiraFight.currentWudaocheckTimes > 30 && playerMapId != 190000) {
         console.log('[samira]比武已经结束, 重新寻找boss');
@@ -867,7 +916,7 @@ var SamiraFight = (function () {
 
       // 当前玩家已经在boss附近了
       const playerPosition = SamiraFight.getPlayerPositionNode();
-      if (playerPosition.x >= SamiraFight.currentBoss.monsterX - 2 && playerPosition.x <= SamiraFight.currentBoss.monsterX + 2 && playerPosition.y >= SamiraFight.currentBoss.monsterY - 2 && playerPosition.y <= SamiraFight.currentBoss.monsterY + 2) {
+      if (playerPosition.x >= SamiraFight.currentBoss.monsterX - 6 && playerPosition.x <= SamiraFight.currentBoss.monsterX - 4 && playerPosition.y >= SamiraFight.currentBoss.monsterY - 2 && playerPosition.y <= SamiraFight.currentBoss.monsterY + 2) {
         com.App.openAutoFight();
       }
       else {
@@ -993,6 +1042,25 @@ var SamiraFight = (function () {
           (new com.modules.kmap.view.MapView()).gotoWhere(point.x, point.y, GameHandler.create(com.App, com.App.openAutoFight))
         }
       }
+    }
+    else if (SamiraFight.currentStatus === 'zhenyingzhan') {
+      if (minutes >= 16) {
+        console.log('[samira]阵营战已经结束, 重新寻找boss');
+        SamiraFight.currentStatus = 'search';
+        return;
+      }
+      
+      // 传送到boss地图
+      if (playerMapId != 33006) {
+        ActivitiesCommandSender.joinByFuncType(1);
+      }
+
+      if (!SamiraFight.autoReviveAndFight) {
+        SamiraFight.changeAutoReviveAndAutoFightStatus();
+      }
+
+      // 开启自动攻击
+      com.App.openAutoFight();
     }
   };
 
@@ -1148,20 +1216,24 @@ var SamiraFight = (function () {
             </div>
             <div style='display: flex; align-items: center; margin-bottom: 10px;'>
               <div><input type="checkbox" class="samira-shanggu" />上古禁地</div>
+              <div><input type="checkbox" class="samira-shanggu-xiaoguai" />上古禁地小怪</div>
               <div><input type="checkbox" class="samira-zhanqi" />战骑祭坛</div>
               <div><input type="checkbox" class="samira-yiji" />战场遗迹</div>
-              <div><input type="checkbox" class="samira-wudao" />武道会</div>
             </div>
             <div style='display: flex; align-items: center; margin-bottom: 10px;'>
               <div><input type="checkbox" class="samira-xukongliehen" />虚空裂痕</div>
               <div><input type="checkbox" class="samira-fuli" />福利BOSS</div>
               <div><input type="checkbox" class="samira-anzhishendian" />暗之神殿</div>
-              <div><input type="checkbox" class="samira-shenmoboss" />神魔BOSS</div>
+              <div><input type="checkbox" class="samira-wudao" />武道会</div>
             </div>
             <div style='display: flex; align-items: center; margin-bottom: 10px;'>
               <div><input type="checkbox" class="samira-zhanchang-boss" />跨服BOSS</div>
               <div><input type="checkbox" class="samira-xiaoguai" />跨服战场小怪</div>
               <div><input type="checkbox" class="samira-yabiao" />押镖</div>
+              <div><input type="checkbox" class="samira-shenmoboss" />神魔BOSS</div>
+            </div>
+            <div style='display: flex; align-items: center; margin-bottom: 10px;'>
+              <div><input type="checkbox" class="samira-zhenyingzhan" />阵营战</div>
             </div>
             <div style='display: none; align-items: center; margin-bottom: 10px;'>
               <div style='display: none'>&nbsp;&nbsp;BOSS血量下限: <input type='number' class='samira-zhanchang-boss-min-hp' style='width: 70px;' /></div>
@@ -1288,22 +1360,18 @@ var SamiraFight = (function () {
 		SamiraFight.loadConfig();
     // 修改内部函数
     SamiraFight.modifyInternelFunction();
+    // 开启自动复活
+    SamiraFight.changeAutoReviveAndAutoFightStatus();
   }));
 
-  SamiraFight.test = function () { 
+  SamiraFight.tp = function (mid) { 
     var cmd = new C2S_TransmitToServerMessage();
-    cmd.transParam = '{"mapmodelid": 23001}';
+    cmd.transParam = '{"mapmodelid": '+ mid +'}';
     cmd.type = 6;
     GameServer.sendCommand(cmd);
   }
 
-  SamiraFight.test2 = function () { 
-    var cmd=new C2S_JoinActivityMessage();
-    cmd.activityId=100080;
-    cmd.count=1;
-    cmd.extendMap='';
-    GameServer.sendCommand(cmd);
-  }
+  window.SamiraFight = SamiraFight;
 
   return SamiraFight;
 })();

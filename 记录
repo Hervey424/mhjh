@@ -47,3 +47,5 @@ App.dataMgr.q_fightBossContainer.getListBy(21)
 23-生效
 22-八卦
 28-异兽
+
+阵营争夺战: ActivitiesCommandSender.joinByFuncType(1)
