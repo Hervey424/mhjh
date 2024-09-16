@@ -12,6 +12,7 @@
 
 武道会体力: com.logic.data.MoneyCenter.getMoney(EnumMoney.JINGJI) == com.logic.data.MoneyCenter.getMoney(-51)
 boss次数: com.logic.data.zone.boss.BossDataCenter.instance._tiliTypeDic
+押镖次数: com.modules.escort.EscortCenter.getAcceptMaxCount()
 
 玩家Id小号: 1288078809323859864
 跨服战场mapId: 300011

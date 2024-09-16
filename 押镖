@@ -1,0 +1,34 @@
+EventMgr.dispatch("TE.taskTransfer",data,JSON.stringify({"npcid":npcid}),1,true);
+
+TaskCommandSender.sendAccpetTask(this._data.taskID, this._data.taskType);
+
+获取任务vo: com.modules.escort.EscortCenter.getData()
+
+npm: 接任务2086 交任务 2087
+自动寻路:
+
+EscortData.findCar();
+
+EscortData.taskState 押镖状态 0 - 未接任务 1 - 正在押镖 2 - 完成 其他 - 未完成
+
+
+
+
+1.传送到npc附近
+EventMgr.dispatch("TE.taskTransfer", com.modules.escort.EscortCenter.getData().taskData.getConditionData(), JSON.stringify({ "npcid": 2086 }), 1, true);
+
+2.接任务
+
+taskId: 640004 
+taskType: 64
+data: com.modules.escort.EscortCenter.getData()
+
+TaskCommandSender.sendAccpetTask(this._data.taskID,this._data.taskType);
+PanelManager.removePanel(PanelRegister.ESCORT_ACCEPT);
+
+3. 跟随镖车
+com.modules.escort.EscortCenter.getData().findCar();
+
+4. 交任务
+EventMgr.dispatch("TE.taskTransfer", com.modules.escort.EscortCenter.getData().taskData.getConditionData(), JSON.stringify({ "npcid": 2087 }), 1, true);
+com.logic.connect.sender.TaskCommandSender.sendFinishTask(640004,64);
