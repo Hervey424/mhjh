@@ -1,0 +1,6 @@
+tab: 0,1,2
+获取元神: App.dataMgr.q_petContainer.petVec[tab]
+
+10002-第三 10001-第一 10003-第二
+获取元神数据 com.modules.pet.PetCenter.getHuanshen()
+

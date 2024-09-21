@@ -613,7 +613,6 @@ var PanelManager=(function(){
 	}
 
 	PanelManager.addAtlasCount=function(panelName,isAdd){
-		return;
 		var info=PanelManager.getPanelInfo(panelName);
 		if(info && info.res){
 			var url;
