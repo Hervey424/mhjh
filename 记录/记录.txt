@@ -5,6 +5,7 @@
 
 去boss房间： com.logic.manager.TransferManager.toBossMap(12, 80711, 0, 0, true);
 获取活着的boss： com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId()
+获取活着的boss： com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(com.App.role.mapId)
 刷新boss数据： BossDataCenter.instance.reset();
 走路： com.App.mapModule.mapMoveModel.walkToMap(80711,monsterX,monsterY, true);
 自动合成: SetupCenter.instance.setGouFuse(EnumDuanzao.AUTO_3,this.hecheng_ck.selected);
@@ -35,9 +36,9 @@ boss次数:
 177-暗之神殿
 178-神魔boss
 179-战场遗迹
-180-
-181-
-182-
+180-锁妖塔BOSS
+181-龙鳞水晶
+182-凤吟水晶
 183-
 
 
