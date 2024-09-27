@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() { }
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '09271624'
+  SamiraFight.version = '09271630'
   SamiraFight.personId = '';
   SamiraFight.running = false;
   // 当前状态 search-搜索boss, fight-战斗, fight-xiuluo-正在攻击修罗天界, wudao-武道会, kuafuboss-跨服boss, xukongliehen-虚空裂痕, yabiao-押镖, kuafuxiaoguai-跨服小怪
@@ -73,7 +73,7 @@ var SamiraFight = (function () {
   // 开启内挂
   SamiraFight.start = function () {
     if (SamiraFight.running != true) {
-      $('.samira-status').text('已运行')
+      $('.samira-status').text('运行中')
       SamiraFight.requestBoss();
       SamiraFight.running = true;
       SamiraFight.currentStatus = 'search';
@@ -1194,7 +1194,14 @@ var SamiraFight = (function () {
     // 更新ui
     $('.samira-current-task').text(SamiraFight.currentStatus ? (SamiraFight.status[SamiraFight.currentStatus] || '未知任务(' + SamiraFight.currentStatus + ')') : '无');
     if (SamiraFight.currentBoss && SamiraFight.currentBoss.bean) {
-      $('.samira-current-boss').text(SamiraFight.currentBoss.bean.q_name || '无');
+      let bossName = SamiraFight.currentBoss.bean.q_name || '无';
+      if (SamiraFight.currentBoss.mapModelId) {
+        const bossMap = com.App.dataMgr.q_mapContainer.list.find(x => x.q_id == SamiraFight.currentBoss.mapModelId);
+        if (bossMap) {
+          bossName + '('+ bossMap.q_name +')'
+        }
+      }
+      $('.samira-current-boss').text(bossName);
     }
 
     if (SamiraFight.currentStatus === 'search') {
