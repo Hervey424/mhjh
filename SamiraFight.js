@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() { }
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '09271406'
+  SamiraFight.version = '09271419'
   SamiraFight.personId = '';
   SamiraFight.running = false;
   // 当前状态 search-搜索boss, fight-战斗, fight-xiuluo-正在攻击修罗天界, wudao-武道会, kuafuboss-跨服boss, xukongliehen-虚空裂痕, yabiao-押镖, kuafuxiaoguai-跨服小怪
@@ -2233,7 +2233,10 @@ var SamiraFight = (function () {
                         </div>
                         <div class="samira-settings-items-group">
                             <div class="samira-settings-item"><label><input type="checkbox" class="samira-zhanqi"/>战骑祭坛</label></div>
-                            <div class="samira-settings-item"><label><input type="checkbox" class="samira-zhanqi-map"/>战骑祭坛地图</label></div>
+                            <div class="samira-settings-item">
+                                <span>战骑祭坛地图</span>
+                                <input type="input" style="width: 150px;" class="samira-zhanqi-map" />
+                            </div>
                             <div class="samira-settings-item"><label><input type="checkbox" class="samira-yiji" />跨服遗迹</label></div>
                             <div class="samira-settings-item"><label><input type="checkbox" class="samira-xiaoguai" />跨服魔甲虫</label></div>
                         </div>
