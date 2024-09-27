@@ -200,7 +200,7 @@ var SamiraFight = (function () {
         if (!item) continue;
         const bean = item.getDataBean();
         // 如果性别不符合, 就熔炼
-        if(bean.q_sex != 0 && bean.q_sex != sex){
+        if(bean.q_sex != 0 && bean.q_sex != sex && bean.q_job == job){
           if(isSex){
             ids.push(netease.protobuf.Int64.parseInt64(item.id));
             continue ;
@@ -1126,7 +1126,7 @@ var SamiraFight = (function () {
         // 根据地图id获取活动
         const currentAct = acts.find(x => x.bean.q_info == parseInt(mapId));
         if (currentAct) {
-          ActivitiesCommandSender, ActivitiesCommandSender.C2S_JoinActivityById(currentAct.id);
+          com.logic.connect.sender.ActivitiesCommandSender.C2S_JoinActivityById(currentAct.id);
           SamiraFight.currentStatus = 'yijieruqin';
           SamiraFight.yijieruqinMapId = mapId;
           return;
@@ -1135,7 +1135,7 @@ var SamiraFight = (function () {
     }
 
     // 如果是星期一到星期五, 8点整进入跨服阵营战
-    if (dayOfweek >= 1 && dayOfweek <= 5 && hours == 20 && minutes >= 0 && minutes <= 5 && SamiraFight.config.zhenyingzhan == '1' && SamiraFight.currentStatus != 'zhenyingzhan') {
+    if (dayOfweek >= 1 && dayOfweek <= 5 && hours == 20 && minutes >= 0 && minutes < 15 && SamiraFight.config.zhenyingzhan == '1' && SamiraFight.currentStatus != 'zhenyingzhan') {
       com.App.returnCity();
       SamiraFight.currentStatus = 'zhenyingzhan';
       return;
@@ -1879,10 +1879,7 @@ var SamiraFight = (function () {
 
       // 角色不在目标地图, 就进入地图
       if (playerMapId != SamiraFight.yijieruqinMapId) {
-        var cmd = new C2S_TransmitToServerMessage();
-        cmd.transParam = '{"mapmodelid":' + SamiraFight.yijieruqinMapId + '}';
-        cmd.type = 6;
-        GameServer.sendCommand(cmd);
+        ZoneCommandSender.enterZoneMap(SamiraFight.yijieruqinMapId);
         return;
       }
 
