@@ -302,31 +302,17 @@ var SamiraFight = (function () {
         }
       }
     })();
-  };  
+  };
 
   // 内功任务/升级
-  SamiraFight.autoNeigong = function () { 
-    if (SamiraFight.config.autoNeigong != '1') { 
+  SamiraFight.autoNeigong = function () {
+    if (SamiraFight.config.autoNeigong != '1') {
       return;
     }
 
     // 内功任务
-    (function () { 
-      const count = com.logic.data.item.BagItemCenter.getItemCount(103001001);
-      const data = com.App.dataMgr.q_globalContainer.getDataBean(15104);
-      if (!data) { 
-        return;
-      }
-      const ids = JSON.parse(data.q_string_value);
-      let times = -1;
-      for (const id of ids) {
-        const info = com.logic.data.shop.MallCenter.getShopItem(1, id);
-        if (info) {
-          if(times == -1 || times > info.remainNum){
-            times = info.remainNum;
-          }
-        }
-      }
+    (function () {
+      const times = SamiraFight.getNeigongTimes();
 
       // 没有次数了
       if (times <= 0) {
@@ -339,16 +325,16 @@ var SamiraFight = (function () {
         return;
       }
 
-      if(ConditionUtil.isItemEnoughJson(bean.q_consume)){
+      if (ConditionUtil.isItemEnoughJson(bean.q_consume)) {
         ItemBuyManager.buy(bean, 1, bean.q_quickPurchaseUse == 1, 0, bean.q_price, bean.q_shop_type, 0);
       }
     })();
 
 
-    (function () { 
+    (function () {
       const data = com.modules.role.neigong.NeiGongCenter.getData();
       const bean = data ? data.bean : null;
-      if (!bean) { 
+      if (!bean) {
         return;
       }
       const cost = JSON.parse(bean.q_cost)[0];
@@ -356,10 +342,35 @@ var SamiraFight = (function () {
       const costNum = cost.num;
       const have = com.logic.data.item.BagItemCenter.getItemCount(costId);
       if (have >= costNum) {
-        ShenLuCenter.sendC2S_BloodActiveMessage(6,1);
+        ShenLuCenter.sendC2S_BloodActiveMessage(6, 1);
       }
     })();
-  }
+  };
+
+  // 获取内功次数
+  SamiraFight.getNeigongTimes = function () { 
+    const data = com.App.dataMgr.q_globalContainer.getDataBean(15104);
+      if (!data) {
+        return 0;
+      }
+      const ids = JSON.parse(data.q_string_value);
+      let times = -1;
+      for (const id of ids) {
+        const info = com.logic.data.shop.MallCenter.getShopItem(1, id);
+        if (info) {
+          if (times == -1 || times > info.remainNum) {
+            times = info.remainNum;
+          }
+        }
+      }
+
+      // 没有次数了
+      if (times <= 0) {
+        times = 0;
+    }
+    
+    return times;
+  };
 
   // 行会购买
   SamiraFight.hhgm = function () {
