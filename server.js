@@ -125,13 +125,13 @@ http.createServer((req, res) => {
       return;
     }
 
-    https.get('https://cqsj-cdn1.7ronggame.com/cqsj/client/ly/js/gameClient_'+ version +'.js', (aRes) => {
+    https.get('https://cqsj-cdn1.7ronggame.com/cqsj/client/ly/js/gameClient_'+ version +'.js?r=' + Math.random(), (aRes) => {
       let aData = '';
       aRes.on('data', chunk => {
         aData += chunk;
       });
       aRes.on('end', () => {
-        https.get('https://raw.githubusercontent.com/Hervey424/mhjh/refs/heads/master/SamiraFight.js', (bRes) => {
+        https.get('https://raw.githubusercontent.com/Hervey424/mhjh/refs/heads/master/SamiraFight.js?r='+ Math.random(), (bRes) => {
           let bData = '';
           bRes.on('data', chunk => {
             bData += chunk;
