@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() { }
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '09271635'
+  SamiraFight.version = '09271700'
   SamiraFight.personId = '';
   SamiraFight.running = false;
   // 当前状态 search-搜索boss, fight-战斗, fight-xiuluo-正在攻击修罗天界, wudao-武道会, kuafuboss-跨服boss, xukongliehen-虚空裂痕, yabiao-押镖, kuafuxiaoguai-跨服小怪
@@ -68,7 +68,6 @@ var SamiraFight = (function () {
     // 采集状态
     gatherStatus: false,
   };
-
 
   // 开启内挂
   SamiraFight.start = function () {
@@ -848,6 +847,7 @@ var SamiraFight = (function () {
     config.wudaoJuesai = config.wudaoJuesai || '0';
     config.redpack = config.redpack || '0';
     config.autoRonglian = config.autoRonglian || '0';
+    config.guajiMapNames = config.guajiMapNames || [];
 
     // 弄到ui上
     if ((config.xiuluoCengshu || []).includes(1)) {
@@ -907,6 +907,7 @@ var SamiraFight = (function () {
     $('.samira-wudao-juesai').prop('checked', config.wudaoJuesai === '1');
     $('.samira-redpack').prop('checked', config.redpack === '1');
     $('.samira-auto-ronglian').prop('checked', config.autoRonglian === '1');
+    $('.samira-guaji-maps').val(config.guajiMapNames);
   };
 
   // 从ui获取配置
@@ -993,6 +994,8 @@ var SamiraFight = (function () {
     const redpack = $('.samira-redpack').prop('checked') ? '1' : '0';
     // 自动熔炼
     const autoRonglian = $('.samira-auto-ronglian').prop('checked') ? '1' : '0';
+    // 挂机地图
+    const guajiMapNames = $('.samira-guaji-maps').val().trim();
 
     SamiraFight.config = {
       xiuluoCengshu: xiuluoCengshu,
@@ -1040,7 +1043,8 @@ var SamiraFight = (function () {
       wudaoJuesai: wudaoJuesai,
       redpack: redpack,
       autoRonglian: autoRonglian,
-      zhanqiMap: zhanqiMap
+      zhanqiMap: zhanqiMap,
+      guajiMapNames: guajiMapNames
     };
 
     return SamiraFight.config;
@@ -1072,7 +1076,7 @@ var SamiraFight = (function () {
     // 跨服boss地图
     const kuafuMapId = SamiraFight.kuafuBossMapId;
     // 挂机地图
-    const bossMapIds = NeiGuaFight._saveMapIds.filter(x => x != 0);
+    const bossMapIds = SamiraFight.getGuaJiMapIds();
     
     const mapIds = [...bossMapIds, fuliMapId, ...azsmMapIds, yijiMapId, zhanqiMapId, kuafuMapId, ...shangguMapIds, ...shangguXiaoGuaiMapIds];
     BossCommandSender.sendC2S_AliveWildBossMessage(mapIds, 0, false);
@@ -1088,7 +1092,7 @@ var SamiraFight = (function () {
   SamiraFight.update = function () {
     const playerName = com.App.role._name;
     const playerMapId = com.App.role._mapId;
-    const mapIds = NeiGuaFight._saveMapIds.filter(x => x != 0);
+    const mapIds = SamiraFight.getGuaJiMapIds();
     const ts = Math.floor(Date.now() / 1000);
     const hours = (new Date()).getHours();
     const minutes = (new Date()).getMinutes();
@@ -1189,7 +1193,7 @@ var SamiraFight = (function () {
       return;
     }
 
-    console.log('[samira]currentStatus:' + SamiraFight.currentStatus, 'player: ' + playerName, SamiraFight.currentBoss);
+    console.log('[samira]currentStatus:' + SamiraFight.currentStatus, 'player: ' + playerName, mapIds, SamiraFight.currentBoss);
     
     // 更新ui
     $('.samira-current-task').text(SamiraFight.currentStatus ? (SamiraFight.status[SamiraFight.currentStatus] || '未知任务(' + SamiraFight.currentStatus + ')') : '无');
@@ -1198,7 +1202,7 @@ var SamiraFight = (function () {
       if (SamiraFight.currentBoss.mapModelId) {
         const bossMap = com.App.dataMgr.q_mapContainer.list.find(x => x.q_id == SamiraFight.currentBoss.mapModelId);
         if (bossMap) {
-          bossName += '('+ bossMap.q_name +')'
+          bossName += '('+ bossMap.q_map_name +')'
         }
       }
       $('.samira-current-boss').text(bossName);
@@ -2051,6 +2055,17 @@ var SamiraFight = (function () {
     return { x: x, y: y }
   };
 
+  // 获取挂机地图id, 首先先从输入框获取, 如果为空则使用巡航地图
+  SamiraFight.getGuaJiMapIds = function () { 
+    const mapNames = SamiraFight.config.guajiMapNames || '';
+    const nameArray = mapNames.split('|').map(x => x ? x.trim() : '').filter(x => x != '' && x != null && x != undefined);
+    const mapIds = nameArray.map(x => com.App.dataMgr.q_mapContainer.list.find(z => z.q_map_name == x)).filter(x => x).map(x => x.q_map_id);
+    if (mapIds.length > 0) {
+      return mapIds;
+    }
+    return NeiGuaFight._saveMapIds.filter(x => x != 0);
+  };
+
   // 获取福利boss地图列表
   SamiraFight.getFuliBossMaps = function () {
     return com.App.dataMgr.q_mapContainer.list.filter(x => x.q_map_id >= 500001 && x.q_map_id <= 500021);
@@ -2246,6 +2261,12 @@ var SamiraFight = (function () {
 														<div class="samira-settings-item">
 																<span>信息颜色</span>
 																<input type="input" style="width: 80px;" class="samira-chat-nmsl-color" />
+														</div>
+												</div>
+                        <div class="samira-settings-items-group">
+                          <div class="samira-settings-item" style="display: flex; width: 100%">
+																<span>挂机地图名称&nbsp;</span>
+																<input type="input" style="flex: 1" placeholder="多个地图名称用|隔开, 如果为空则使用巡航选择地图" class="samira-guaji-maps" />
 														</div>
 												</div>
                     </div>
