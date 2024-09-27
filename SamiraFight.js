@@ -2147,7 +2147,7 @@ var SamiraFight = (function () {
 
     const settingHtml = $(`<div class="samira-settings">
         <div class="samira-settings-inner">
-            <div class="samira-settings-header">功能设置(${version})</div>
+            <div class="samira-settings-header">功能设置(${SamiraFight.version})</div>
             <div class="samira-settings-content">
                 <fieldset class="samira-settings-fieldset">
                     <legend>功能</legend>
