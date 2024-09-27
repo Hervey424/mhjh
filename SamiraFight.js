@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() { }
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '09271615'
+  SamiraFight.version = '09271624'
   SamiraFight.personId = '';
   SamiraFight.running = false;
   // 当前状态 search-搜索boss, fight-战斗, fight-xiuluo-正在攻击修罗天界, wudao-武道会, kuafuboss-跨服boss, xukongliehen-虚空裂痕, yabiao-押镖, kuafuxiaoguai-跨服小怪
@@ -76,6 +76,7 @@ var SamiraFight = (function () {
       $('.samira-status').text('已运行')
       SamiraFight.requestBoss();
       SamiraFight.running = true;
+      SamiraFight.currentStatus = 'search';
       Laya.workerTimer.loop(1000, SamiraFight, com.modules.map.model.auto.SamiraFight.requestBoss);
       Laya.workerTimer.loop(10000, SamiraFight, com.modules.map.model.auto.SamiraFight.requestXiuLuoBoss);
       Laya.workerTimer.loop(1000, SamiraFight, com.modules.map.model.auto.SamiraFight.update); 
@@ -88,11 +89,13 @@ var SamiraFight = (function () {
   // 关闭内挂
   SamiraFight.stop = function () {
     SamiraFight.running = false;
-    SamiraFight.currentStatus = 'search';
+    SamiraFight.currentStatus = '';
     SamiraFight.currentBoss = null;
     SamiraFight.currentcheckTimes = 0;
     SamiraFight.currentXiuLuoCengshu = -1;
     $('.samira-status').text('未运行')
+    $('.samira-current-task').text('无');
+    $('.samira-current-boss').text('无');
     Laya.workerTimer.clear(SamiraFight, com.modules.map.model.auto.SamiraFight.requestBoss);
     Laya.workerTimer.clear(SamiraFight, com.modules.map.model.auto.SamiraFight.update);
     Laya.workerTimer.clear(SamiraFight, com.modules.map.model.auto.SamiraFight.requestXiuLuoBoss);
@@ -332,7 +335,6 @@ var SamiraFight = (function () {
 
       // 没有次数了
       if (times <= 0) {
-        times = 0;
         return;
       }
 
@@ -1188,7 +1190,12 @@ var SamiraFight = (function () {
     }
 
     console.log('[samira]currentStatus:' + SamiraFight.currentStatus, 'player: ' + playerName, SamiraFight.currentBoss);
-    $('.samira-current-task').text(SamiraFight.status[SamiraFight.currentStatus] || '未知任务('+ SamiraFight.currentStatus +')');
+    
+    // 更新ui
+    $('.samira-current-task').text(SamiraFight.currentStatus ? (SamiraFight.status[SamiraFight.currentStatus] || '未知任务(' + SamiraFight.currentStatus + ')') : '无');
+    if (SamiraFight.currentBoss && SamiraFight.currentBoss.bean) {
+      $('.samira-current-boss').text(SamiraFight.currentBoss.bean.q_name || '无');
+    }
 
     if (SamiraFight.currentStatus === 'search') {
       // 关闭武道会界面
@@ -2291,7 +2298,7 @@ var SamiraFight = (function () {
                 </fieldset>
             </div>
             <div class="samira-settings-footer" style="display: block; text-align: left; padding: 10px 10px;">
-                <div>当前版本: ${SamiraFight.version}&nbsp;&nbsp;&nbsp;&nbsp;当前任务: <span class='samira-current-task'></span></div>
+                <div>当前版本: ${SamiraFight.version}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;当前任务: <span class='samira-current-task'>无</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;当前目标: <span class='samira-current-boss'>无</span></div>
             </div>
             <div class="samira-settings-footer">
                 <div class="samira-settings-footer-btn samira-settings-footer-btn-start">启动</div>
