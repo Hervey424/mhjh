@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() { }
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '09271425'
+  SamiraFight.version = '09271538'
   SamiraFight.personId = '';
   SamiraFight.running = false;
   // 当前状态 search-搜索boss, fight-战斗, fight-xiuluo-正在攻击修罗天界, wudao-武道会, kuafuboss-跨服boss, xukongliehen-虚空裂痕, yabiao-押镖, kuafuxiaoguai-跨服小怪
@@ -1578,8 +1578,17 @@ var SamiraFight = (function () {
             SamiraFight.currentStatus = 'fight';
           }
         } else {
-          App.openAutoFight();
           console.log('[samira]没有找到boss, 开启自动攻击, 重新寻找boss');
+          // 去第一个地图打怪
+          if (mapIds.length > 0) {
+            const mid = mapIds[0];
+            if (mid != playerMapId) {
+              SamiraFight.tp(mid);
+            }
+            else {
+              App.openAutoFight();
+            }
+          }
         }
       }
     }
