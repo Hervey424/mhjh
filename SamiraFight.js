@@ -794,6 +794,7 @@ var SamiraFight = (function () {
     config.shangguxiaoguai = config.shangguxiaoguai || '0';
     config.shangguxiaoguaiMap = config.shangguxiaoguaiMap || '-1';
     config.zhanqi = config.zhanqi || '0';
+    config.zhanqiMap = config.zhanqiMap || '-1';
     config.anzhishendian = config.anzhishendian || '0';
     config.yiji = config.yiji || '0';
     config.wudao = config.wudao || '0';
@@ -849,6 +850,7 @@ var SamiraFight = (function () {
     $('.samira-shanggu').prop('checked', config.shanggu === '1');
     $('.samira-shanggu-xiaoguai').prop('checked', config.shangguxiaoguai === '1');
     $('.samira-zhanqi').prop('checked', config.zhanqi === '1');
+    $('.samira-zhanqi').val(config.zhanqiMap);
     $('.samira-anzhishendian').prop('checked', config.anzhishendian === '1');
     $('.samira-yiji').prop('checked', config.yiji === '1');
     $('.samira-wudao').prop('checked', config.wudao === '1');
@@ -906,6 +908,7 @@ var SamiraFight = (function () {
     const shangguXiaoGuaiMap = $('.samira-shanggu-xiaoguai-map').val().trim();
     // 战骑祭坛
     const zhanqi = $('.samira-zhanqi').prop('checked') ? '1' : '0';
+    const zhanqiMap = $('.samira-zhanqi-map').val().trim();
     // 暗之神殿
     const anzhishendian = $('.samira-anzhishendian').prop('checked') ? '1' : '0';
     // 战场遗迹
@@ -1019,7 +1022,8 @@ var SamiraFight = (function () {
       yaoshouFengyin: yaoshouFengyin,
       wudaoJuesai: wudaoJuesai,
       redpack: redpack,
-      autoRonglian: autoRonglian
+      autoRonglian: autoRonglian,
+      zhanqiMap: zhanqiMap
     };
 
     return SamiraFight.config;
@@ -1043,7 +1047,7 @@ var SamiraFight = (function () {
     // 获取遗迹地图
     const yijiMapId = SamiraFight.getMaxLevelYijiBossMapId();
     // 获取战骑地图
-    const zhanqiMapId = SamiraFight.getMaxLevelZhanqiBossMapId();
+    const zhanqiMapId = SamiraFight.getSelectZhanqiBossMapId();
     // 获取上古禁地地图
     const shangguMapIds = SamiraFight.getMaxLevelShangguBossMapIds(SamiraFight.config.shangguMap);
     // 获取上古禁地小怪地图
@@ -1422,7 +1426,7 @@ var SamiraFight = (function () {
 
       // 处理战骑祭坛
       if (SamiraFight.kuafuActiveStatus && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(168) > 0 && SamiraFight.config.zhanqi == '1') {
-        const zhanqiMapId = SamiraFight.getMaxLevelZhanqiBossMapId();
+        const zhanqiMapId = SamiraFight.getSelectZhanqiBossMapId();
         const zhanqiBosses = com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(zhanqiMapId)
           .filter(x => x.bean.q_type == 8)
           .filter(boss => (boss.owner === playerName || boss.owner == '' || boss.owner == null) && boss.remainTime === 0);
@@ -2066,16 +2070,13 @@ var SamiraFight = (function () {
     return com.App.dataMgr.q_mapContainer.list.filter(x => x.q_map_id >= 200001 && x.q_map_id <= 200085);
   };
 
-  // 获取最大等级战骑地图
-  SamiraFight.getMaxLevelZhanqiBossMapId = function () {
+  // 获取选择的战骑地图
+  SamiraFight.getSelectZhanqiBossMapId = function () {
+    const indexArray = (SamiraFight.config.zhanqiMap || '').split('|').filter(x => x != '' && x != null || x != undefined).map(x => parseInt(x));
     const maps = SamiraFight.getZhanqiBossMaps();
-    let mapId = -1;
-    for (const map of maps) {
-      if (mapId == -1) {
-        mapId = map.q_map_id;
-        continue;
-      }
+    let mapIds = [];
 
+    for (const map of maps) {
       const playerLevel = com.App.role._level;
       const serverOpenDay = com.game.core.utils.ServerTime.getOpenDays();
 
@@ -2083,10 +2084,20 @@ var SamiraFight = (function () {
       const minLevel = condition.q_min_level;
       const openday = condition.openday;
       if (playerLevel >= minLevel && serverOpenDay >= openday) {
-        mapId = map.q_map_id;
+        mapIds.push(map.q_map_id);
       }
     }
-    return mapId;
+
+    const result = [];
+    for (const index of indexArray) { 
+      if (index >= 1 && index <= mapIds.length) {
+        result.push(mapIds[index - 1]);
+      }
+      else if (index < 0) { 
+        result.push(mapIds[mapIds.length + index]);
+      }
+    }
+    return result;
   };
 
   // 获取遗迹地图
@@ -2218,8 +2229,11 @@ var SamiraFight = (function () {
                             <div class="samira-settings-item"><label><input type="checkbox" class="samira-fuli" />福利BOSS</label></div>
                             <div class="samira-settings-item"><label><input type="checkbox" class="samira-anzhishendian" />暗之神殿</label></div>
                             <div class="samira-settings-item"><label><input type="checkbox" class="samira-wudao" />武道会</label></div>
-                            <div class="samira-settings-item"><label><input type="checkbox" class="samira-zhanqi"/>战骑祭坛</label></div>
                             <div class="samira-settings-item"><label><input type="checkbox" class="samira-shenmoboss" />神魔BOSS</label></div>
+                        </div>
+                        <div class="samira-settings-items-group">
+                            <div class="samira-settings-item"><label><input type="checkbox" class="samira-zhanqi"/>战骑祭坛</label></div>
+                            <div class="samira-settings-item"><label><input type="checkbox" class="samira-zhanqi-map"/>战骑祭坛地图</label></div>
                             <div class="samira-settings-item"><label><input type="checkbox" class="samira-yiji" />跨服遗迹</label></div>
                             <div class="samira-settings-item"><label><input type="checkbox" class="samira-xiaoguai" />跨服魔甲虫</label></div>
                         </div>
