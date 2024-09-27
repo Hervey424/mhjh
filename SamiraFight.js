@@ -2130,7 +2130,7 @@ var SamiraFight = (function () {
     // 添加css
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'http://localhost:3000/css2.css';
+    link.href = 'https://mhjh.xianghongwei.cn/css.css';
     document.head.appendChild(link);
 
     const settingHtml = $(`<div class="samira-settings">
