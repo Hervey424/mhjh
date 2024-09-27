@@ -2,12 +2,27 @@ var SamiraFight = (function () {
   function SamiraFight() { }
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '09271538'
+  SamiraFight.version = '09271615'
   SamiraFight.personId = '';
   SamiraFight.running = false;
   // 当前状态 search-搜索boss, fight-战斗, fight-xiuluo-正在攻击修罗天界, wudao-武道会, kuafuboss-跨服boss, xukongliehen-虚空裂痕, yabiao-押镖, kuafuxiaoguai-跨服小怪
   // zhenyingzhan-阵营攻防战 yijieruqin-异界入侵 sbk-沙巴克
   SamiraFight.currentStatus = 'search';
+  SamiraFight.status = {
+    search: '搜索BOSS',
+    fight: '战斗',
+    'fight-xiuluo': '修罗天界',
+    wudao: '武道会',
+    kuafuboss: '跨服BOSS',
+    xukongliehen: '虚空裂痕',
+    yabiao: '押镖',
+    kuafuxiaoguai: '跨服小怪',
+    zhenyingzhan: '阵营攻防战',
+    yijieruqin: '异界入侵',
+    sbk: '沙巴克',
+    suoyaotacaiji: '锁妖塔采集',
+    wudaohuijuesai: '武道会决赛'
+  };
   // 当前boss
   SamiraFight.currentBoss = null;
   // 打boss防止卡住检查次数
@@ -1172,7 +1187,9 @@ var SamiraFight = (function () {
       return;
     }
 
-    console.log('[samira]currentStatus:' + SamiraFight.currentStatus, 'player: ' + playerName, SamiraFight.currentBoss)
+    console.log('[samira]currentStatus:' + SamiraFight.currentStatus, 'player: ' + playerName, SamiraFight.currentBoss);
+    $('.samira-current-task').text(SamiraFight.status[SamiraFight.currentStatus] || '未知任务('+ SamiraFight.currentStatus +')');
+
     if (SamiraFight.currentStatus === 'search') {
       // 关闭武道会界面
       PanelManager.closeByClass(WulingdahuiPanel);
@@ -2272,6 +2289,9 @@ var SamiraFight = (function () {
                         </div>
                     </div>
                 </fieldset>
+            </div>
+            <div class="samira-settings-footer" style="display: block; text-align: left; padding: 10px 10px;">
+                <div>当前版本: ${SamiraFight.version}&nbsp;&nbsp;&nbsp;&nbsp;当前任务: <span class='samira-current-task'></span></div>
             </div>
             <div class="samira-settings-footer">
                 <div class="samira-settings-footer-btn samira-settings-footer-btn-start">启动</div>
