@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() { }
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '09271704'
+  SamiraFight.version = '0928-0852'
   SamiraFight.personId = '';
   SamiraFight.running = false;
   // 当前状态 search-搜索boss, fight-战斗, fight-xiuluo-正在攻击修罗天界, wudao-武道会, kuafuboss-跨服boss, xukongliehen-虚空裂痕, yabiao-押镖, kuafuxiaoguai-跨服小怪
@@ -1195,7 +1195,7 @@ var SamiraFight = (function () {
 
     console.log('[samira]currentStatus:' + SamiraFight.currentStatus, 'player: ' + playerName, mapIds, SamiraFight.currentBoss);
     
-    // 更新ui
+    // 显示当前状态
     $('.samira-current-task').text(SamiraFight.currentStatus ? (SamiraFight.status[SamiraFight.currentStatus] || '未知任务(' + SamiraFight.currentStatus + ')') : '无');
     if (SamiraFight.currentBoss && SamiraFight.currentBoss.bean) {
       let bossName = SamiraFight.currentBoss.bean.q_name || '无';
@@ -1208,6 +1208,7 @@ var SamiraFight = (function () {
       $('.samira-current-boss').text(bossName);
     }
     
+    // 显示当前boss
     if((!SamiraFight.currentBoss) || SamiraFight.currentStatus == 'search') {
       $('.samira-current-boss').text('无');
     }
@@ -1509,7 +1510,7 @@ var SamiraFight = (function () {
       }
 
       // 处理上古禁地BOSS(如果有内功任务, 也会去打boss)
-      if (SamiraFight.kuafuActiveStatus && (SamiraFight.config.shanggu == '1' || (SamiraFight.config.autoNeigong != '1' && SamiraFight.getNeigongTimes() > 0))) {
+      if (SamiraFight.kuafuActiveStatus && (SamiraFight.config.shanggu == '1' || (SamiraFight.config.autoNeigong == '1' && SamiraFight.getNeigongTimes() > 0))) {
         const bosses = [];
         const shangguMapIds = SamiraFight.getMaxLevelShangguBossMapIds(SamiraFight.config.shangguMap);
         for (const mapId of shangguMapIds) {
@@ -2217,7 +2218,7 @@ var SamiraFight = (function () {
 
     const settingHtml = $(`<div class="samira-settings">
         <div class="samira-settings-inner">
-            <div class="samira-settings-header">功能设置(${SamiraFight.version})</div>
+            <div class="samira-settings-header">功能设置</div>
             <div class="samira-settings-content">
                 <fieldset class="samira-settings-fieldset">
                     <legend>功能</legend>
