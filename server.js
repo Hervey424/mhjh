@@ -6,7 +6,7 @@ const querystring = require('querystring');
 const css = `.samira-settings{
   width: 1000px; 
   position: fixed; 
-  top: 15%; 
+  top: 0%; 
   left: 50%; 
   margin-left: -600px; 
   background: #000000; 
