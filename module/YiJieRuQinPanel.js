@@ -133,6 +133,7 @@ var YiJieRuQinPanel=(function(_super){
 	}
 
 	__proto.onClick=function(e){
+		
 		if(e.currentTarget==this._view.btnGo){
 			if(!GuildCenter.hasGuild()){
 				GameNotice.showMousePosMessage("未加入行会，无法参与");

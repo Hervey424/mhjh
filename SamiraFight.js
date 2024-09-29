@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() { }
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '0928-0852'
+  SamiraFight.version = '0929-1605'
   SamiraFight.personId = '';
   SamiraFight.running = false;
   // 当前状态 search-搜索boss, fight-战斗, fight-xiuluo-正在攻击修罗天界, wudao-武道会, kuafuboss-跨服boss, xukongliehen-虚空裂痕, yabiao-押镖, kuafuxiaoguai-跨服小怪
@@ -224,6 +224,7 @@ var SamiraFight = (function () {
             continue ;
           }
         }
+        // 按照职业和品质熔炼
         if(com.logic.data.item.HuishouCenter.isAutoSmeltByRank(bean.q_job, item.rank)){
           ids.push(netease.protobuf.Int64.parseInt64(item.id));
         }
@@ -847,7 +848,7 @@ var SamiraFight = (function () {
     config.wudaoJuesai = config.wudaoJuesai || '0';
     config.redpack = config.redpack || '0';
     config.autoRonglian = config.autoRonglian || '0';
-    config.guajiMapNames = config.guajiMapNames || [];
+    config.guajiMapNames = config.guajiMapNames || '';
 
     // 弄到ui上
     if ((config.xiuluoCengshu || []).includes(1)) {
@@ -2359,6 +2360,7 @@ var SamiraFight = (function () {
     settingHtml.find('.samira-settings-footer-btn-select-map').click(function () { 
       PanelOpenManager.openSetup(null,4);
     });
+    $('.samira-settings').remove();
     $('body').append(settingHtml);
 
     const bossHpHtml = $(`<div style='bottom: 25px; padding: 10px; display: none;' class='samira-hp-container'>
@@ -2367,6 +2369,7 @@ var SamiraFight = (function () {
                 <div style='flex: 1; margin-left: 10px;' class='samira-hp-items'></div>
               </div>
         </div>`);
+    $('.samira-hp-container').remove();
     $('body').append(bossHpHtml);
     
     const statusHtml = $(`<div class='samira-status-contaienr'>
@@ -2375,6 +2378,7 @@ var SamiraFight = (function () {
     statusHtml.find('.samira-status').click(function () {
       $('.samira-settings').toggle();
     });
+    $('.samira-status-contaienr').remove();
     $('body').append(statusHtml);
   };
 
