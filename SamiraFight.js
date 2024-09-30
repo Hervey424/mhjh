@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() { }
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '0929-2038'
+  SamiraFight.version = '0930-0916'
   SamiraFight.personId = '';
   SamiraFight.running = false;
   // 当前状态 search-搜索boss, fight-战斗, fight-xiuluo-正在攻击修罗天界, wudao-武道会, kuafuboss-跨服boss, xukongliehen-虚空裂痕, yabiao-押镖, kuafuxiaoguai-跨服小怪
@@ -2469,6 +2469,7 @@ var SamiraFight = (function () {
 
   // 打开红包
   SamiraFight.openRedPack = function (cmd) { 
+    console.log('samira收到红包: ', 111111111111111111111111, cmd)
     if (SamiraFight.config.redpack == '1') { 
       const list = cmd.hongbao;
       for(var $each_item in list){
