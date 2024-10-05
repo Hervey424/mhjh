@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() { }
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1005-2117'
+  SamiraFight.version = '1005-2135'
   SamiraFight.personId = '';
   SamiraFight.running = false;
   // 当前状态 search-搜索boss, fight-战斗, fight-xiuluo-正在攻击修罗天界, wudao-武道会, kuafuboss-跨服boss, xukongliehen-虚空裂痕, yabiao-押镖, kuafuxiaoguai-跨服小怪
@@ -1306,17 +1306,8 @@ var SamiraFight = (function () {
         com.App.returnCity();
 
         // 获取所有活动
-        const beans = com.App.dataMgr.q_activitiesContainer.getListByType(3000);
-        const acts = [];
-        for (var i = 0; i < beans.length; i++) {
-          var act = com.logic.data.activity.ActivityCenter.getData(beans[i].q_id);
-          if (act && act.activityStates > -1) {
-            acts.push(act);
-          }
-        };
-        
-        // 根据地图id获取活动
-        const currentAct = acts.find(x => x.bean.q_info == parseInt(mapId));
+        const acts = com.App.dataMgr.q_activitiesContainer.getListByType(3000).map(x => com.logic.data.activity.ActivityCenter.getData(x.q_id)).filter(x => x.activityStates > -1).map(x => ({ id: x.id, mapId: x.bean.q_info }));
+        const currentAct = acts.find(x => x.mapId == parseInt(mapId));
         if (currentAct) {
           com.logic.connect.sender.ActivitiesCommandSender.C2S_JoinActivityById(currentAct.id);
           SamiraFight.currentStatus = 'yijieruqin';
