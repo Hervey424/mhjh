@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() { }
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1005-1322'
+  SamiraFight.version = '1005-1509'
   SamiraFight.personId = '';
   SamiraFight.running = false;
   // 当前状态 search-搜索boss, fight-战斗, fight-xiuluo-正在攻击修罗天界, wudao-武道会, kuafuboss-跨服boss, xukongliehen-虚空裂痕, yabiao-押镖, kuafuxiaoguai-跨服小怪
@@ -192,6 +192,52 @@ var SamiraFight = (function () {
     SamiraFight.autoRonglian();
     SamiraFight.autoOpenRedpacket();
     SamiraFight.autoDuanzao();
+    SamiraFight.autoJunzhuang();
+  };
+
+  // 自动升级军装
+  SamiraFight.autoJunzhuang = function () { 
+    if (SamiraFight.config.autoJunzhuang != '1') {
+      return;
+    }
+
+    const parts = com.modules.role.junxian.data.JunZhuangCenter.parts;
+    let minLevel = 999999;
+    let minPart = 0;
+    for (const part of parts) {
+      const equip = com.logic.data.item.WearEquipCenter.getEquipByPart(part);
+      if (!equip) {
+        continue;
+      }
+      const level = com.logic.data.item.EquipPartCenter.getPartQiangHuaLevel(part, 10);
+      const beanId = com.modules.role.junxian.data.JunZhuangCenter.getQiangHuaNewID(3, level);
+      const bean = com.App.dataMgr.q_equip_qianghua_newContainer.getDataBean(beanId);
+      if (bean && bean.q_next_id != 0) { 
+        if(level < minLevel){
+          minLevel = level;
+          minPart = part;
+        }
+      }
+    }
+
+    if (minLevel != 999999 && minPart != 0) { 
+      const level = com.logic.data.item.EquipPartCenter.getPartQiangHuaLevel(minPart, 10);
+      const beanId = com.modules.role.junxian.data.JunZhuangCenter.getQiangHuaNewID(3, level);
+      const bean = com.App.dataMgr.q_equip_qianghua_newContainer.getDataBean(beanId);
+      if (bean && bean.q_next_id != 0) { 
+        const next = com.App.dataMgr.q_equip_qianghua_newContainer.getDataBean(bean.q_next_id);
+        if (next) { 
+          const cost = JSON.parse(next.q_cost_qianghua)[0];
+          const costNum = cost.num;
+          const costId = cost.id;
+          const count = com.logic.data.item.BagItemCenter.getItemCount(costId);
+          if (count >= costNum) { 
+            DuanzaoServer.sendC2S_Qianghua2ItemMessage(minPart, 0, 10);
+            return;
+          }
+        }
+      }
+    }
   };
 
   // 自动锻造
@@ -202,6 +248,11 @@ var SamiraFight = (function () {
       for (const parts of partItems) { 
         let minLevel = 999999, minPart = 0;
         for (const part of parts) { 
+          // 判断当前部位是否穿装备
+          const equip = com.logic.data.item.WearEquipCenter.getEquipByPart(part);
+          if (!equip) {
+            continue;
+          }
           const level = com.logic.data.item.EquipPartCenter.getPartInfo(part).getQianghuaLevel(10);
           if (level < minLevel) { 
             minLevel = level;
@@ -218,9 +269,7 @@ var SamiraFight = (function () {
               const costNum = cost.num;
               const costId = cost.id;
               const count = com.logic.data.item.BagItemCenter.getItemCount(costId);
-              console.log(11111111111, minPart, count, costNum)
               if (count >= costNum) { 
-              console.log(11111111111, 222222,minPart, count, costNum)
                 DuanzaoServer.sendC2S_Qianghua2ItemMessage(minPart, 0, 10);
                 return;
               }
@@ -233,6 +282,10 @@ var SamiraFight = (function () {
     { 
       const parts = [...com.logic.enum.EnumEquipType.qianghua_parts,...com.logic.enum.EnumEquipType.shenshi_parts];
       for (const part of parts) { 
+        const equip = com.logic.data.item.WearEquipCenter.getEquipByPart(part);
+        if (!equip) { 
+          continue;
+        }
         const level = com.logic.data.item.EquipPartCenter.getPartInfo(part).getQianghuaLevel(11);
         const bean = com.App.dataMgr.q_equip_jinglianContainer.list.find(x => x.q_equipPos == part);
         if (bean.q_maxlv != level) { 
@@ -937,6 +990,7 @@ var SamiraFight = (function () {
     config.guajiMapNames = config.guajiMapNames || '';
     config.longhunBoss = config.longhunBoss || '1';
     config.autoDuanzao = config.autoDuanzao || '1';
+    config.autoJunzhuang = config.autoJunzhuang || '1';
 
     // 弄到ui上
     if ((config.xiuluoCengshu || []).includes(1)) {
@@ -999,6 +1053,7 @@ var SamiraFight = (function () {
     $('.samira-longhunboss').prop('checked', config.longhunBoss === '1');
     $('.samira-guaji-maps').val(config.guajiMapNames);
     $('.samira-duanzao').prop('checked', config.autoDuanzao === '1');
+    $('.samira-auto-junzhuang').prop('checked', config.autoDuanzao === '1');
   };
 
   // 从ui获取配置
@@ -1091,6 +1146,8 @@ var SamiraFight = (function () {
     const longhunBoss = $('.samira-longhunboss').prop('checked') ? '1' : '0';
     // 自动锻造
     const autoDuanzao = $('.samira-duanzao').prop('checked') ? '1' : '0';
+    // 自动升级军装
+    const autoJunzhuang = $('.samira-auto-junzhuang').prop('checked') ? '1' : '0';
 
     SamiraFight.config = {
       xiuluoCengshu: xiuluoCengshu,
@@ -1141,7 +1198,8 @@ var SamiraFight = (function () {
       zhanqiMap: zhanqiMap,
       guajiMapNames: guajiMapNames,
       longhunBoss: longhunBoss,
-      autoDuanzao: autoDuanzao
+      autoDuanzao: autoDuanzao,
+      autoJunzhuang: autoJunzhuang
     };
 
     return SamiraFight.config;
@@ -2372,7 +2430,7 @@ var SamiraFight = (function () {
 
     const settingHtml = $(`<div class="samira-settings">
         <div class="samira-settings-inner">
-            <div class="samira-settings-header">功能设置</div>
+            <div class="samira-settings-header" style='display:none'>功能设置</div>
             <div class="samira-settings-content">
                 <fieldset class="samira-settings-fieldset">
                     <legend>功能</legend>
@@ -2394,6 +2452,7 @@ var SamiraFight = (function () {
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-redpack' />抢红包</label></div>
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-longhunboss' />龙魂BOSS</label></div>
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-duanzao' />强化&精炼</label></div>
+														<div class="samira-settings-item"><label><input type="checkbox" class='samira-auto-junzhuang' />军装升级</label></div>
 												</div>
 												<div class="samira-settings-items-group">
 														<div class="samira-settings-item">
@@ -2555,8 +2614,8 @@ var SamiraFight = (function () {
     }
 
     FunctionManager.isFunctionOpen=function(functionId,needNotice,noticeType,noticeColor){
-      // 修改巡航自动合成
-      if([105].includes(functionId)){
+      // 105-自动合成, 108-自动历练任务
+      if([105,108].includes(functionId)){
         return true;
       }
 
