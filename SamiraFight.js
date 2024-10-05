@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() { }
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1005-1654'
+  SamiraFight.version = '1005-1743'
   SamiraFight.personId = '';
   SamiraFight.running = false;
   // 当前状态 search-搜索boss, fight-战斗, fight-xiuluo-正在攻击修罗天界, wudao-武道会, kuafuboss-跨服boss, xukongliehen-虚空裂痕, yabiao-押镖, kuafuxiaoguai-跨服小怪
@@ -306,7 +306,7 @@ var SamiraFight = (function () {
   SamiraFight.autoOpenRedpacket = function () { 
     // 开启功能并且有体力
     if (SamiraFight.config.redpack == '1' && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(184) > 0) { 
-      const list = com.modules.activity.flower.HongbaoCenter.list.filter(x => x.canGet == 1);
+      const list =  com.modules.activity.flower.HongbaoCenter.list.filter(x => x.canGet == 1);
       let max = -1;
       let maxItem = null;
       for (const item of list) {
@@ -2748,6 +2748,12 @@ var SamiraFight = (function () {
     }
   };
 
+  // 红包更新
+  SamiraFight.onHongbaoActionMessage = function (cmd) { 
+    const hongbao = cmd.hongbao;
+    SamiraFight.openRedPack({ hongbao: [hongbao] })
+  };
+
   // 角色死亡
   GameServer.register(S2C_PlayerDieMessage,GameHandler.create(SamiraFight, SamiraFight.onS2C_PlayerDieMessageHandler));
   // 注册攻击boss回调
@@ -2779,9 +2785,7 @@ var SamiraFight = (function () {
     // 采集中断或者完成
     SamiraFight.yaoshou.gatherStatus = false
   }));
-  GameServer.register(S2C_HongbaoActionMessage, function (cmd) {
-    SamiraFight.openRedPack({ hongbao: [cmd.hongbao] });
-  });
+  GameServer.register(S2C_HongbaoActionMessage, GameHandler.create(SamiraFight,SamiraFight.onHongbaoActionMessage));
 	GameServer.register(S2C_HongbaoListMessage,GameHandler.create(SamiraFight,SamiraFight.openRedPack));
 
   window.SamiraFight = SamiraFight;
