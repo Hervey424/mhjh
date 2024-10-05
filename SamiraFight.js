@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() { }
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1004-1315'
+  SamiraFight.version = '1005-1305'
   SamiraFight.personId = '';
   SamiraFight.running = false;
   // 当前状态 search-搜索boss, fight-战斗, fight-xiuluo-正在攻击修罗天界, wudao-武道会, kuafuboss-跨服boss, xukongliehen-虚空裂痕, yabiao-押镖, kuafuxiaoguai-跨服小怪
@@ -191,9 +191,64 @@ var SamiraFight = (function () {
     SamiraFight.autoShenlu();
     SamiraFight.autoRonglian();
     SamiraFight.autoOpenRedpacket();
+    SamiraFight.autoDuanzao();
   };
 
-    // 自动打开红包
+  // 自动锻造
+  SamiraFight.autoDuanzao = function () {
+    // 强化
+    { 
+      const partItems = [com.logic.enum.EnumEquipType.shenshi_parts, com.logic.enum.EnumEquipType.qianghua_parts];
+      for (const parts of partItems) { 
+        let minLevel = 999999, minPart = 0;
+        for (const part of parts) { 
+          const level = com.logic.data.item.EquipPartCenter.getPartInfo(part).getQianghuaLevel(10);
+          if (level < minLevel) { 
+            minLevel = level;
+            minPart = part;
+          }
+        }
+        if (minLevel != 999999 && minPart != 0) { 
+          const isShenshi = !parts.includes(50000);
+          const bean = com.App.dataMgr.q_equip_qianghua_newContainer.getDataBean(isShenshi ? 10000 + minLevel : minLevel, false);
+          if (bean && bean.q_next_id != 0) { 
+            const next = com.App.dataMgr.q_equip_qianghua_newContainer.getDataBean(bean.q_next_id, false);
+            if (next) { 
+              const cost = JSON.parse(next.q_cost_qianghua)[0];
+              const costNum = cost.num;
+              const costId = cost.id;
+              const count = com.logic.data.item.BagItemCenter.getItemCount(costId);
+              if (count >= costNum) { 
+                console.log(11111111,minPart)
+                DuanzaoServer.sendC2S_Qianghua2ItemMessage(minPart, 0, 10);
+                return;
+              }
+            }
+          }
+        }
+      }
+    }
+    // 精炼
+    { 
+      const parts = [...com.logic.enum.EnumEquipType.qianghua_parts,...com.logic.enum.EnumEquipType.shenshi_parts];
+      for (const part of parts) { 
+        const level = com.logic.data.item.EquipPartCenter.getPartInfo(part).getQianghuaLevel(11);
+        const bean = com.App.dataMgr.q_equip_jinglianContainer.list.find(x => x.q_equipPos == part);
+        if (bean.q_maxlv != level) { 
+          const cost = JSON.parse(bean.q_cost_jinglian)[0];
+          const costNum = cost.num;
+          const costId = cost.id;
+          const count = com.logic.data.item.BagItemCenter.getItemCount(costId);
+          if (count >= costNum) { 
+            DuanzaoServer.sendC2S_Qianghua2ItemMessage(part, 0, 11);
+            return;
+          }
+        }
+      }
+    }
+  };
+
+  // 自动打开红包
   SamiraFight.autoOpenRedpacket = function () { 
     // 开启功能并且有体力
     if (SamiraFight.config.redpack == '1' && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(184) > 0) { 
@@ -880,6 +935,7 @@ var SamiraFight = (function () {
     config.autoRonglian = config.autoRonglian || '0';
     config.guajiMapNames = config.guajiMapNames || '';
     config.longhunBoss = config.longhunBoss || '1';
+    config.autoDuanzao = config.autoDuanzao || '1';
 
     // 弄到ui上
     if ((config.xiuluoCengshu || []).includes(1)) {
@@ -941,6 +997,7 @@ var SamiraFight = (function () {
     $('.samira-auto-ronglian').prop('checked', config.autoRonglian === '1');
     $('.samira-longhunboss').prop('checked', config.longhunBoss === '1');
     $('.samira-guaji-maps').val(config.guajiMapNames);
+    $('.samira-duanzao').prop('checked', config.autoDuanzao === '1');
   };
 
   // 从ui获取配置
@@ -1031,6 +1088,8 @@ var SamiraFight = (function () {
     const guajiMapNames = $('.samira-guaji-maps').val().trim();
     // 龙魂boss
     const longhunBoss = $('.samira-longhunboss').prop('checked') ? '1' : '0';
+    // 自动锻造
+    const autoDuanzao = $('.samira-duanzao').prop('checked') ? '1' : '0';
 
     SamiraFight.config = {
       xiuluoCengshu: xiuluoCengshu,
@@ -1080,7 +1139,8 @@ var SamiraFight = (function () {
       autoRonglian: autoRonglian,
       zhanqiMap: zhanqiMap,
       guajiMapNames: guajiMapNames,
-      longhunBoss: longhunBoss
+      longhunBoss: longhunBoss,
+      autoDuanzao: autoDuanzao
     };
 
     return SamiraFight.config;
@@ -2332,6 +2392,7 @@ var SamiraFight = (function () {
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-auto-shenlu' />神炉升级</label></div>
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-redpack' />抢红包</label></div>
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-longhunboss' />龙魂BOSS</label></div>
+														<div class="samira-settings-item"><label><input type="checkbox" class='samira-duanzao' />强化&精炼</label></div>
 												</div>
 												<div class="samira-settings-items-group">
 														<div class="samira-settings-item">
