@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() { }
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1006-1548'
+  SamiraFight.version = '1006-1550'
   SamiraFight.personId = '';
   SamiraFight.running = false;
   // 当前状态 search-搜索boss, fight-战斗, fight-xiuluo-正在攻击修罗天界, wudao-武道会, kuafuboss-跨服boss, xukongliehen-虚空裂痕, yabiao-押镖, kuafuxiaoguai-跨服小怪
@@ -1781,7 +1781,7 @@ var SamiraFight = (function () {
             }
           }
           
-          console.log('[samira]所有地图boss数量:', mapBossCount, '最多的地图:', maxCountMapId, '数量:', max);
+          console.log('[samira]所有地图boss数量:', mapBossCount, '最多的地图:', maxCountMapId, '数量:', maxCount);
 
           if (maxCount != 0 && maxCountMapId != 0) {
             const boss = allMapFilterdBosses.find(x => x.mapModelId == maxCountMapId);
