@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() { }
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1005-2135'
+  SamiraFight.version = '1006-1544'
   SamiraFight.personId = '';
   SamiraFight.running = false;
   // 当前状态 search-搜索boss, fight-战斗, fight-xiuluo-正在攻击修罗天界, wudao-武道会, kuafuboss-跨服boss, xukongliehen-虚空裂痕, yabiao-押镖, kuafuxiaoguai-跨服小怪
@@ -1637,6 +1637,12 @@ var SamiraFight = (function () {
           return;
         }
       }
+
+      // 如果有内功任务， 就去打上古boss，倒数三个
+      if (SamiraFight.config.autoNeigong == '1' && SamiraFight.getNeigongTimes() > 0) { 
+        SamiraFight.config.shanggu = '1';
+        SamiraFight.config.shangguMap = '-1|-2|-3';
+      }
     
       // 处理上古禁地小怪
       if (SamiraFight.kuafuActiveStatus && SamiraFight.config.shangguxiaoguai == '1') {
@@ -1668,7 +1674,7 @@ var SamiraFight = (function () {
       }
 
       // 处理上古禁地BOSS(如果有内功任务, 也会去打boss)
-      if (SamiraFight.kuafuActiveStatus && (SamiraFight.config.shanggu == '1' || (SamiraFight.config.autoNeigong == '1' && SamiraFight.getNeigongTimes() > 0))) {
+      if (SamiraFight.kuafuActiveStatus && SamiraFight.config.shanggu == '1') {
         const bosses = [];
         const shangguMapIds = SamiraFight.getMaxLevelShangguBossMapIds(SamiraFight.config.shangguMap);
         for (const mapId of shangguMapIds) {
@@ -1735,6 +1741,7 @@ var SamiraFight = (function () {
         }
         // 如果当前地图没有boss, 就获取所有地图的
         else {
+          // 获取地图中boss最多的地图
           const allMapBosses = [];
           for (const mapId of mapIds) {
             const mapBosses = BossDataCenter.instance._mapbossDic[mapId];
@@ -1746,12 +1753,34 @@ var SamiraFight = (function () {
             }
           }
 
-          // 筛选出来活着的并且
+          // 筛选出来活着的并且没有归属的
           const allMapFilterdBosses = allMapBosses.filter(bossFilterFunc);
-          bosses.push(...allMapFilterdBosses);
+          const mapBossCount = {};
+          for (const b of allMapFilterdBosses) {
+            const mid = b.mapModelId;
+            if (mapBossCount[mid]) {
+              mapBossCount[mid] += 1;
+            } else {
+              mapBossCount[mid] = 1;
+            }
+          }
+          // 获取boss数量最多的地图
+          let maxCount = 0;
+          let maxCountMapId = 0;
+          for (const key in mapBossCount) { 
+            if (mapBossCount[key] > maxCount) {
+              maxCount = mapBossCount[key];
+              maxCountMapId = key;
+            }
+          }
+          
+          console.log('[samira]所有地图boss数量:', mapBossCount, '最多的地图:', maxCountMapId, '数量:', max);
 
-          if (bosses.length > 0) {
-            selectBoss = bosses[0];
+          if (maxCount != 0 && maxCountMapId != 0) {
+            const boss = allMapFilterdBosses.find(x => x.mapModelId == maxCountMapId);
+            if (boss) { 
+              selectBoss = boss;
+            }
           }
         }
         
