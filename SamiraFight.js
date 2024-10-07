@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() { }
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1006-1550'
+  SamiraFight.version = '1007-1019'
   SamiraFight.personId = '';
   SamiraFight.running = false;
   // 当前状态 search-搜索boss, fight-战斗, fight-xiuluo-正在攻击修罗天界, wudao-武道会, kuafuboss-跨服boss, xukongliehen-虚空裂痕, yabiao-押镖, kuafuxiaoguai-跨服小怪
@@ -60,9 +60,6 @@ var SamiraFight = (function () {
     levelTs: 0,
     checkTimes: 0
   };
-  // 异界入侵
-  SamiraFight.yijieruqinMapNum = {};
-  SamiraFight.yijieruqinMapId = 0;
   // 锁妖塔水晶
   SamiraFight.yaoshou = {
     npcInfo: null,
@@ -175,7 +172,6 @@ var SamiraFight = (function () {
       SamiraFight.stopKuafuBossHp();
     }
 
-    SamiraFight.yijieruqinGetGuildNum();
     SamiraFight.autoRichang();
     SamiraFight.autoYuanshenUp();
     SamiraFight.autoZhuansheng();
@@ -608,33 +604,6 @@ var SamiraFight = (function () {
     }
   };
 
-  // 异界入侵获取工会人数
-  SamiraFight.yijieruqinGetGuildNum = function () { 
-    const hours = (new Date()).getHours();
-    const minutes = (new Date()).getMinutes();
-
-    if (hours == 20 && minutes >= 30 && minutes <= 35 || true) { 
-      const beans = com.App.dataMgr.q_activitiesContainer.getListByType(3000);
-      const acts = [];
-      for(var i=0;i < beans.length;i++){
-        var act= com.logic.data.activity.ActivityCenter.getData(beans[i].q_id);
-        if(act && act.activityStates >-1){
-          acts.push(act);
-        }
-      };
-
-      for (const act of acts) { 
-        com.logic.connect.sender.GuildCommandSender.sendC2S_GuildMemberNumInMapMessage(act.bean.q_info)
-      }
-      console.log('[samira]异界入侵获取地图人数: ', SamiraFight.yijieruqinMapNum);
-    }
-  };
-
-  // 异界入侵获取地图人数回调
-  SamiraFight.yijieruqinGetGuildNumCallback = function (cmd) { 
-    SamiraFight.yijieruqinMapNum[cmd.mapId] = cmd.num;
-  }
-
   // 自动坐骑升级
   SamiraFight.autoZuoqi = function () { 
     if (SamiraFight.config.autoZuoqi != '1') { 
@@ -978,6 +947,7 @@ var SamiraFight = (function () {
     config.autoUse = config.autoUse || '0';
     config.autoZuoqi = config.autoZuoqi || '0';
     config.yijieruqin = config.yijieruqin || '0';
+    config.yijieruqinIndex = config.yijieruqinIndex || '4';
     config.hhqf = config.hhqf || '1';
     config.hhgm = config.hhgm || '行会免费礼包';
     config.autoNeigong = config.autoNeigong || '0';
@@ -1041,6 +1011,7 @@ var SamiraFight = (function () {
     $('.samira-auto-use').prop('checked', config.autoUse === '1');
     $('.samira-auto-zuoqi').prop('checked', config.autoZuoqi === '1');
     $('.samira-yijieruqin').prop('checked', config.yijieruqin === '1');
+    $('.samira-yijieruqin-index').val(config.yijieruqinIndex);
     $('.samira-hhqf').val(config.hhqf);
     $('.samira-hhgm').val(config.hhgm);
     $('.samira-auto-neigong').prop('checked', config.autoNeigong === '1');
@@ -1120,6 +1091,7 @@ var SamiraFight = (function () {
     const autoZuoqi = $('.samira-auto-zuoqi').prop('checked') ? '1' : '0';
     // 异界入侵
     const yijieruqin = $('.samira-yijieruqin').prop('checked') ? '1' : '0';
+    const yijieruqinIndex = parseInt($('.samira-yijieruqin-index').val().trim());
     // 行会祈福
     const hhqf = $('.samira-hhqf').val().trim();
     // 行会购买
@@ -1206,7 +1178,8 @@ var SamiraFight = (function () {
       guajiMapNames: guajiMapNames,
       longhunBoss: longhunBoss,
       autoDuanzao: autoDuanzao,
-      autoJunzhuang: autoJunzhuang
+      autoJunzhuang: autoJunzhuang,
+      yijieruqinIndex: yijieruqinIndex
     };
 
     return SamiraFight.config;
@@ -1266,6 +1239,8 @@ var SamiraFight = (function () {
     const dayXiaoGuaiTaskTimes = dayXiaoguaiTask ? dayXiaoguaiTask.q_time : 0;
     const dayXiaoGuaiTaskComplateTimes = dayXiaoGuaiData ? dayXiaoGuaiData.times : 0;
 
+    console.log('[samira]currentStatus:' + SamiraFight.currentStatus, 'player: ' + playerName, mapIds, SamiraFight.currentBoss);
+
     // 恢复武道会
     if (ts > SamiraFight.wudaoResumeTs) {
       SamiraFight.wudaoStatus = true;
@@ -1297,31 +1272,12 @@ var SamiraFight = (function () {
     }
 
     // 如果是20点31分, 进入异界入侵
-    if (((hours == 20 && minutes == 31)) && SamiraFight.config.yijieruqin == '1' && SamiraFight.currentStatus != 'yijieruqin') {
-      // 获取人数最多的地图
-      let mapId = 0;
-      let maxNum = 0;
-      for (const key in SamiraFight.yijieruqinMapNum) {
-        if (SamiraFight.yijieruqinMapNum[key] >= maxNum) {
-          mapId = parseInt(key);
-          maxNum = SamiraFight.yijieruqinMapNum[key];
-          break;
-        }
-      }
-
-      if (mapId != 0) {
-        com.App.returnCity();
-
-        // 获取所有活动
-        const acts = com.App.dataMgr.q_activitiesContainer.getListByType(3000).map(x => com.logic.data.activity.ActivityCenter.getData(x.q_id)).filter(x => x.activityStates > -1).map(x => ({ id: x.id, mapId: x.bean.q_info }));
-        const currentAct = acts.find(x => x.mapId == parseInt(mapId));
-        if (currentAct) {
-          com.logic.connect.sender.ActivitiesCommandSender.C2S_JoinActivityById(currentAct.id);
-          SamiraFight.currentStatus = 'yijieruqin';
-          SamiraFight.yijieruqinMapId = mapId;
-          return;
-        }
-      }
+    if (((hours == 20 && (minutes >= 30 && minutes <= 35))) && SamiraFight.config.yijieruqin == '1' && SamiraFight.currentStatus != 'yijieruqin') {
+      // 先回城， 然后开始异界入侵
+      com.App.returnCity();
+      SamiraFight.currentStatus = 'yijieruqin';
+      SamiraFight.currentBoss = null;
+      return;
     }
 
     // 如果是星期一到星期五, 8点整进入跨服阵营战
@@ -1345,8 +1301,6 @@ var SamiraFight = (function () {
       SamiraFight.tp(210041);
       return;
     }
-
-    console.log('[samira]currentStatus:' + SamiraFight.currentStatus, 'player: ' + playerName, mapIds, SamiraFight.currentBoss);
     
     // 显示当前状态
     $('.samira-current-task').text(SamiraFight.currentStatus ? (SamiraFight.status[SamiraFight.currentStatus] || '未知任务(' + SamiraFight.currentStatus + ')') : '无');
@@ -1906,8 +1860,8 @@ var SamiraFight = (function () {
       }
     }
     else if (SamiraFight.currentStatus === 'wudao') {
-      // 因为匹配和进入地图需要时间, 30秒后, 判断地图是不是在武道会, 如果不在说明已经结束
-      if (SamiraFight.currentWudaocheckTimes > 30 && playerMapId != 190000) {
+      // 因为匹配和进入地图需要时间, 15秒后, 判断地图是不是在武道会, 如果不在说明已经结束
+      if (SamiraFight.currentWudaocheckTimes > 15 && playerMapId != 190000) {
         console.log('[samira]比武已经结束, 重新寻找boss');
         SamiraFight.currentWudaocheckTimes = 0;
         SamiraFight.currentBoss = null;
@@ -2130,20 +2084,19 @@ var SamiraFight = (function () {
       com.App.openAutoFight();
     }
     else if (SamiraFight.currentStatus === 'yijieruqin') {
-      console.log('[samira]异界入侵选择的地图Id: ' + SamiraFight.yijieruqinMapId);
-      if (SamiraFight.yijieruqinMapId == 0) {
-        console.log('[samira]异界入侵地图Id未设置, 重新寻找boss');
-        SamiraFight.currentStatus = 'search';
-        return;
-      }
+      console.log('[samira]异界入侵选择BOSS: ' + SamiraFight.config.yijieruqinIndex);
+
+      const bosses = com.App.dataMgr.q_activitiesContainer.getListByType(3000).map(x => com.logic.data.activity.ActivityCenter.getData(x.q_id)).filter(x => x.activityStates > -1).map(x => ({ actId: x.id, mapId: x.bean.q_info, name: x.bean.q_name }));
+      const boss = bosses[SamiraFight.config.yijieruqinIndex - 1];
 
       // 角色不在目标地图, 就进入地图
-      if (playerMapId != SamiraFight.yijieruqinMapId) {
-        ZoneCommandSender.enterZoneMap(SamiraFight.yijieruqinMapId);
+      if (playerMapId != boss.mapId) {
+        com.logic.connect.sender.ActivitiesCommandSender.C2S_JoinActivityById(boss.actId);
+        ZoneCommandSender.enterZoneMap(boss.mapId);
         return;
       }
 
-      const map = App.dataMgr.q_mapContainer.getDataBean(SamiraFight.yijieruqinMapId);
+      const map = App.dataMgr.q_mapContainer.getDataBean(boss.mapId);
       const mapid = map.q_map_id;
       const bossid = map.q_boss ? JSON.parse(map.q_boss)[0]["monster"] : 0;
       const num = BossDataCenter.instance.getMapsBossNum([mapid], null, [bossid], true);
@@ -2517,7 +2470,10 @@ var SamiraFight = (function () {
                         <div class="samira-settings-item"><label><input type="checkbox" class="samira-xukongliehen" />虚空裂痕【19.30】</label></div>
                         <div class="samira-settings-item"><label><input type="checkbox" class="samira-zhenyingzhan" />跨服阵营战【20.00】</label></div>
                         <div class="samira-settings-item"><label><input type="checkbox" class="samira-zhanchang-boss" />跨服神尊BOSS【11.00，16.00，24.00】</label></div>
-                        <div class="samira-settings-item"><label><input type="checkbox" class="samira-yijieruqin" />异界入侵【20.30】</label></div>
+                        <div class="samira-settings-item">
+                          <label><input type="checkbox" class="samira-yijieruqin" />异界入侵【20.30】</label>
+													<input type="input" style="width: 80px;" class="samira-yijieruqin-index" />
+                        </div>
                         <div class="samira-settings-item"><label><input type="checkbox" class="samira-sbk" />沙巴克【周六20.00】</label></div>
                         <div class="samira-settings-item"><label><input type="checkbox" class="samira-wudao-juesai" />武道会决赛【周日20.00】</label></div>
                         <div class="samira-settings-item"><label><input type="checkbox" class="samira-yabiao" />双倍押镖</label></div>
@@ -2782,8 +2738,6 @@ var SamiraFight = (function () {
   GameServer.register(S2C_PlayerDieMessage,GameHandler.create(SamiraFight, SamiraFight.onS2C_PlayerDieMessageHandler));
   // 注册攻击boss回调
   GameServer.register(S2C_AttackResultMessage, GameHandler.create(SamiraFight, SamiraFight.kuafuBossHpAttackResultMessage));
-  // 获取工会人数回调
-  GameServer.register(S2C_GuildMemberNumInMapMessage, GameHandler.create(SamiraFight, SamiraFight.yijieruqinGetGuildNumCallback));
 	// 注册回去用户信息回调
 	GameServer.register(S2C_MyPlayerInfoMessage, GameHandler.create(this, (cmd) => {
 	  const personId = cmd.personId.toString();
