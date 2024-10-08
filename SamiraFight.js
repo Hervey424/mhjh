@@ -1,9 +1,11 @@
 var SamiraFight = (function () {
-  function SamiraFight() { }
+  function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1007-1019'
+  SamiraFight.version = '1008-1817';
   SamiraFight.personId = '';
+  SamiraFight.autoOpenTimer = 0;
+  SamiraFight.autoOpenTime = 15;
   SamiraFight.running = false;
   // 当前状态 search-搜索boss, fight-战斗, fight-xiuluo-正在攻击修罗天界, wudao-武道会, kuafuboss-跨服boss, xukongliehen-虚空裂痕, yabiao-押镖, kuafuxiaoguai-跨服小怪
   // zhenyingzhan-阵营攻防战 yijieruqin-异界入侵 sbk-沙巴克, longhunboss-龙魂boss
@@ -22,7 +24,7 @@ var SamiraFight = (function () {
     sbk: '沙巴克',
     suoyaotacaiji: '锁妖塔采集',
     wudaohuijuesai: '武道会决赛',
-    longhunboss: '龙魂BOSS',
+    longhunboss: '龙魂BOSS'
   };
   // 当前boss
   SamiraFight.currentBoss = null;
@@ -50,7 +52,12 @@ var SamiraFight = (function () {
   SamiraFight.kuafuBossHpDic = {};
   SamiraFight.kuafuXiaoGuai = {
     taskId: 60005,
-    points: [{ x: 206, y: 222 }, { x: 237, y: 306 }, { x: 160, y: 324 }, { x: 127, y: 314 }],
+    points: [
+      { x: 206, y: 222 },
+      { x: 237, y: 306 },
+      { x: 160, y: 324 },
+      { x: 127, y: 314 }
+    ],
     pointIndex: 0,
     target: null
   };
@@ -64,7 +71,7 @@ var SamiraFight = (function () {
   SamiraFight.yaoshou = {
     npcInfo: null,
     // 采集状态
-    gatherStatus: false,
+    gatherStatus: false
   };
   // 当前进行的龙魂boss副本Id
   SamiraFight.currentLongHunZoneId = 0;
@@ -72,32 +79,47 @@ var SamiraFight = (function () {
   // 开启内挂
   SamiraFight.start = function () {
     if (SamiraFight.running != true) {
-      $('.samira-status').text('运行中')
+      clearInterval(SamiraFight.autoOpenTimer);
+      $('.samira-status').text('运行中');
       SamiraFight.requestBoss();
       SamiraFight.running = true;
       SamiraFight.currentStatus = 'search';
       Laya.workerTimer.loop(1000, SamiraFight, com.modules.map.model.auto.SamiraFight.requestBoss);
       Laya.workerTimer.loop(10000, SamiraFight, com.modules.map.model.auto.SamiraFight.requestXiuLuoBoss);
-      Laya.workerTimer.loop(1000, SamiraFight, com.modules.map.model.auto.SamiraFight.update); 
+      Laya.workerTimer.loop(1000, SamiraFight, com.modules.map.model.auto.SamiraFight.update);
 
-      console.log('[samira]上古禁地地图: ', SamiraFight.getMaxLevelShangguBossMapIds(SamiraFight.config.shangguMap))
-      console.log('[samira]上古禁地小怪地图: ', SamiraFight.getMaxLevelShangguBossMapIds(SamiraFight.config.shangguXiaoGuaiMap))
+      console.log('[samira]上古禁地地图: ', SamiraFight.getMaxLevelShangguBossMapIds(SamiraFight.config.shangguMap));
+      console.log('[samira]上古禁地小怪地图: ', SamiraFight.getMaxLevelShangguBossMapIds(SamiraFight.config.shangguXiaoGuaiMap));
     }
   };
 
   // 关闭内挂
   SamiraFight.stop = function () {
     SamiraFight.running = false;
+    clearInterval(SamiraFight.autoOpenTimer);
     SamiraFight.currentStatus = '';
     SamiraFight.currentBoss = null;
     SamiraFight.currentcheckTimes = 0;
     SamiraFight.currentXiuLuoCengshu = -1;
-    $('.samira-status').text('未运行')
+    $('.samira-status').text('未运行');
     $('.samira-current-task').text('无');
     $('.samira-current-boss').text('无');
     Laya.workerTimer.clear(SamiraFight, com.modules.map.model.auto.SamiraFight.requestBoss);
     Laya.workerTimer.clear(SamiraFight, com.modules.map.model.auto.SamiraFight.update);
     Laya.workerTimer.clear(SamiraFight, com.modules.map.model.auto.SamiraFight.requestXiuLuoBoss);
+  };
+
+  // 自动开启
+  SamiraFight.autoStart = function () { 
+    SamiraFight.autoOpenTimer = setInterval(() => {
+      SamiraFight.autoOpenTime -= 1;
+      $('.samira-status').text(SamiraFight.autoOpenTime + '秒后自动开启');
+      if (SamiraFight.autoOpenTime <= 0) {
+        clearInterval(SamiraFight.autoOpenTimer);
+        $('.samira-settings').hide();
+        SamiraFight.start();
+      }
+    }, 1000);
   };
 
   // 自动复活timer
@@ -119,17 +141,13 @@ var SamiraFight = (function () {
       }
       if (revType == 1 || revType == 3) {
         type = 1;
-      }
-      else if (revType == 4 || revType == 6) {
+      } else if (revType == 4 || revType == 6) {
         type = 4;
-      }
-      else if (revType == 16) {
+      } else if (revType == 16) {
         type = 16;
-      }
-      else if (revType == 32 || revType == 34) {
+      } else if (revType == 32 || revType == 34) {
         type = 32;
-      }
-      else if (revType == 130) {
+      } else if (revType == 130) {
         type = 128;
       }
 
@@ -142,33 +160,33 @@ var SamiraFight = (function () {
         com.App.openAutoFight();
       }, 1500);
     }
-  }
+  };
 
   // 公共功能timer, 每秒执行一次
   SamiraFight.commonTimerFunction = function () {
     console.log('[samira]commonTimer', SamiraFight.config);
-    const hours = (new Date()).getHours();
+    const hours = new Date().getHours();
 
     // 取消所有屏蔽
-    { 
+    {
       App.showHideData.setAll(false);
-      EnumSetup.save(8,false,false);
-      EnumSetup.save(9,false,false);
-      EnumSetup.save(10,false,false);
-      EnumSetup.save(11,false,false);
-      EnumSetup.save(12,false,false);
-      EnumSetup.save(13,false,false);
-      EnumSetup.save(14,false,false);
-      EnumSetup.save(15,false,false);
-      EnumSetup.save(16,false,false);
-      EnumSetup.save(17,false,false);
-      EnumSetup.save(34,false,false);
+      EnumSetup.save(8, false, false);
+      EnumSetup.save(9, false, false);
+      EnumSetup.save(10, false, false);
+      EnumSetup.save(11, false, false);
+      EnumSetup.save(12, false, false);
+      EnumSetup.save(13, false, false);
+      EnumSetup.save(14, false, false);
+      EnumSetup.save(15, false, false);
+      EnumSetup.save(16, false, false);
+      EnumSetup.save(17, false, false);
+      EnumSetup.save(34, false, false);
     }
 
     // 时间如果是11点, 16点, 21点, 自动开启boss伤害统计
-    if ((hours == 11 || hours == 16 || hours == 21)) {
+    if (hours == 11 || hours == 16 || hours == 21) {
       SamiraFight.startKuafuBossHp();
-    } else { 
+    } else {
       SamiraFight.stopKuafuBossHp();
     }
 
@@ -192,7 +210,7 @@ var SamiraFight = (function () {
   };
 
   // 自动升级军装
-  SamiraFight.autoJunzhuang = function () { 
+  SamiraFight.autoJunzhuang = function () {
     if (SamiraFight.config.autoJunzhuang != '1') {
       return;
     }
@@ -208,26 +226,26 @@ var SamiraFight = (function () {
       const level = com.logic.data.item.EquipPartCenter.getPartQiangHuaLevel(part, 10);
       const beanId = com.modules.role.junxian.data.JunZhuangCenter.getQiangHuaNewID(3, level);
       const bean = com.App.dataMgr.q_equip_qianghua_newContainer.getDataBean(beanId);
-      if (bean && bean.q_next_id != 0) { 
-        if(level < minLevel){
+      if (bean && bean.q_next_id != 0) {
+        if (level < minLevel) {
           minLevel = level;
           minPart = part;
         }
       }
     }
 
-    if (minLevel != 999999 && minPart != 0) { 
+    if (minLevel != 999999 && minPart != 0) {
       const level = com.logic.data.item.EquipPartCenter.getPartQiangHuaLevel(minPart, 10);
       const beanId = com.modules.role.junxian.data.JunZhuangCenter.getQiangHuaNewID(3, level);
       const bean = com.App.dataMgr.q_equip_qianghua_newContainer.getDataBean(beanId);
-      if (bean && bean.q_next_id != 0) { 
+      if (bean && bean.q_next_id != 0) {
         const next = com.App.dataMgr.q_equip_qianghua_newContainer.getDataBean(bean.q_next_id);
-        if (next) { 
+        if (next) {
           const cost = JSON.parse(next.q_cost_qianghua)[0];
           const costNum = cost.num;
           const costId = cost.id;
           const count = com.logic.data.item.BagItemCenter.getItemCount(costId);
-          if (count >= costNum) { 
+          if (count >= costNum) {
             DuanzaoServer.sendC2S_Qianghua2ItemMessage(minPart, 0, 10);
             return;
           }
@@ -239,33 +257,34 @@ var SamiraFight = (function () {
   // 自动锻造
   SamiraFight.autoDuanzao = function () {
     // 强化
-    { 
+    {
       const partItems = [com.logic.enum.EnumEquipType.shenshi_parts, com.logic.enum.EnumEquipType.qianghua_parts];
-      for (const parts of partItems) { 
-        let minLevel = 999999, minPart = 0;
-        for (const part of parts) { 
+      for (const parts of partItems) {
+        let minLevel = 999999,
+          minPart = 0;
+        for (const part of parts) {
           // 判断当前部位是否穿装备
           const equip = com.logic.data.item.WearEquipCenter.getEquipByPart(part);
           if (!equip) {
             continue;
           }
           const level = com.logic.data.item.EquipPartCenter.getPartInfo(part).getQianghuaLevel(10);
-          if (level < minLevel) { 
+          if (level < minLevel) {
             minLevel = level;
             minPart = part;
           }
         }
-        if (minLevel != 999999 && minPart != 0) { 
+        if (minLevel != 999999 && minPart != 0) {
           const isShenshi = !parts.includes(50000);
           const bean = com.App.dataMgr.q_equip_qianghua_newContainer.getDataBean(isShenshi ? 10000 + minLevel : minLevel, false);
-          if (bean && bean.q_next_id != 0) { 
+          if (bean && bean.q_next_id != 0) {
             const next = com.App.dataMgr.q_equip_qianghua_newContainer.getDataBean(bean.q_next_id, false);
-            if (next) { 
+            if (next) {
               const cost = JSON.parse(next.q_cost_qianghua)[0];
               const costNum = cost.num;
               const costId = cost.id;
               const count = com.logic.data.item.BagItemCenter.getItemCount(costId);
-              if (count >= costNum) { 
+              if (count >= costNum) {
                 DuanzaoServer.sendC2S_Qianghua2ItemMessage(minPart, 0, 10);
                 return;
               }
@@ -275,21 +294,21 @@ var SamiraFight = (function () {
       }
     }
     // 精炼
-    { 
-      const parts = [...com.logic.enum.EnumEquipType.qianghua_parts,...com.logic.enum.EnumEquipType.shenshi_parts];
-      for (const part of parts) { 
+    {
+      const parts = [...com.logic.enum.EnumEquipType.qianghua_parts, ...com.logic.enum.EnumEquipType.shenshi_parts];
+      for (const part of parts) {
         const equip = com.logic.data.item.WearEquipCenter.getEquipByPart(part);
-        if (!equip) { 
+        if (!equip) {
           continue;
         }
         const level = com.logic.data.item.EquipPartCenter.getPartInfo(part).getQianghuaLevel(11);
         const bean = com.App.dataMgr.q_equip_jinglianContainer.list.find(x => x.q_equipPos == part);
-        if (bean.q_maxlv != level) { 
+        if (bean.q_maxlv != level) {
           const cost = JSON.parse(bean.q_cost_jinglian)[0];
           const costNum = cost.num;
           const costId = cost.id;
           const count = com.logic.data.item.BagItemCenter.getItemCount(costId);
-          if (count >= costNum) { 
+          if (count >= costNum) {
             DuanzaoServer.sendC2S_Qianghua2ItemMessage(part, 0, 11);
             return;
           }
@@ -299,10 +318,10 @@ var SamiraFight = (function () {
   };
 
   // 自动打开红包
-  SamiraFight.autoOpenRedpacket = function () { 
+  SamiraFight.autoOpenRedpacket = function () {
     // 开启功能并且有体力
-    if (SamiraFight.config.redpack == '1' && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(184) > 0) { 
-      const list =  com.modules.activity.flower.HongbaoCenter.list.filter(x => x.canGet == 1);
+    if (SamiraFight.config.redpack == '1' && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(184) > 0) {
+      const list = com.modules.activity.flower.HongbaoCenter.list.filter(x => x.canGet == 1);
       let max = -1;
       let maxItem = null;
       for (const item of list) {
@@ -319,28 +338,28 @@ var SamiraFight = (function () {
 
       if (maxItem) {
         var id = maxItem.id.toString();
-        ActivitiesCommandSender.sendC2S_HongbaoOpenMessage(Int64.parseInt64(id),App.role.personId);
+        ActivitiesCommandSender.sendC2S_HongbaoOpenMessage(Int64.parseInt64(id), App.role.personId);
       }
     }
   };
 
   // 自动熔炼
   SamiraFight.autoRonglian = function () {
-    if (SamiraFight.config.autoRonglian != '1') { 
+    if (SamiraFight.config.autoRonglian != '1') {
       return;
     }
 
     // 获取分钟数
-    const minutes = (new Date()).getMinutes();
-    const seconds = (new Date()).getSeconds();
+    const minutes = new Date().getMinutes();
+    const seconds = new Date().getSeconds();
 
-    if (minutes % 2 == 0 && seconds == 30) { 
+    if (minutes % 2 == 0 && seconds == 30) {
       const bags = com.logic.data.item.BagItemCenter.itemList;
       const datas = [];
-      for(const item of bags){
-        if(!item) continue ;
+      for (const item of bags) {
+        if (!item) continue;
         const ebean = item.getEquipDataBean();
-        if(ebean && ebean.q_smelt_reward){
+        if (ebean && ebean.q_smelt_reward) {
           datas.push(item);
         }
       }
@@ -349,43 +368,43 @@ var SamiraFight = (function () {
       const job = com.App.role.job;
       const sex = com.App.role.sex;
       const isSex = com.logic.data.item.HuishouCenter.isRLOtherSex;
-      for(var item of datas){
+      for (var item of datas) {
         if (!item) continue;
         const bean = item.getDataBean();
         // 如果性别不符合, 就熔炼
-        if(bean.q_sex != 0 && bean.q_sex != sex && bean.q_job == job){
-          if(isSex){
+        if (bean.q_sex != 0 && bean.q_sex != sex && bean.q_job == job) {
+          if (isSex) {
             ids.push(netease.protobuf.Int64.parseInt64(item.id));
-            continue ;
+            continue;
           }
         }
 
         // 如果职业不对，并且是绑定的，就熔炼
-        if (bean.q_job != 0 && bean.q_job != job && item.isbind) { 
+        if (bean.q_job != 0 && bean.q_job != job && item.isbind) {
           ids.push(netease.protobuf.Int64.parseInt64(item.id));
           continue;
         }
 
         // 按照选择的职业和品质熔炼
-        if(com.logic.data.item.HuishouCenter.isAutoSmeltByRank(bean.q_job, item.rank)){
+        if (com.logic.data.item.HuishouCenter.isAutoSmeltByRank(bean.q_job, item.rank)) {
           ids.push(netease.protobuf.Int64.parseInt64(item.id));
         }
       }
 
-      if(ids.length > 0){
-        com.logic.data.item.HuishouCenter.sendC2S_EquipHuiShouMessage(ids,1,1);
+      if (ids.length > 0) {
+        com.logic.data.item.HuishouCenter.sendC2S_EquipHuiShouMessage(ids, 1, 1);
       }
     }
   };
 
   // 自动神炉升级
-  SamiraFight.autoShenlu = function () { 
-    if (SamiraFight.config.autoShenlu != '1') { 
+  SamiraFight.autoShenlu = function () {
+    if (SamiraFight.config.autoShenlu != '1') {
       return;
     }
 
     const types = com.modules.shenLu.ShenLuCenter.SHENLU_TYPES;
-    for (const type of types) { 
+    for (const type of types) {
       const data = com.modules.shenLu.ShenLuCenter.getData(type);
       const bean = data ? data.bean : null;
       // 数据不存在
@@ -402,7 +421,7 @@ var SamiraFight = (function () {
       const costId = cost.id;
       const costNum = cost.num;
       const have = com.logic.data.item.BagItemCenter.getItemCount(costId);
-      if (have >= costNum) { 
+      if (have >= costNum) {
         com.modules.shenLu.ShenLuCenter.sendC2S_BloodActiveMessage(type, 2);
         return;
       }
@@ -417,8 +436,8 @@ var SamiraFight = (function () {
   };
 
   // 自动古宝升级/激活
-  SamiraFight.autoGubao = function () { 
-    if (SamiraFight.config.autoGubao != '1') { 
+  SamiraFight.autoGubao = function () {
+    if (SamiraFight.config.autoGubao != '1') {
       return;
     }
 
@@ -427,8 +446,8 @@ var SamiraFight = (function () {
     const types = JSON.parse(data.q_string_value).tabs_type || [];
 
     // 古宝升级
-    (function () { 
-      for (const type of types) { 
+    (function () {
+      for (const type of types) {
         if (com.modules.gubao.GubaoCenter.isAllActive(type) && com.modules.gubao.GubaoCenter.isGubaoUP(type)) {
           com.modules.gubao.GubaoCenter.sendC2S_GubaoActivationMessage(type, 1, 1);
           return;
@@ -437,27 +456,27 @@ var SamiraFight = (function () {
     })();
 
     // 古宝激活
-    (function () { 
-      for (const type of types) { 
+    (function () {
+      for (const type of types) {
         // 判断是否全部激活
-        if (com.modules.gubao.GubaoCenter.isAllActive(type)) { 
+        if (com.modules.gubao.GubaoCenter.isAllActive(type)) {
           continue;
         }
 
         // 获取小件
         const items = com.App.dataMgr.q_gubaoContainer.getBeans(type).slice(1);
-        for (const item of items) { 
-          if (com.modules.gubao.GubaoCenter.isActive(item.q_id)) { 
+        for (const item of items) {
+          if (com.modules.gubao.GubaoCenter.isActive(item.q_id)) {
             continue;
           }
-          
+
           // 判断有没有材料, 如果有就激活
           const cost = JSON.parse(item.q_open_cost)[0];
           const costId = cost.id;
           const costNum = cost.num;
           const have = com.logic.data.item.BagItemCenter.getItemCount(costId);
           if (have >= costNum) {
-            com.modules.gubao.GubaoCenter.sendC2S_GubaoActivationMessage(item.q_id)
+            com.modules.gubao.GubaoCenter.sendC2S_GubaoActivationMessage(item.q_id);
             return;
           }
         }
@@ -480,7 +499,7 @@ var SamiraFight = (function () {
         return;
       }
 
-      const bean = com.App.dataMgr.q_shopContainer.getDataBean(371003)
+      const bean = com.App.dataMgr.q_shopContainer.getDataBean(371003);
       if (!bean) {
         return;
       }
@@ -489,7 +508,6 @@ var SamiraFight = (function () {
         ItemBuyManager.buy(bean, 1, bean.q_quickPurchaseUse == 1, 0, bean.q_price, bean.q_shop_type, 0);
       }
     })();
-
 
     (function () {
       const data = com.modules.role.neigong.NeiGongCenter.getData();
@@ -508,27 +526,27 @@ var SamiraFight = (function () {
   };
 
   // 获取内功次数
-  SamiraFight.getNeigongTimes = function () { 
+  SamiraFight.getNeigongTimes = function () {
     const data = com.App.dataMgr.q_globalContainer.getDataBean(15104);
-      if (!data) {
-        return 0;
-      }
-      const ids = JSON.parse(data.q_string_value);
-      let times = -1;
-      for (const id of ids) {
-        const info = com.logic.data.shop.MallCenter.getShopItem(1, id);
-        if (info) {
-          if (times == -1 || times > info.remainNum) {
-            times = info.remainNum;
-          }
+    if (!data) {
+      return 0;
+    }
+    const ids = JSON.parse(data.q_string_value);
+    let times = -1;
+    for (const id of ids) {
+      const info = com.logic.data.shop.MallCenter.getShopItem(1, id);
+      if (info) {
+        if (times == -1 || times > info.remainNum) {
+          times = info.remainNum;
         }
       }
-
-      // 没有次数了
-      if (times <= 0) {
-        times = 0;
     }
-    
+
+    // 没有次数了
+    if (times <= 0) {
+      times = 0;
+    }
+
     return times;
   };
 
@@ -537,24 +555,24 @@ var SamiraFight = (function () {
     const names = (SamiraFight.config.hhgm || '').split('|').map(x => x.trim());
     const goods = com.logic.data.shop.MallCenter.getShopItemInfos(12) || [];
 
-    for (const name of names) { 
-      for (const g of goods) { 
+    for (const name of names) {
+      for (const g of goods) {
         const shopItem = com.App.dataMgr.q_shopContainer.list.find(x => x.q_id == g.sellId);
         const shopActualId = JSON.parse(shopItem.q_actual_item)[0].id;
         const item = com.App.dataMgr.q_itemContainer.list.find(x => x.q_id == shopActualId);
         const need = g.dynamicShopBuyPrice;
-        if (item.q_name === name) { 
+        if (item.q_name === name) {
           // 没有购买次数
-          if (g.remainNum <= 0) { 
+          if (g.remainNum <= 0) {
             continue;
           }
-  
+
           // 钱不够了
-          if (shopItem.q_consume && !ConditionUtil.isItemEnoughJson(shopItem.q_consume)) { 
+          if (shopItem.q_consume && !ConditionUtil.isItemEnoughJson(shopItem.q_consume)) {
             return;
           }
-  
-          if(App.isMoneyEnough(need, shopItem.q_currency_type)){
+
+          if (App.isMoneyEnough(need, shopItem.q_currency_type)) {
             ItemBuyManager.buy(shopItem, 1, false, 1120000, need, 12, 0);
           }
         }
@@ -563,25 +581,28 @@ var SamiraFight = (function () {
   };
 
   // 行会祈福
-  SamiraFight.hhqf = function () { 
+  SamiraFight.hhqf = function () {
     // 先获取数据
-    if(!GuildQifuCenter.isHasData){
+    if (!GuildQifuCenter.isHasData) {
       GuildQifuCenter.sendC2S_GetGuildCliffordInfoMessage();
       return;
-		}
+    }
 
-    const types = (SamiraFight.config.hhqf || '').split('|').map(x => x.trim()).filter(x => ['1', '2', '3', '4'].includes(x)).map(x => parseInt(x));
-    for (const type of types) { 
+    const types = (SamiraFight.config.hhqf || '')
+      .split('|')
+      .map(x => x.trim())
+      .filter(x => ['1', '2', '3', '4'].includes(x))
+      .map(x => parseInt(x));
+    for (const type of types) {
       const bean = App.dataMgr.q_building_juanxianContainer.getDataBean(type, false);
       if (bean) {
         const info = GuildQifuCenter.getInfo(type);
         if (info) {
-          if (info.cliffordTimes < bean.q_times) { 
-            if(GuildQifuCenter.isFree(type)){
+          if (info.cliffordTimes < bean.q_times) {
+            if (GuildQifuCenter.isFree(type)) {
               GuildQifuCenter.sendC2S_BuildDonateMessage(type);
               return;
-            }
-            else if(App.isMoneyEnoughJson(bean.q_currency_type)){
+            } else if (App.isMoneyEnoughJson(bean.q_currency_type)) {
               GuildQifuCenter.sendC2S_BuildDonateMessage(type);
               return;
             }
@@ -593,11 +614,11 @@ var SamiraFight = (function () {
     // 领取活跃
     const total = com.logic.data.MoneyCenter.getMoney(-83);
     const tasks = com.logic.data.Q_globalCenter.getJsonData(525);
-    for (let i = 0; i < tasks.length; i++) { 
+    for (let i = 0; i < tasks.length; i++) {
       // 判断你是不是可以领取
       const task = tasks[i];
-      if (total >= task.active) { 
-        if(ByteUtils.readBit(GuildQifuCenter.record, i)==0){
+      if (total >= task.active) {
+        if (ByteUtils.readBit(GuildQifuCenter.record, i) == 0) {
           GuildQifuCenter.sendC2S_GuildQiandaoMessage(i);
         }
       }
@@ -605,8 +626,8 @@ var SamiraFight = (function () {
   };
 
   // 自动坐骑升级
-  SamiraFight.autoZuoqi = function () { 
-    if (SamiraFight.config.autoZuoqi != '1') { 
+  SamiraFight.autoZuoqi = function () {
+    if (SamiraFight.config.autoZuoqi != '1') {
       return;
     }
 
@@ -625,7 +646,7 @@ var SamiraFight = (function () {
 
     // 坐骑化形
     const items = com.App.dataMgr.q_mountContainer.mounts;
-    for (const item of items) { 
+    for (const item of items) {
       const itemData = com.modules.zuoqi.ZuoQiCenter.getZuoqi(item.q_id);
       // 已激活
       if (itemData) {
@@ -638,20 +659,20 @@ var SamiraFight = (function () {
           const costInfo = JSON.parse(nextLvInfo.q_levelup_consume)[0];
           const costItemId = costInfo.id;
           const costItemNum = costInfo.num;
-          const have = com.logic.data.item.BagItemCenter.getItemCount(costItemId)
-          if (have >= costItemNum) { 
+          const have = com.logic.data.item.BagItemCenter.getItemCount(costItemId);
+          if (have >= costItemNum) {
             HorseCommandSender.sendC2S_FaqiUpgradeMessage(item.q_id);
             return;
           }
         }
-      } 
+      }
       // 未激活
       else {
         const costInfo = JSON.parse(item.q_open_cost)[0];
         const costItemId = costInfo.id;
         const costItemNum = costInfo.num;
-        const have = com.logic.data.item.BagItemCenter.getItemCount(costItemId)
-        if (have >= costItemNum) { 
+        const have = com.logic.data.item.BagItemCenter.getItemCount(costItemId);
+        if (have >= costItemNum) {
           HorseCommandSender.sendC2S_jihuoInfoMessage(1, item.q_id);
           return;
         }
@@ -660,14 +681,14 @@ var SamiraFight = (function () {
   };
 
   // 自动使用
-  SamiraFight.autoUse = function () { 
-    if (SamiraFight.config.autoUse != '1') { 
+  SamiraFight.autoUse = function () {
+    if (SamiraFight.config.autoUse != '1') {
       return;
     }
 
     const canUserItems = [...com.logic.data.Q_globalCenter.getJsonData(15024), 881494];
     const items = com.logic.data.item.BagItemCenter.itemList;
-    for (const item of items) { 
+    for (const item of items) {
       if (item && canUserItems.includes(item.itemId)) {
         com.logic.manager.ItemUseManager.useItemByItemId(item.id, item.count);
       }
@@ -675,13 +696,13 @@ var SamiraFight = (function () {
   };
 
   // 自动穿戴
-  SamiraFight.autoWear = function () { 
-    if (SamiraFight.config.autoWear != '1') { 
+  SamiraFight.autoWear = function () {
+    if (SamiraFight.config.autoWear != '1') {
       return;
     }
 
     const items = com.logic.data.item.BagItemCenter.itemList;
-    for (const item of items) { 
+    for (const item of items) {
       if (item && item.isBatterInBag() && ItemUtil.isCanUseByItemData(item, false) && item.getDataBean().q_client_type != 131) {
         com.logic.manager.ItemUseManager.useItemByItemId(item.id);
         return;
@@ -690,15 +711,15 @@ var SamiraFight = (function () {
   };
 
   // 自动领取10元礼包
-  SamiraFight.autoFree10 = function () { 
-    if (SamiraFight.config.autoFree10 != '1') { 
+  SamiraFight.autoFree10 = function () {
+    if (SamiraFight.config.autoFree10 != '1') {
       return;
     }
     const active = com.logic.data.activity.ActivityUtil.getOpenList(100, 4)[0];
-    if (active && active.playerStates == 1) { 
+    if (active && active.playerStates == 1) {
       com.logic.connect.sender.ActivitiesCommandSender.C2S_JoinActivityById(active.bean.q_id);
     }
-  }
+  };
 
   // 自动领取日常
   SamiraFight.autoRichang = function () {
@@ -708,7 +729,7 @@ var SamiraFight = (function () {
 
     // 获取所有任务, 每次一个
     const tasks = com.App.dataMgr.q_jitanContainer.getList();
-    for (const task of tasks) { 
+    for (const task of tasks) {
       const taskData = com.logic.data.jitian.JitanCenter.getJiTianTaskData(task.q_id);
       if (taskData.rewardtimes < taskData.times) {
         com.modules.daily.DailyCenter.sendGetDailyAward(task.q_id);
@@ -750,23 +771,23 @@ var SamiraFight = (function () {
   };
 
   // 自动转生
-  SamiraFight.autoZhuansheng = function () { 
-    if (SamiraFight.config.autoZhuansheng != '1') { 
+  SamiraFight.autoZhuansheng = function () {
+    if (SamiraFight.config.autoZhuansheng != '1') {
       return;
     }
 
-    if (com.modules.role.zhuansheng.ZhuanShengCenter.upgradePoint) { 
+    if (com.modules.role.zhuansheng.ZhuanShengCenter.upgradePoint) {
       com.modules.role.zhuansheng.ZhuanShengCenter.sendC2S_JingjieLvUpMessage();
     }
-  }
+  };
 
   // 自动元神升级
   SamiraFight.autoYuanshenUp = function () {
-    if (SamiraFight.config.autoYuanshenUp != '1') { 
+    if (SamiraFight.config.autoYuanshenUp != '1') {
       return;
     }
     const indexs = [0, 1, 2];
-    for (const index of indexs) { 
+    for (const index of indexs) {
       const bean = App.dataMgr.q_petContainer.petVec[index];
       const pet = com.modules.pet.PetCenter.getHuanshen(bean.q_pet_id);
       if (pet) {
@@ -778,9 +799,9 @@ var SamiraFight = (function () {
         if (have >= need) {
           HuobanCommandSender.sendC2S_yuanshengUpgradeMessage(bean.q_pettype);
         }
-      } 
+      }
     }
-  }
+  };
 
   // 自动羊了个羊
   SamiraFight.autoYanglegeyang = function () {
@@ -795,7 +816,7 @@ var SamiraFight = (function () {
     }
 
     // 检测有没有次数
-    if (com.modules.yanglegeyang.YangCenter.chessData.rewardRemainTimes <= 0) { 
+    if (com.modules.yanglegeyang.YangCenter.chessData.rewardRemainTimes <= 0) {
       SamiraFight.ylgy = {
         level: 0,
         levelTs: 0
@@ -807,10 +828,10 @@ var SamiraFight = (function () {
     if (SamiraFight.ylgy.level == 0) {
       SamiraFight.ylgy.level = 1;
       SamiraFight.ylgy.levelTs = Math.floor(Date.now() / 1000);
-      com.modules.yanglegeyang.YangCenter.sendC2S_ClgsActionMessage(1, 1 ,0);
+      com.modules.yanglegeyang.YangCenter.sendC2S_ClgsActionMessage(1, 1, 0);
     }
     // 如果当前在第一关, 并且时间超过5秒, 就进入第二关
-    else if (SamiraFight.ylgy.level == 1) { 
+    else if (SamiraFight.ylgy.level == 1) {
       if (Math.floor(Date.now() / 1000) - SamiraFight.ylgy.levelTs >= 5) {
         SamiraFight.ylgy.level = 2;
         SamiraFight.ylgy.levelTs = Math.floor(Date.now() / 1000);
@@ -818,7 +839,7 @@ var SamiraFight = (function () {
       }
     }
     // 如果当前在第二关, 并且时间超过300秒, 就领取奖励
-    else if (SamiraFight.ylgy.level == 2) { 
+    else if (SamiraFight.ylgy.level == 2) {
       if (Math.floor(Date.now() / 1000) - SamiraFight.ylgy.levelTs >= 300) {
         SamiraFight.ylgy.level = 3;
         SamiraFight.ylgy.levelTs = Math.floor(Date.now() / 1000);
@@ -837,7 +858,7 @@ var SamiraFight = (function () {
   };
 
   // 开启跨服boss血量监测
-  SamiraFight.startKuafuBossHp = function () { 
+  SamiraFight.startKuafuBossHp = function () {
     if (!SamiraFight.kuafuBossHpStatus) {
       SamiraFight.kuafuBossHpStatus = true;
       SamiraFight.kuafuBossHpDic = {};
@@ -846,7 +867,7 @@ var SamiraFight = (function () {
   };
 
   // 关闭跨服boss血量监测
-  SamiraFight.stopKuafuBossHp = function () { 
+  SamiraFight.stopKuafuBossHp = function () {
     if (SamiraFight.kuafuBossHpStatus) {
       SamiraFight.kuafuBossHpStatus = false;
       Laya.workerTimer.clear(SamiraFight, com.modules.map.model.auto.SamiraFight.kuafuBossHpTimer);
@@ -857,16 +878,15 @@ var SamiraFight = (function () {
   // 跨服boss血量监测timer
   SamiraFight.kuafuBossHpTimer = function () {
     BossCommandSender.sendC2S_AliveWildBossMessage([SamiraFight.kuafuBossMapId], 0, false);
-    const bosses = com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(SamiraFight.kuafuBossMapId, false)
-      .filter(x => x.bean.q_type === 8)
+    const bosses = com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(SamiraFight.kuafuBossMapId, false).filter(x => x.bean.q_type === 8);
     SamiraFight.kuafuBossIds = bosses.map(x => x.monsterIn64Id);
     SamiraFight.kuafuBossData = bosses;
     let html = '';
     for (const boss of bosses) {
       const hp = boss.allHp == 0 ? '' : ((boss.curHp / boss.allHp) * 100).toFixed(0);
       const attact = SamiraFight.kuafuBossHpDic[boss.monsterIn64Id] || 0;
-      const attact2 = boss.allHp == 0 ? '0.00' : (attact / boss.allHp * 100).toFixed(2);
-      html += '<div style="white-space: nowrap;">' + boss.bean.q_name + ': ' + hp + '%(' + attact2 + '%)</div>'
+      const attact2 = boss.allHp == 0 ? '0.00' : ((attact / boss.allHp) * 100).toFixed(2);
+      html += '<div style="white-space: nowrap;">' + boss.bean.q_name + ': ' + hp + '%(' + attact2 + '%)</div>';
     }
     if (bosses.length > 0) {
       $('.samira-hp-container').show();
@@ -874,14 +894,13 @@ var SamiraFight = (function () {
     } else {
       $('.samira-hp-container').hide();
     }
-    
   };
 
   // 攻击结果消息
   SamiraFight.kuafuBossHpAttackResultMessage = function (cmd) {
     if (App.role == null) {
       return;
-    };
+    }
     // 获取攻击人的id
     var attackerId = cmd.sourceId.toString();
     var attacker = com.App.mapModule.mapAvatarModel.getFightRoleData(attackerId);
@@ -892,8 +911,8 @@ var SamiraFight = (function () {
 
     // 攻击人是自己或者宠物
     if (attacker._personId == com.App.role._personId || attacker._ownerId == com.App.role._personId) {
-      for (const fightRet of (cmd.fightRetList || [])) {
-        for (const attactReg of (fightRet.attackRetList || [])) {
+      for (const fightRet of cmd.fightRetList || []) {
+        for (const attactReg of fightRet.attackRetList || []) {
           const targetId = attactReg.fighterId.toString();
           // 如果bossid在列表中, 就记录下来
           if (SamiraFight.kuafuBossIds.includes(targetId)) {
@@ -905,8 +924,7 @@ var SamiraFight = (function () {
         }
       }
     }
-
-  }
+  };
 
   // 从配置文件加载配置, 程序启动会执行
   SamiraFight.loadConfig = function () {
@@ -915,7 +933,7 @@ var SamiraFight = (function () {
     let config = {};
     try {
       config = JSON.parse(json);
-    } catch { };
+    } catch {}
 
     config = config || {};
     config.xiuluoCengshu = config.xiuluoCengshu || [];
@@ -1190,7 +1208,7 @@ var SamiraFight = (function () {
     const config = SamiraFight.getConfigFromUI();
     const key = 'player-config-v1-' + SamiraFight.personId;
     localStorage.setItem(key, JSON.stringify(config));
-    com.components.game.GameNotice.showBottomMessage('保存成功')
+    com.components.game.GameNotice.showBottomMessage('保存成功');
   };
 
   // 从服务端获取或者的boss列表
@@ -1212,7 +1230,7 @@ var SamiraFight = (function () {
     const kuafuMapId = SamiraFight.kuafuBossMapId;
     // 挂机地图
     const bossMapIds = SamiraFight.getGuaJiMapIds();
-    
+
     const mapIds = [...bossMapIds, fuliMapId, ...azsmMapIds, yijiMapId, zhanqiMapId, kuafuMapId, ...shangguMapIds, ...shangguXiaoGuaiMapIds];
     BossCommandSender.sendC2S_AliveWildBossMessage(mapIds, 0, false);
   };
@@ -1220,7 +1238,7 @@ var SamiraFight = (function () {
   // 从服务端获取修罗boss
   SamiraFight.requestXiuLuoBoss = function () {
     console.log('[samira]获取修罗boss列表');
-    com.logic.data.zone.tower.ZoneTowerCenter.sendC2S_WushenZoneInfoMessage(200000)
+    com.logic.data.zone.tower.ZoneTowerCenter.sendC2S_WushenZoneInfoMessage(200000);
   };
 
   // 逻辑更新
@@ -1229,9 +1247,9 @@ var SamiraFight = (function () {
     const playerMapId = com.App.role._mapId;
     const mapIds = SamiraFight.getGuaJiMapIds();
     const ts = Math.floor(Date.now() / 1000);
-    const hours = (new Date()).getHours();
-    const minutes = (new Date()).getMinutes();
-    const dayOfweek = (new Date()).getDay();
+    const hours = new Date().getHours();
+    const minutes = new Date().getMinutes();
+    const dayOfweek = new Date().getDay();
     const yabiaoTili = com.modules.escort.EscortCenter.getData().remainCount;
     // 小怪任务
     const dayXiaoguaiTask = com.App.dataMgr.q_jitanContainer.getList().find(x => x.q_id === SamiraFight.kuafuXiaoGuai.taskId);
@@ -1265,14 +1283,14 @@ var SamiraFight = (function () {
     }
 
     // 如果是7点30, 进入虚空裂痕
-    if (hours == 19 && (minutes >= 30 && minutes <= 50) && SamiraFight.config.xukongliehen == '1' && SamiraFight.currentStatus != 'xukongliehen') {
+    if (hours == 19 && minutes >= 30 && minutes <= 50 && SamiraFight.config.xukongliehen == '1' && SamiraFight.currentStatus != 'xukongliehen') {
       com.App.returnCity();
       SamiraFight.currentStatus = 'xukongliehen';
       return;
     }
 
     // 如果是20点31分, 进入异界入侵
-    if (((hours == 20 && (minutes >= 30 && minutes <= 35))) && SamiraFight.config.yijieruqin == '1' && SamiraFight.currentStatus != 'yijieruqin') {
+    if (hours == 20 && minutes >= 30 && minutes <= 35 && SamiraFight.config.yijieruqin == '1' && SamiraFight.currentStatus != 'yijieruqin') {
       // 先回城， 然后开始异界入侵
       com.App.returnCity();
       SamiraFight.currentStatus = 'yijieruqin';
@@ -1301,22 +1319,22 @@ var SamiraFight = (function () {
       SamiraFight.tp(210041);
       return;
     }
-    
+
     // 显示当前状态
-    $('.samira-current-task').text(SamiraFight.currentStatus ? (SamiraFight.status[SamiraFight.currentStatus] || '未知任务(' + SamiraFight.currentStatus + ')') : '无');
+    $('.samira-current-task').text(SamiraFight.currentStatus ? SamiraFight.status[SamiraFight.currentStatus] || '未知任务(' + SamiraFight.currentStatus + ')' : '无');
     if (SamiraFight.currentBoss && SamiraFight.currentBoss.bean) {
       let bossName = SamiraFight.currentBoss.bean.q_name || '无';
       if (SamiraFight.currentBoss.mapModelId) {
         const bossMap = com.App.dataMgr.q_mapContainer.list.find(x => x.q_map_id == SamiraFight.currentBoss.mapModelId);
         if (bossMap) {
-          bossName += '('+ bossMap.q_map_name +')'
+          bossName += '(' + bossMap.q_map_name + ')';
         }
       }
       $('.samira-current-boss').text(bossName);
     }
-    
+
     // 显示当前boss
-    if((!SamiraFight.currentBoss) || SamiraFight.currentStatus == 'search') {
+    if (!SamiraFight.currentBoss || SamiraFight.currentStatus == 'search') {
       $('.samira-current-boss').text('无');
     }
 
@@ -1328,21 +1346,21 @@ var SamiraFight = (function () {
       // 跨服boss
       if (SamiraFight.config.zhanchangBoss == '1') {
         const bosses = SamiraFight.kuafuBossData;
-        const filterBosses = bosses.filter(x => x.curHp / x.allHp * 100)
+        const filterBosses = bosses
+          .filter(x => (x.curHp / x.allHp) * 100)
           .filter(x => x.curHp > 0 && x.remainTime == 0)
           .filter(x => {
             // 获取当前boss自己已经打的血量
             const attact = SamiraFight.kuafuBossHpDic[x.monsterIn64Id] || 0;
             // 如果已经超过百分之二就不打了
-            if (attact / x.allHp * 100 > 2) {
+            if ((attact / x.allHp) * 100 > 2) {
               return false;
-            }
-            else {
+            } else {
               return true;
             }
           })
           .sort((a, b) => b.curHp - a.curHp);
-        
+
         // 寻找到还没有打的boss
         if (filterBosses.length > 0) {
           const boss = filterBosses[0];
@@ -1374,14 +1392,14 @@ var SamiraFight = (function () {
         SamiraFight.currentBoss = null;
         SamiraFight.currentWudaocheckTimes = 0;
         // 先回城在匹配, 要不然会出问题
-        com.App.returnCity()
+        com.App.returnCity();
         // 开始匹配
         PanelManager.openByClass(WulingdahuiPipeiPanel, '最强王者');
         return;
       }
 
       // 龙魂boss
-      if (SamiraFight.config.longhunBoss == '1') { 
+      if (SamiraFight.config.longhunBoss == '1') {
         const zones = SamiraFight.getCanEnterLongHunBossZoneIds();
         if (zones.length > 0) {
           com.App.returnCity();
@@ -1405,7 +1423,7 @@ var SamiraFight = (function () {
           const selectMapIndex = selectMapAndBoss[0];
           const data = selectMapIndex >= 0 ? datas[selectMapIndex] : datas[datas.length + selectMapIndex];
           const mapId = data.bean.q_map_id;
-          
+
           const npcs = [];
           for (var $each_info in com.modules.boss.wanyao.WanyaoCenter._npcs[mapId]) {
             const info = com.modules.boss.wanyao.WanyaoCenter._npcs[mapId][$each_info];
@@ -1460,8 +1478,8 @@ var SamiraFight = (function () {
         }
       }
 
-      // 跨服小怪
-      if (SamiraFight.kuafuActiveStatus && SamiraFight.config.xiaoguai == '1' && dayXiaoGuaiTaskComplateTimes < dayXiaoGuaiTaskTimes) {
+      // 跨服小怪(下午五点之后再打)
+      if (SamiraFight.kuafuActiveStatus && hours >= 17 && SamiraFight.config.xiaoguai == '1' && dayXiaoGuaiTaskComplateTimes < dayXiaoGuaiTaskTimes) {
         console.log('[samira]准备攻击跨服小怪');
         SamiraFight.kuafuXiaoGuai.pointTimes = 0;
         SamiraFight.kuafuXiaoGuai.pointIndex = 0;
@@ -1472,12 +1490,13 @@ var SamiraFight = (function () {
       // 处理神魔boss
       if (SamiraFight.kuafuActiveStatus && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(178) > 0 && SamiraFight.config.shenmoBoss == '1') {
         const bosses = com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(SamiraFight.kuafuBossMapId);
-        const filterShanguBoss = bosses.filter(x => x.bean.q_type == 16)
+        const filterShanguBoss = bosses
+          .filter(x => x.bean.q_type == 16)
           .filter(boss => ((boss.owner === playerName || boss.owner == '' || boss.owner == null) && boss.remainTime === 0) || (boss.remainTime != 0 && boss.remainTime <= ts + SamiraFight.config.waitBossTime))
           .sort((a, b) => {
             return b.level - a.level;
           });
-        
+
         if (filterShanguBoss.length > 0) {
           const boss = filterShanguBoss[0];
           SamiraFight.currentBoss = boss;
@@ -1510,13 +1529,11 @@ var SamiraFight = (function () {
               ZoneTowerCenter.sendC2S_IntoPurgatoryZoneMessage(200000, f, 0);
               window.setTimeout(() => {
                 com.App.openAutoFight();
-              })
+              });
 
               return;
             }
           }
-
-          
         }
       }
 
@@ -1571,7 +1588,7 @@ var SamiraFight = (function () {
       // 处理战场遗迹
       if (SamiraFight.kuafuActiveStatus && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(179) > 0 && SamiraFight.config.yiji == '1') {
         const yijiMapId = SamiraFight.getMaxLevelYijiBossMapId();
-        const yiujiBosses = com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(yijiMapId).filter(boss => (boss.owner === playerName || boss.owner == '' || boss.owner == null) && boss.remainTime === 0)
+        const yiujiBosses = com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(yijiMapId).filter(boss => (boss.owner === playerName || boss.owner == '' || boss.owner == null) && boss.remainTime === 0);
 
         if (yiujiBosses.length > 0) {
           const boss = yiujiBosses[0];
@@ -1586,7 +1603,8 @@ var SamiraFight = (function () {
       // 处理战骑祭坛
       if (SamiraFight.kuafuActiveStatus && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(168) > 0 && SamiraFight.config.zhanqi == '1') {
         const zhanqiMapId = SamiraFight.getSelectZhanqiBossMapId();
-        const zhanqiBosses = com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(zhanqiMapId)
+        const zhanqiBosses = com.logic.data.zone.boss.BossDataCenter.instance
+          .getBossListByMapId(zhanqiMapId)
           .filter(x => x.bean.q_type == 8)
           .filter(boss => (boss.owner === playerName || boss.owner == '' || boss.owner == null) && boss.remainTime === 0);
         if (zhanqiBosses.length > 0) {
@@ -1600,11 +1618,11 @@ var SamiraFight = (function () {
       }
 
       // 如果有内功任务， 就去打上古boss，倒数三个
-      if (SamiraFight.config.autoNeigong == '1' && SamiraFight.getNeigongTimes() > 0) { 
+      if (SamiraFight.config.autoNeigong == '1' && SamiraFight.getNeigongTimes() > 0) {
         SamiraFight.config.shanggu = '1';
         SamiraFight.config.shangguMap = '-1|-2|-3';
       }
-    
+
       // 处理上古禁地小怪
       if (SamiraFight.kuafuActiveStatus && SamiraFight.config.shangguxiaoguai == '1') {
         const bosses = [];
@@ -1618,8 +1636,9 @@ var SamiraFight = (function () {
             }
           }
         }
-        const filterShanguBoss = bosses.filter(x => x.bean.q_type == 4)
-          .filter(boss => ((boss.owner === playerName || boss.owner == '' || boss.owner == null) && boss.remainTime === 0))
+        const filterShanguBoss = bosses
+          .filter(x => x.bean.q_type == 4)
+          .filter(boss => (boss.owner === playerName || boss.owner == '' || boss.owner == null) && boss.remainTime === 0)
           .sort((a, b) => {
             return b.level - a.level;
           });
@@ -1647,7 +1666,8 @@ var SamiraFight = (function () {
             }
           }
         }
-        const filterShanguBoss = bosses.filter(x => x.bean.q_type == 16)
+        const filterShanguBoss = bosses
+          .filter(x => x.bean.q_type == 16)
           .filter(boss => ((boss.owner === playerName || boss.owner == '' || boss.owner == null) && boss.remainTime === 0) || (boss.remainTime != 0 && boss.remainTime <= ts + SamiraFight.config.waitBossTime))
           .sort((a, b) => {
             return b.level - a.level;
@@ -1667,12 +1687,12 @@ var SamiraFight = (function () {
       {
         let selectBoss = null;
         const bosses = [];
-        const bossFilterFunc = boss => boss.bean.q_type == 16 && (((boss.owner === playerName || boss.owner == '' || boss.owner == null) && boss.remainTime === 0));
+        const bossFilterFunc = boss => boss.bean.q_type == 16 && (boss.owner === playerName || boss.owner == '' || boss.owner == null) && boss.remainTime === 0;
         // 如果玩家当前所在地图在挂机地图中, 优先获取玩家当前所在地图的boss
         if (mapIds.includes(playerMapId)) {
           // 获取当前地图活着的boss
           const currentMapBossesObject = BossDataCenter.instance._mapbossDic[playerMapId];
-          const currentMapBosses = []
+          const currentMapBosses = [];
           for (const bossId in currentMapBossesObject) {
             const bs = currentMapBossesObject[bossId];
             for (const b in bs) {
@@ -1688,13 +1708,13 @@ var SamiraFight = (function () {
           // 获取每个boss的距离
           for (const b of bosses) {
             const vo = new com.game.core.scene.map.road.SearchToPointVO();
-            const p = com.game.core.scene.map.libarys.MapVO.getCenterPoint(b.monsterX,b.monsterY)
-            vo.px=p.x;
-            vo.py=p.y;
-            vo.shift=0;
-            vo.type="walk";
+            const p = com.game.core.scene.map.libarys.MapVO.getCenterPoint(b.monsterX, b.monsterY);
+            vo.px = p.x;
+            vo.py = p.y;
+            vo.shift = 0;
+            vo.type = 'walk';
             const list = com.App.mapModule.mapMoveModel.searchRoadByAstar(vo);
-            b.distance = list.length;
+            b.distance = list ? list.length : 9999999;
           }
           // 获取最近的一个
           const sortedBosses = bosses.sort((a, b) => a.distance - b.distance);
@@ -1728,23 +1748,23 @@ var SamiraFight = (function () {
           // 获取boss数量最多的地图
           let maxCount = 0;
           let maxCountMapId = 0;
-          for (const key in mapBossCount) { 
+          for (const key in mapBossCount) {
             if (mapBossCount[key] > maxCount) {
               maxCount = mapBossCount[key];
               maxCountMapId = key;
             }
           }
-          
+
           console.log('[samira]所有地图boss数量:', mapBossCount, '最多的地图:', maxCountMapId, '数量:', maxCount);
 
           if (maxCount != 0 && maxCountMapId != 0) {
             const boss = allMapFilterdBosses.find(x => x.mapModelId == maxCountMapId);
-            if (boss) { 
+            if (boss) {
               selectBoss = boss;
             }
           }
         }
-        
+
         if (selectBoss) {
           SamiraFight.currentBoss = selectBoss;
           // 如果不是在当前地图, 就先进入地图
@@ -1772,15 +1792,13 @@ var SamiraFight = (function () {
             const mid = mapIds[0];
             if (mid != playerMapId) {
               SamiraFight.tp(mid);
-            }
-            else {
+            } else {
               App.openAutoFight();
             }
           }
         }
       }
-    }
-    else if (SamiraFight.currentStatus === 'fight') {
+    } else if (SamiraFight.currentStatus === 'fight') {
       // 怪物为空
       if (SamiraFight.currentBoss == null) {
         console.log('[samira]boss为空, 重新寻找boss');
@@ -1826,13 +1844,11 @@ var SamiraFight = (function () {
       const playerPosition = SamiraFight.getPlayerPositionNode();
       if (playerPosition.x >= SamiraFight.currentBoss.monsterX - 2 && playerPosition.x <= SamiraFight.currentBoss.monsterX + 2 && playerPosition.y >= SamiraFight.currentBoss.monsterY - 2 && playerPosition.y <= SamiraFight.currentBoss.monsterY + 2) {
         com.App.openAutoFight();
-      }
-      else {
+      } else {
         // 走路过去并且自动攻击
-        (new com.modules.kmap.view.MapView()).gotoWhere(SamiraFight.currentBoss.monsterX, SamiraFight.currentBoss.monsterY, GameHandler.create(com.App, com.App.openAutoFight))
+        new com.modules.kmap.view.MapView().gotoWhere(SamiraFight.currentBoss.monsterX, SamiraFight.currentBoss.monsterY, GameHandler.create(com.App, com.App.openAutoFight));
       }
-    }
-    else if (SamiraFight.currentStatus === 'fight-xiuluo') {
+    } else if (SamiraFight.currentStatus === 'fight-xiuluo') {
       if (SamiraFight.currentXiuLuoCengshu <= 0) {
         console.log('[samira]修罗层数设置不正确, 开始寻找');
         SamiraFight.currentXiuLuoCengshu = -1;
@@ -1854,12 +1870,10 @@ var SamiraFight = (function () {
         SamiraFight.currentStatus = 'search';
         SamiraFight.currentXiuLuoCengshu = -1;
         return;
-      }
-      else {
+      } else {
         console.log('[samira]还有' + aliveCount + '个boss没有死亡, 继续打怪');
       }
-    }
-    else if (SamiraFight.currentStatus === 'wudao') {
+    } else if (SamiraFight.currentStatus === 'wudao') {
       // 因为匹配和进入地图需要时间, 15秒后, 判断地图是不是在武道会, 如果不在说明已经结束
       if (SamiraFight.currentWudaocheckTimes > 15 && playerMapId != 190000) {
         console.log('[samira]比武已经结束, 重新寻找boss');
@@ -1882,7 +1896,7 @@ var SamiraFight = (function () {
           SamiraFight.wudaoStatus = false;
           PanelManager.closeByClass(WulingdahuiView);
           PanelManager.closeByClass(WulingdahuiPipeiPanel);
-          SamiraFight.wudaoResumeTs = ts + (60 * 30);
+          SamiraFight.wudaoResumeTs = ts + 60 * 30;
           console.log('[samira]武道会暂时关闭, 不再进行匹配!');
         }
         return;
@@ -1897,8 +1911,7 @@ var SamiraFight = (function () {
       }
 
       console.log('[samira]正在比武(' + SamiraFight.currentWudaocheckTimes + ')...');
-    }
-    else if (SamiraFight.currentStatus === 'kuafuboss') {
+    } else if (SamiraFight.currentStatus === 'kuafuboss') {
       // 怪物为空
       if (SamiraFight.currentBoss == null) {
         console.log('[samira]boss为空, 重新寻找boss');
@@ -1920,10 +1933,10 @@ var SamiraFight = (function () {
         SamiraFight.currentStatus = 'search';
         return;
       }
-      
+
       // boss被自己打掉百分之二以上
       const attact = SamiraFight.kuafuBossHpDic[boss.monsterIn64Id] || 0;
-      if (attact / boss.allHp * 100 > 2.05) {
+      if ((attact / boss.allHp) * 100 > 2.05) {
         console.log('[samira]boss已被自己攻击超过2%, 重新寻找boss');
         SamiraFight.currentStatus = 'search';
         return;
@@ -1939,19 +1952,17 @@ var SamiraFight = (function () {
       const playerPosition = SamiraFight.getPlayerPositionNode();
       if (playerPosition.x >= SamiraFight.currentBoss.monsterX - 4 && playerPosition.x <= SamiraFight.currentBoss.monsterX + 4 && playerPosition.y >= SamiraFight.currentBoss.monsterY - 4 && playerPosition.y <= SamiraFight.currentBoss.monsterY + 4) {
         com.App.openAutoFight();
-      }
-      else {
+      } else {
         // 走路过去并且自动攻击
-        (new com.modules.kmap.view.MapView()).gotoWhere(SamiraFight.currentBoss.monsterX, SamiraFight.currentBoss.monsterY, GameHandler.create(com.App, com.App.openAutoFight))
+        new com.modules.kmap.view.MapView().gotoWhere(SamiraFight.currentBoss.monsterX, SamiraFight.currentBoss.monsterY, GameHandler.create(com.App, com.App.openAutoFight));
       }
-    }
-    else if (SamiraFight.currentStatus === 'xukongliehen') {
+    } else if (SamiraFight.currentStatus === 'xukongliehen') {
       if (minutes >= 55) {
         console.log('[samira]虚空裂痕已经结束, 重新寻找boss');
         SamiraFight.currentStatus = 'search';
         return;
       }
-      
+
       // 传送到boss地图
       if (playerMapId != 23001) {
         var cmd = new C2S_JoinActivityMessage();
@@ -1963,8 +1974,7 @@ var SamiraFight = (function () {
 
       // 开启自动攻击
       com.App.openAutoFight();
-    }
-    else if (SamiraFight.currentStatus === 'yabiao') {
+    } else if (SamiraFight.currentStatus === 'yabiao') {
       const data = com.modules.escort.EscortCenter.getData();
       if (!data || !data.taskData) {
         return;
@@ -1973,7 +1983,7 @@ var SamiraFight = (function () {
       const status = data.taskState;
       // 未接任务
       if (status == 0) {
-        EventMgr.dispatch("TE.taskTransfer", com.modules.escort.EscortCenter.getData().taskData.getConditionData(), JSON.stringify({ "npcid": 2086 }), 1, true);
+        EventMgr.dispatch('TE.taskTransfer', com.modules.escort.EscortCenter.getData().taskData.getConditionData(), JSON.stringify({ npcid: 2086 }), 1, true);
         TaskCommandSender.sendAccpetTask(data.taskID, data.taskType);
         PanelManager.removePanel(PanelRegister.ESCORT_ACCEPT);
       }
@@ -1983,16 +1993,14 @@ var SamiraFight = (function () {
       }
       // 完成
       else if (status == 2) {
-        EventMgr.dispatch("TE.taskTransfer", data.taskData.getConditionData(), JSON.stringify({ "npcid": 2087 }), 1, true);
+        EventMgr.dispatch('TE.taskTransfer', data.taskData.getConditionData(), JSON.stringify({ npcid: 2087 }), 1, true);
         com.logic.connect.sender.TaskCommandSender.sendFinishTask(data.taskID, data.taskType);
         SamiraFight.currentStatus = 'search';
-      }
-      else {
+      } else {
         console.log('[samira]押镖状态异常:', status);
         SamiraFight.currentStatus = 'search';
       }
-    }
-    else if (SamiraFight.currentStatus === 'xiaoguai') {
+    } else if (SamiraFight.currentStatus === 'xiaoguai') {
       if (dayXiaoGuaiTaskComplateTimes >= dayXiaoGuaiTaskTimes) {
         console.log('[samira]跨服小怪任务已完成, 重新寻找boss');
         SamiraFight.currentStatus = 'search';
@@ -2032,16 +2040,14 @@ var SamiraFight = (function () {
         const targetNode = { x: SamiraFight.kuafuXiaoGuai.target._roleData.nodex, y: SamiraFight.kuafuXiaoGuai.target._roleData.nodey };
         if (playerPosition.x >= targetNode.x - 2 && playerPosition.x <= targetNode.x + 2 && playerPosition.y >= targetNode.y - 2 && playerPosition.y <= targetNode.y + 2) {
           com.App.openAutoFight();
-        }
-        else {
-          (new com.modules.kmap.view.MapView()).gotoWhere(targetNode.x, targetNode.y, GameHandler.create(com.App, com.App.openAutoFight))
+        } else {
+          new com.modules.kmap.view.MapView().gotoWhere(targetNode.x, targetNode.y, GameHandler.create(com.App, com.App.openAutoFight));
         }
         return;
-      }
-      else {
+      } else {
         SamiraFight.kuafuXiaoGuai.target = null;
       }
-    
+
       // 如果周围有怪物, 就确定目标
       if (monsters.length > 0) {
         const monster = monsters[0];
@@ -2058,19 +2064,17 @@ var SamiraFight = (function () {
           if (SamiraFight.kuafuXiaoGuai.pointIndex >= SamiraFight.kuafuXiaoGuai.points.length) {
             SamiraFight.kuafuXiaoGuai.pointIndex = 0;
           }
-        }
-        else {
-          (new com.modules.kmap.view.MapView()).gotoWhere(point.x, point.y, GameHandler.create(com.App, com.App.openAutoFight))
+        } else {
+          new com.modules.kmap.view.MapView().gotoWhere(point.x, point.y, GameHandler.create(com.App, com.App.openAutoFight));
         }
       }
-    }
-    else if (SamiraFight.currentStatus === 'zhenyingzhan') {
+    } else if (SamiraFight.currentStatus === 'zhenyingzhan') {
       if (minutes >= 15) {
         console.log('[samira]阵营战已经结束, 重新寻找boss');
         SamiraFight.currentStatus = 'search';
         return;
       }
-      
+
       // 传送到boss地图
       if (playerMapId != 33006) {
         ActivitiesCommandSender.joinByFuncType(1);
@@ -2082,11 +2086,14 @@ var SamiraFight = (function () {
 
       // 开启自动攻击
       com.App.openAutoFight();
-    }
-    else if (SamiraFight.currentStatus === 'yijieruqin') {
+    } else if (SamiraFight.currentStatus === 'yijieruqin') {
       console.log('[samira]异界入侵选择BOSS: ' + SamiraFight.config.yijieruqinIndex);
 
-      const bosses = com.App.dataMgr.q_activitiesContainer.getListByType(3000).map(x => com.logic.data.activity.ActivityCenter.getData(x.q_id)).filter(x => x.activityStates > -1).map(x => ({ actId: x.id, mapId: x.bean.q_info, name: x.bean.q_name }));
+      const bosses = com.App.dataMgr.q_activitiesContainer
+        .getListByType(3000)
+        .map(x => com.logic.data.activity.ActivityCenter.getData(x.q_id))
+        .filter(x => x.activityStates > -1)
+        .map(x => ({ actId: x.id, mapId: x.bean.q_info, name: x.bean.q_name }));
       const boss = bosses[SamiraFight.config.yijieruqinIndex - 1];
 
       // 角色不在目标地图, 就进入地图
@@ -2098,7 +2105,7 @@ var SamiraFight = (function () {
 
       const map = App.dataMgr.q_mapContainer.getDataBean(boss.mapId);
       const mapid = map.q_map_id;
-      const bossid = map.q_boss ? JSON.parse(map.q_boss)[0]["monster"] : 0;
+      const bossid = map.q_boss ? JSON.parse(map.q_boss)[0]['monster'] : 0;
       const num = BossDataCenter.instance.getMapsBossNum([mapid], null, [bossid], true);
 
       // 检查boss是否死亡
@@ -2116,8 +2123,7 @@ var SamiraFight = (function () {
 
       // 开启自动攻击
       com.App.openAutoFight();
-    }
-    else if (SamiraFight.currentStatus === 'sbk') {
+    } else if (SamiraFight.currentStatus === 'sbk') {
       if (minutes >= 30) {
         console.log('[samira]沙巴克已结束, 重新寻找boss');
         SamiraFight.currentStatus = 'search';
@@ -2131,8 +2137,8 @@ var SamiraFight = (function () {
           $('.samira-auto-revive').prop('checked', true);
         }
 
-        if (playerMapId != 10005) { 
-          EventMgr.dispatch("ET.character_move_to_position", 10005, 10, 21);
+        if (playerMapId != 10005) {
+          EventMgr.dispatch('ET.character_move_to_position', 10005, 10, 21);
         } else {
           com.App.openAutoFight();
         }
@@ -2140,9 +2146,8 @@ var SamiraFight = (function () {
       }
 
       // 进入地图
-      com.logic.connect.sender.CastleWarCommandSender.askCountrySiegeSelect()
-    }
-    else if (SamiraFight.currentStatus === 'suoyaotacaiji') {
+      com.logic.connect.sender.CastleWarCommandSender.askCountrySiegeSelect();
+    } else if (SamiraFight.currentStatus === 'suoyaotacaiji') {
       // 刷新ncp信息
       WanyaoCenter.sendC2S_NpcInfoMessage();
 
@@ -2151,7 +2156,7 @@ var SamiraFight = (function () {
         console.log('[samira]正在采集水晶...');
         return;
       }
-      
+
       // 判断npc
       if (SamiraFight.yaoshou.npcInfo == null) {
         console.log('[samira]找不到要采集的水晶, 重新寻找BOSS');
@@ -2171,29 +2176,26 @@ var SamiraFight = (function () {
       const startPick = () => {
         if (!SamiraFight.yaoshou.gatherStatus) {
           const npcId = SamiraFight.yaoshou.npcInfo.npcId.toString();
-          com.logic.connect.sender.TaskCommandSender.sendC2S_NpcServicesMessage(npcId)
+          com.logic.connect.sender.TaskCommandSender.sendC2S_NpcServicesMessage(npcId);
           com.logic.connect.sender.TaskCommandSender.sendServiceMessage(npcId, 2, 1);
         }
       };
-      
+
       // 走过去
       const playerPosition = SamiraFight.getPlayerPositionNode();
       if (playerPosition.x >= SamiraFight.yaoshou.npcInfo.x - 2 && playerPosition.x <= SamiraFight.yaoshou.npcInfo.x + 2 && playerPosition.y >= SamiraFight.yaoshou.npcInfo.y - 2 && playerPosition.y <= SamiraFight.yaoshou.npcInfo.y + 2) {
         startPick();
-      }
-      else {
+      } else {
         // 走路过去并且自动攻击
-        (new com.modules.kmap.view.MapView()).gotoWhere(SamiraFight.yaoshou.npcInfo.x, SamiraFight.yaoshou.npcInfo.y)
+        new com.modules.kmap.view.MapView().gotoWhere(SamiraFight.yaoshou.npcInfo.x, SamiraFight.yaoshou.npcInfo.y);
       }
-    }
-    else if (SamiraFight.currentStatus === 'wudaohuijuesai') { 
+    } else if (SamiraFight.currentStatus === 'wudaohuijuesai') {
       if (minutes >= 25) {
         console.log('[samira]武道会决赛, 重新寻找boss');
         SamiraFight.currentStatus = 'search';
         return;
       }
-    }
-    else if (SamiraFight.currentStatus === 'longhunboss') {
+    } else if (SamiraFight.currentStatus === 'longhunboss') {
       // 当前副本的次数没有了, 说明已经打完了
       const zones = SamiraFight.getCanEnterLongHunBossZoneIds();
       if (!zones.includes(SamiraFight.currentLongHunZoneId)) {
@@ -2220,14 +2222,20 @@ var SamiraFight = (function () {
   SamiraFight.getPlayerPositionNode = function () {
     var x = Math.floor(com.App.role._map_x / MapConfig.MAP_NODE_WIDTH);
     var y = Math.floor(com.App.role._map_y / MapConfig.MAP_NODE_HEIGHT);
-    return { x: x, y: y }
+    return { x: x, y: y };
   };
 
   // 获取挂机地图id, 首先先从输入框获取, 如果为空则使用巡航地图
-  SamiraFight.getGuaJiMapIds = function () { 
+  SamiraFight.getGuaJiMapIds = function () {
     const mapNames = SamiraFight.config.guajiMapNames || '';
-    const nameArray = mapNames.split('|').map(x => x ? x.trim() : '').filter(x => x != '' && x != null && x != undefined);
-    const mapIds = nameArray.map(x => com.App.dataMgr.q_mapContainer.list.find(z => z.q_map_name == x)).filter(x => x).map(x => x.q_map_id);
+    const nameArray = mapNames
+      .split('|')
+      .map(x => (x ? x.trim() : ''))
+      .filter(x => x != '' && x != null && x != undefined);
+    const mapIds = nameArray
+      .map(x => com.App.dataMgr.q_mapContainer.list.find(z => z.q_map_name == x))
+      .filter(x => x)
+      .map(x => x.q_map_id);
     if (mapIds.length > 0) {
       return mapIds;
     }
@@ -2265,7 +2273,10 @@ var SamiraFight = (function () {
 
   // 获取最大等级的上古禁地地图列表
   SamiraFight.getMaxLevelShangguBossMapIds = function (mapIndexs) {
-    const indexArray = (mapIndexs || '').split('|').filter(x => x != '' && x != null || x != undefined).map(x => parseInt(x));
+    const indexArray = (mapIndexs || '')
+      .split('|')
+      .filter(x => (x != '' && x != null) || x != undefined)
+      .map(x => parseInt(x));
     const maps = SamiraFight.getShanguBossMaps();
     const mapIds = [];
     for (const map of maps) {
@@ -2281,11 +2292,10 @@ var SamiraFight = (function () {
     }
 
     const result = [];
-    for (const index of indexArray) { 
+    for (const index of indexArray) {
       if (index >= 1 && index <= mapIds.length) {
         result.push(mapIds[index - 1]);
-      }
-      else if (index < 0) { 
+      } else if (index < 0) {
         result.push(mapIds[mapIds.length + index]);
       }
     }
@@ -2299,7 +2309,10 @@ var SamiraFight = (function () {
 
   // 获取选择的战骑地图
   SamiraFight.getSelectZhanqiBossMapId = function () {
-    const indexArray = (SamiraFight.config.zhanqiMap || '').split('|').filter(x => x != '' && x != null || x != undefined).map(x => parseInt(x));
+    const indexArray = (SamiraFight.config.zhanqiMap || '')
+      .split('|')
+      .filter(x => (x != '' && x != null) || x != undefined)
+      .map(x => parseInt(x));
     const maps = SamiraFight.getZhanqiBossMaps();
     let mapIds = [];
 
@@ -2316,11 +2329,10 @@ var SamiraFight = (function () {
     }
 
     const result = [];
-    for (const index of indexArray) { 
+    for (const index of indexArray) {
       if (index >= 1 && index <= mapIds.length) {
         result.push(mapIds[index - 1]);
-      }
-      else if (index < 0) { 
+      } else if (index < 0) {
         result.push(mapIds[mapIds.length + index]);
       }
     }
@@ -2338,11 +2350,11 @@ var SamiraFight = (function () {
     let mapId = -1;
     // 军装数据
     const junzhuang = JunZhuangCenter.getSummaryAttrs();
-    const tongshuai = KuafuBattleCenter.getAttrValue(junzhuang, "统率");
-    const yongwu = KuafuBattleCenter.getAttrValue(junzhuang, "勇武");
-    const zhimou = KuafuBattleCenter.getAttrValue(junzhuang, "智谋");
-    const neizheng = KuafuBattleCenter.getAttrValue(junzhuang, "内政");
-    const weiwang = KuafuBattleCenter.getAttrValue(junzhuang, "威望");
+    const tongshuai = KuafuBattleCenter.getAttrValue(junzhuang, '统率');
+    const yongwu = KuafuBattleCenter.getAttrValue(junzhuang, '勇武');
+    const zhimou = KuafuBattleCenter.getAttrValue(junzhuang, '智谋');
+    const neizheng = KuafuBattleCenter.getAttrValue(junzhuang, '内政');
+    const weiwang = KuafuBattleCenter.getAttrValue(junzhuang, '威望');
     for (const map of maps) {
       if (mapId == -1) {
         mapId = map.q_map_id;
@@ -2373,21 +2385,21 @@ var SamiraFight = (function () {
   // 获取暗之神殿地图Ids
   SamiraFight.getAzsdMapIds = function () {
     return [210000, 210001, 210002, 210003];
-  }
+  };
 
   // 获取可以进入得龙魂boss副本id
-  SamiraFight.getCanEnterLongHunBossZoneIds = function () { 
+  SamiraFight.getCanEnterLongHunBossZoneIds = function () {
     const zones = com.App.dataMgr.q_zone_mapContainer.getZoneListByType(100);
     const canEnterZoneIds = [];
 
-    for(const zone of zones) {
+    for (const zone of zones) {
       const mapId = JSON.parse(zone.q_mapid)[0];
       const mapBean = com.App.dataMgr.q_mapContainer.getDataBean(mapId);
       if (!mapBean) {
         continue;
       }
 
-      if (ConditionUtil.isMapCanEnter(mapBean)) { 
+      if (ConditionUtil.isMapCanEnter(mapBean)) {
         const zoneInfo = com.logic.data.zone.ZoneCenter.getZone(zone.q_id);
         if (zoneInfo && zoneInfo.syCanEnterTimes > 0) {
           canEnterZoneIds.push(zone.q_id);
@@ -2533,27 +2545,41 @@ var SamiraFight = (function () {
                 <div class="samira-settings-footer-btn samira-settings-footer-btn-stop">关闭</div>
                 <div class="samira-settings-footer-btn samira-settings-footer-btn-savaconfig">保存配置</div>
                 <div class="samira-settings-footer-btn samira-settings-footer-btn-select-map">选择地图</div>
+                <div class="samira-settings-footer-btn samira-settings-footer-btn-open-dev">打开控制台</div>
+                <div class="samira-settings-footer-btn samira-settings-footer-btn-refresh">刷新</div>
                 <div class="samira-settings-footer-btn samira-settings-footer-close">关闭窗口</div>
             </div>
         </div>
     </div>`);
 
-    settingHtml.find('.samira-settings-footer-btn-start').click(function () { 
+    settingHtml.find('.samira-settings-footer-btn-start').click(function () {
       SamiraFight.start();
       $('.samira-settings').hide();
     });
-    settingHtml.find('.samira-settings-footer-btn-stop').click(function () { 
+    settingHtml.find('.samira-settings-footer-btn-stop').click(function () {
       SamiraFight.stop();
     });
-    settingHtml.find('.samira-settings-footer-btn-savaconfig').click(function () { 
+    settingHtml.find('.samira-settings-footer-btn-savaconfig').click(function () {
       SamiraFight.saveConfig();
     });
-    settingHtml.find('.samira-settings-footer-close').click(function () { 
+    settingHtml.find('.samira-settings-footer-close').click(function () {
       $('.samira-settings').hide();
     });
-    settingHtml.find('.samira-settings-footer-btn-select-map').click(function () { 
-      PanelOpenManager.openSetup(null,4);
+    settingHtml.find('.samira-settings-footer-btn-select-map').click(function () {
+      PanelOpenManager.openSetup(null, 4);
     });
+    settingHtml.find('.samira-settings-footer-btn-open-dev').click(function () { 
+      if(window.myApi && window.myApi.openDevTools) {
+        window.myApi.openDevTools();
+      }
+    });
+    settingHtml.find('.samira-settings-footer-btn-refresh').click(function () { 
+      if(window.myApi && window.myApi.refresh) {
+        window.myApi.refresh();
+      }
+    });
+
+
     $('.samira-settings').remove();
     $('body').append(settingHtml);
 
@@ -2565,7 +2591,7 @@ var SamiraFight = (function () {
         </div>`);
     $('.samira-hp-container').remove();
     $('body').append(bossHpHtml);
-    
+
     const statusHtml = $(`<div class='samira-status-contaienr'>
         <div class='samira-settings-footer-btn samira-status' style='margin: 0px'>未运行</div>
       </div>`);
@@ -2577,96 +2603,99 @@ var SamiraFight = (function () {
   };
 
   // 修改内部函数
-  SamiraFight.modifyInternelFunction = function(){
-    ActivityCenter.getData=function(id){
+  SamiraFight.modifyInternelFunction = function () {
+    ActivityCenter.getData = function (id) {
       // 修改内挂地图限制
-      if(!id){
+      if (!id) {
         return null;
       }
       const data = ActivityCenter._actDict[id];
-      if(data){
+      if (data) {
         // 修改巡航为已开启
-        if([Q_globalCenter.getInt(15179), 200002, 200003, 200004,200005,200006,200007,200008,200009].includes(id)){
+        if ([Q_globalCenter.getInt(15179), 200002, 200003, 200004, 200005, 200006, 200007, 200008, 200009].includes(id)) {
           data.playerStates = 0;
         }
       }
       return data;
-    }
+    };
 
-    FunctionManager.isFunctionOpen=function(functionId,needNotice,noticeType,noticeColor){
+    FunctionManager.isFunctionOpen = function (functionId, needNotice, noticeType, noticeColor) {
       // 105-自动合成, 108-自动历练任务
-      if([105,108].includes(functionId)){
+      if ([105, 108].includes(functionId)) {
         return true;
       }
 
-      (needNotice===void 0)&& (needNotice=false);
-      (noticeType===void 0)&& (noticeType=-1);
-      (noticeColor===void 0)&& (noticeColor=0xff0000);
-      if(FunctionManager._state !=null){
-        if(myparseInt(functionId)==0){
+      needNotice === void 0 && (needNotice = false);
+      noticeType === void 0 && (noticeType = -1);
+      noticeColor === void 0 && (noticeColor = 0xff0000);
+      if (FunctionManager._state != null) {
+        if (myparseInt(functionId) == 0) {
           return true;
-        };
-        var bit=FunctionManager.getBit(functionId);
-        if(bit==0){
-          var bean=App.dataMgr.q_functionContainer.getDataBean(functionId,false);
-          if(bean !=null){
-            if(needNotice){
-              if(noticeType==-1)GameNotice.showMousePosMessage(bean.q_describe);
-              else GameNotice.showNoticeTypeMsg(noticeType,bean.q_describe);
+        }
+        var bit = FunctionManager.getBit(functionId);
+        if (bit == 0) {
+          var bean = App.dataMgr.q_functionContainer.getDataBean(functionId, false);
+          if (bean != null) {
+            if (needNotice) {
+              if (noticeType == -1) GameNotice.showMousePosMessage(bean.q_describe);
+              else GameNotice.showNoticeTypeMsg(noticeType, bean.q_describe);
             }
           }
-        }
-        else{
+        } else {
           return true;
         }
       }
       return false;
-    }
+    };
   };
 
   // 传送
-  SamiraFight.tp = function (mid) { 
+  SamiraFight.tp = function (mid) {
     var cmd = new C2S_TransmitToServerMessage();
-    cmd.transParam = '{"mapmodelid": '+ mid +'}';
+    cmd.transParam = '{"mapmodelid": ' + mid + '}';
     cmd.type = 6;
     GameServer.sendCommand(cmd);
-  }
+  };
 
   // 发送聊天
-  SamiraFight.sendChat = function (channel, text, color) { 
+  SamiraFight.sendChat = function (channel, text, color) {
     if (color) {
-      com.logic.connect.sender.ChatCommandSender.sendChatRequestMessage(channel, `<font color="${color}">${text}</font>`, '', null, 'chat')
+      com.logic.connect.sender.ChatCommandSender.sendChatRequestMessage(channel, `<font color="${color}">${text}</font>`, '', null, 'chat');
     } else {
-      com.logic.connect.sender.ChatCommandSender.sendChatRequestMessage(channel, text, '', null, 'chat')
+      com.logic.connect.sender.ChatCommandSender.sendChatRequestMessage(channel, text, '', null, 'chat');
     }
   };
 
   // 发送聊天2
   SamiraFight.sendChat2 = function (channel, text) {
     function getColor(i, total) {
-        const red = Math.round(255 * (1 - i / total)); // 红色逐渐减少
-        const green = Math.round(255 * (i / total));   // 绿色逐渐增加
-        const hex = (r, g, b) => {
-            return '#' + [r, g, b].map(x => {
-                const hex = x.toString(16);
-                return hex.length === 1 ? '0' + hex : hex;
-            }).join('');
-        };
-        return hex(red, green, 0); // 蓝色保持为0
+      const red = Math.round(255 * (1 - i / total)); // 红色逐渐减少
+      const green = Math.round(255 * (i / total)); // 绿色逐渐增加
+      const hex = (r, g, b) => {
+        return (
+          '#' +
+          [r, g, b]
+            .map(x => {
+              const hex = x.toString(16);
+              return hex.length === 1 ? '0' + hex : hex;
+            })
+            .join('')
+        );
+      };
+      return hex(red, green, 0); // 蓝色保持为0
     }
     let html = '';
-    for (let i = 0; i < text.length; i++) { 
+    for (let i = 0; i < text.length; i++) {
       html += `<font color="${getColor(i, text.length)}">${text[i]}</font>`;
     }
-    com.logic.connect.sender.ChatCommandSender.sendChatRequestMessage(channel, html, '', null, 'chat')
+    com.logic.connect.sender.ChatCommandSender.sendChatRequestMessage(channel, html, '', null, 'chat');
   };
 
   // 角色死亡
   SamiraFight.onS2C_PlayerDieMessageHandler = function (cmd) {
-    
     var personId = cmd.personId.toString();
     if (com.App.mapModule.mapAvatarModel.checkIsCharcter(personId)) {
-      const records = (cmd.records || []);
+      const records = cmd.records || [];
       if (records.length <= 0) {
         return;
       }
@@ -2674,25 +2703,28 @@ var SamiraFight = (function () {
       const mapId = record.mapModelid;
 
       // 如果在战骑祭坛, 上古禁地, 锁魂塔,  跨服地图并且状态不是跨服boss, 就5分钟内不进行跨服活动
-      if (SamiraFight.getShanguBossMaps().map(x => x.q_map_id).includes(mapId) ||
-        SamiraFight.getZhanqiBossMaps().map(x => x.q_map_id).includes(mapId) ||
+      if (
+        SamiraFight.getShanguBossMaps()
+          .map(x => x.q_map_id)
+          .includes(mapId) ||
+        SamiraFight.getZhanqiBossMaps()
+          .map(x => x.q_map_id)
+          .includes(mapId) ||
         com.modules.boss.wanyao.WanyaoCenter.datas.map(x => x.bean.q_map_id).includes(mapId) ||
-        (mapId == SamiraFight.kuafuBossMapId || SamiraFight.currentStatus != 'kuafuboss')) { 
+        mapId == SamiraFight.kuafuBossMapId ||
+        SamiraFight.currentStatus != 'kuafuboss'
+      ) {
         SamiraFight.kuafuActiveStatus = false;
         SamiraFight.kuafuActiveResumeTs = Math.floor(Date.now() / 1000) + 300;
         SamiraFight.currentStatus = 'search';
         console.log('[samira]角色已死亡, 5分钟内不进行跨服活动');
       }
-          
-      // 跨服频道发送辱骂
-      if (SamiraFight.config.chatNmsl == '1') { 
-        const mapIds = [
-          ...SamiraFight.getShanguBossMaps().map(x => x.q_map_id),
-          ...SamiraFight.getZhanqiBossMaps().map(x => x.q_map_id),
-          SamiraFight.kuafuBossMapId
-        ];
 
-        if (SamiraFight.currentStatus == 'kuafuboss') { 
+      // 跨服频道发送辱骂
+      if (SamiraFight.config.chatNmsl == '1') {
+        const mapIds = [...SamiraFight.getShanguBossMaps().map(x => x.q_map_id), ...SamiraFight.getZhanqiBossMaps().map(x => x.q_map_id), SamiraFight.kuafuBossMapId];
+
+        if (SamiraFight.currentStatus == 'kuafuboss') {
           return;
         }
 
@@ -2702,7 +2734,10 @@ var SamiraFight = (function () {
           const attName = cmd.attackername;
           const myName = com.App.role._name;
           const mapName = com.App.dataMgr.q_mapContainer.getDataBean(mapId).q_map_name;
-          const text = testDetail.replace(/attname/ig, attName).replace(/mapname/ig, mapName).replace(/myname/ig, myName);
+          const text = testDetail
+            .replace(/attname/gi, attName)
+            .replace(/mapname/gi, mapName)
+            .replace(/myname/gi, myName);
           const color = SamiraFight.config.chatNmslColor;
           if (color == 1) {
             SamiraFight.sendChat2(5, text);
@@ -2711,65 +2746,86 @@ var SamiraFight = (function () {
           }
         }
       }
-		}
-  }
+    }
+  };
 
   // 打开红包
-  SamiraFight.openRedPack = function (cmd) { 
-    if (SamiraFight.config.redpack == '1' && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(184) > 0) { 
+  SamiraFight.openRedPack = function (cmd) {
+    if (SamiraFight.config.redpack == '1' && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(184) > 0) {
       const list = cmd.hongbao;
-      for(var $each_item in list){
-        item=list[$each_item];
-        if(item.canGet==1 && item.gotNum==0){
+      for (var $each_item in list) {
+        item = list[$each_item];
+        if (item.canGet == 1 && item.gotNum == 0) {
           var id = item.id.toString();
-          ActivitiesCommandSender.sendC2S_HongbaoOpenMessage(Int64.parseInt64(id),App.role.personId);
+          ActivitiesCommandSender.sendC2S_HongbaoOpenMessage(Int64.parseInt64(id), App.role.personId);
         }
       }
     }
   };
 
   // 红包更新
-  SamiraFight.onHongbaoActionMessage = function (cmd) { 
+  SamiraFight.onHongbaoActionMessage = function (cmd) {
     const hongbao = cmd.hongbao;
-    SamiraFight.openRedPack({ hongbao: [hongbao] })
+    SamiraFight.openRedPack({ hongbao: [hongbao] });
+  };
+
+  // 时间更新
+  SamiraFight.onS2C_TimeMessage = function (cmd) {
+    // 通知外壳
+    if (window.myApi && window.myApi.heartBeat()) {
+      window.myApi.heartBeat();
+    }
   };
 
   // 角色死亡
-  GameServer.register(S2C_PlayerDieMessage,GameHandler.create(SamiraFight, SamiraFight.onS2C_PlayerDieMessageHandler));
+  GameServer.register(S2C_PlayerDieMessage, GameHandler.create(SamiraFight, SamiraFight.onS2C_PlayerDieMessageHandler));
   // 注册攻击boss回调
   GameServer.register(S2C_AttackResultMessage, GameHandler.create(SamiraFight, SamiraFight.kuafuBossHpAttackResultMessage));
-	// 注册回去用户信息回调
-	GameServer.register(S2C_MyPlayerInfoMessage, GameHandler.create(this, (cmd) => {
-	  const personId = cmd.personId.toString();
-    SamiraFight.personId = personId;
-	  // 初始化ui
-		SamiraFight.initUI();
-		// 自动合成
-		SetupCenter.instance.setGouFuse(EnumDuanzao.AUTO_3, true);
-		// 加载配置
-    SamiraFight.loadConfig();
-    SamiraFight.getConfigFromUI();
-    // 修改内部函数
-    SamiraFight.modifyInternelFunction();
-    // 自动复活
-    Laya.workerTimer.loop(1000, SamiraFight, com.modules.map.model.auto.SamiraFight.reviveTimer);
-    // 其他功能
-    Laya.workerTimer.loop(1000, SamiraFight, com.modules.map.model.auto.SamiraFight.commonTimerFunction);
-  }));
+  // 注册回去用户信息回调
+  GameServer.register(
+    S2C_MyPlayerInfoMessage,
+    GameHandler.create(this, cmd => {
+      const personId = cmd.personId.toString();
+      SamiraFight.personId = personId;
+      // 初始化ui
+      SamiraFight.initUI();
+      // 自动合成
+      SetupCenter.instance.setGouFuse(EnumDuanzao.AUTO_3, true);
+      // 加载配置
+      SamiraFight.loadConfig();
+      SamiraFight.getConfigFromUI();
+      // 修改内部函数
+      SamiraFight.modifyInternelFunction();
+      // 自动复活
+      Laya.workerTimer.loop(1000, SamiraFight, com.modules.map.model.auto.SamiraFight.reviveTimer);
+      // 其他功能
+      Laya.workerTimer.loop(1000, SamiraFight, com.modules.map.model.auto.SamiraFight.commonTimerFunction);
+      // 自动开启
+      SamiraFight.autoStart();
+    })
+  );
   // 采集
-  GameServer.register(S2C_StartGatherMessage, GameHandler.create(SamiraFight, function () { SamiraFight.yaoshou.gatherStatus = true }));
-  GameServer.register(S2C_StopGatherMessage, GameHandler.create(SamiraFight, function () { 
-    SamiraFight.currentStatus = 'search';
-    // 采集中断或者完成
-    SamiraFight.yaoshou.gatherStatus = false
-  }));
-  GameServer.register(S2C_HongbaoActionMessage, GameHandler.create(SamiraFight,SamiraFight.onHongbaoActionMessage));
-	GameServer.register(S2C_HongbaoListMessage,GameHandler.create(SamiraFight,SamiraFight.openRedPack));
+  GameServer.register(
+    S2C_StartGatherMessage,
+    GameHandler.create(SamiraFight, function () {
+      SamiraFight.yaoshou.gatherStatus = true;
+    })
+  );
+  GameServer.register(
+    S2C_StopGatherMessage,
+    GameHandler.create(SamiraFight, function () {
+      SamiraFight.currentStatus = 'search';
+      // 采集中断或者完成
+      SamiraFight.yaoshou.gatherStatus = false;
+    })
+  );
+  GameServer.register(S2C_HongbaoActionMessage, GameHandler.create(SamiraFight, SamiraFight.onHongbaoActionMessage));
+  GameServer.register(S2C_HongbaoListMessage, GameHandler.create(SamiraFight, SamiraFight.openRedPack));
+  GameServer.register(S2C_TimeMessage, GameHandler.create(SamiraFight, SamiraFight.onS2C_TimeMessage));
 
   window.SamiraFight = SamiraFight;
 
+  WebParams.isWeiduan = () => true;
+
   return SamiraFight;
 })();
-
-
-
