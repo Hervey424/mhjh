@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1008-1817';
+  SamiraFight.version = '1008-2039';
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
   SamiraFight.autoOpenTime = 15;
@@ -1230,8 +1230,10 @@ var SamiraFight = (function () {
     const kuafuMapId = SamiraFight.kuafuBossMapId;
     // 挂机地图
     const bossMapIds = SamiraFight.getGuaJiMapIds();
+    // 异界入侵boss
+    const yijieruqinMapIds = com.App.dataMgr.q_activitiesContainer.getListByType(3000).map(x => com.logic.data.activity.ActivityCenter.getData(x.q_id)).filter(x => x.activityStates > -1).map(x => parseInt(x.bean.q_info))
 
-    const mapIds = [...bossMapIds, fuliMapId, ...azsmMapIds, yijiMapId, zhanqiMapId, kuafuMapId, ...shangguMapIds, ...shangguXiaoGuaiMapIds];
+    const mapIds = [...bossMapIds, fuliMapId, ...azsmMapIds, yijiMapId, zhanqiMapId, kuafuMapId, ...shangguMapIds, ...shangguXiaoGuaiMapIds, ...yijieruqinMapIds];
     BossCommandSender.sendC2S_AliveWildBossMessage(mapIds, 0, false);
   };
 
@@ -1290,7 +1292,7 @@ var SamiraFight = (function () {
     }
 
     // 如果是20点31分, 进入异界入侵
-    if (hours == 20 && minutes >= 30 && minutes <= 35 && SamiraFight.config.yijieruqin == '1' && SamiraFight.currentStatus != 'yijieruqin') {
+    if (hours == 20 && minutes >= 30 && minutes <= 31 && SamiraFight.config.yijieruqin == '1' && SamiraFight.currentStatus != 'yijieruqin') {
       // 先回城， 然后开始异界入侵
       com.App.returnCity();
       SamiraFight.currentStatus = 'yijieruqin';
