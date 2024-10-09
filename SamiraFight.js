@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1008-2039';
+  SamiraFight.version = '1008-2040';
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
   SamiraFight.autoOpenTime = 15;
@@ -1413,7 +1413,7 @@ var SamiraFight = (function () {
       }
 
       // 妖兽锁魂塔采集
-      if (SamiraFight.kuafuActiveStatus && (com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(181) > 0 || com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(182) > 0)) {
+      if (SamiraFight.kuafuActiveStatus && hours > 1 && (com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(181) > 0 || com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(182) > 0)) {
         if (SamiraFight.config.yaoshouLonglin == '1' || SamiraFight.config.yaoshouFengyin == '1') {
           WanyaoCenter.sendC2S_NpcInfoMessage();
         }
@@ -1459,7 +1459,7 @@ var SamiraFight = (function () {
       }
 
       // 妖兽锁魂塔BOSS
-      if (SamiraFight.kuafuActiveStatus && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(180) > 0 && SamiraFight.config.yaoshou == '1') {
+      if (SamiraFight.kuafuActiveStatus && hours > 1 && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(180) > 0 && SamiraFight.config.yaoshou == '1') {
         const selectMapAndBoss = SamiraFight.config.yaoshouBoss.split('|').map(x => parseInt(x));
         const datas = com.modules.boss.wanyao.WanyaoCenter.datas.filter(x => x.isEnter);
         if (selectMapAndBoss.length == 2 && datas.length > 0) {
@@ -1490,7 +1490,7 @@ var SamiraFight = (function () {
       }
 
       // 处理神魔boss
-      if (SamiraFight.kuafuActiveStatus && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(178) > 0 && SamiraFight.config.shenmoBoss == '1') {
+      if (SamiraFight.kuafuActiveStatus && hours > 2 && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(178) > 0 && SamiraFight.config.shenmoBoss == '1') {
         const bosses = com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(SamiraFight.kuafuBossMapId);
         const filterShanguBoss = bosses
           .filter(x => x.bean.q_type == 16)
@@ -2483,7 +2483,7 @@ var SamiraFight = (function () {
                     <div class="samira-settings-items">
                         <div class="samira-settings-item"><label><input type="checkbox" class="samira-xukongliehen" />虚空裂痕【19.30】</label></div>
                         <div class="samira-settings-item"><label><input type="checkbox" class="samira-zhenyingzhan" />跨服阵营战【20.00】</label></div>
-                        <div class="samira-settings-item"><label><input type="checkbox" class="samira-zhanchang-boss" />跨服神尊BOSS【11.00，16.00，24.00】</label></div>
+                        <div class="samira-settings-item"><label><input type="checkbox" class="samira-zhanchang-boss" />跨服神尊BOSS【11.00，16.00，21.00】</label></div>
                         <div class="samira-settings-item">
                           <label><input type="checkbox" class="samira-yijieruqin" />异界入侵【20.30】</label>
 													<input type="input" style="width: 80px;" class="samira-yijieruqin-index" />
