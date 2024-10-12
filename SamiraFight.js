@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1012-2040';
+  SamiraFight.version = '1012-2003';
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
   SamiraFight.autoOpenTime = 15;
@@ -2139,7 +2139,7 @@ var SamiraFight = (function () {
           $('.samira-auto-revive').prop('checked', true);
         }
 
-        if (playerMapId != 10005) {
+        if (playerMapId != 10006) {
           EventMgr.dispatch('ET.character_move_to_position', 10006, 10, 21);
         } else {
           com.App.openAutoFight();
