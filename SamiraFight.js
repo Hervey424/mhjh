@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1008-2040';
+  SamiraFight.version = '1012-2040';
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
   SamiraFight.autoOpenTime = 15;
@@ -2140,7 +2140,7 @@ var SamiraFight = (function () {
         }
 
         if (playerMapId != 10005) {
-          EventMgr.dispatch('ET.character_move_to_position', 10005, 10, 21);
+          EventMgr.dispatch('ET.character_move_to_position', 10006, 10, 21);
         } else {
           com.App.openAutoFight();
         }
@@ -2472,7 +2472,7 @@ var SamiraFight = (function () {
 												</div>
                         <div class="samira-settings-items-group">
                           <div class="samira-settings-item" style="display: flex; width: 100%">
-																<span>挂机地图名称&nbsp;</span>
+																<span>挂机地图名称</span>
 																<input type="input" style="flex: 1" placeholder="多个地图名称用|隔开, 如果为空则使用巡航选择地图" class="samira-guaji-maps" />
 														</div>
 												</div>
