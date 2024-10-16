@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1016-1546';
+  SamiraFight.version = '1016-2125';
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
   SamiraFight.autoOpenTime = 15;
@@ -2981,6 +2981,10 @@ var SamiraFight = (function () {
     }
     const ts = Math.floor(Date.now() / 1000);
     for (const record of cmd.records || []) {
+      if (record.showtype != 2) { 
+        continue;
+      }
+
       const content = (record.content || '').trim();
       const playerName = record.sender ? record.sender.playerName : '';
       const playerId = record.sender ? record.sender.playerId.toString() : '';
