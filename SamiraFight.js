@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1012-2007';
+  SamiraFight.version = '1016-1502';
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
   SamiraFight.autoOpenTime = 15;
@@ -24,7 +24,8 @@ var SamiraFight = (function () {
     sbk: '沙巴克',
     suoyaotacaiji: '锁妖塔采集',
     wudaohuijuesai: '武道会决赛',
-    longhunboss: '龙魂BOSS'
+    longhunboss: '龙魂BOSS',
+    jiaoyi: '交易'
   };
   // 当前boss
   SamiraFight.currentBoss = null;
@@ -75,6 +76,18 @@ var SamiraFight = (function () {
   };
   // 当前进行的龙魂boss副本Id
   SamiraFight.currentLongHunZoneId = 0;
+  // 交易
+  SamiraFight.jiaoyi = {
+    // 允许交易得时间
+    allowTime: 0,
+    // 交易开始时间
+    startTime: 0,
+    // 交易类型 1-发起 2-接收
+    type: 1,
+    // 目标用户
+    targetUserId: '',
+    targetUserName: ''
+  };
 
   // 开启内挂
   SamiraFight.start = function () {
@@ -986,6 +999,8 @@ var SamiraFight = (function () {
     config.longhunBoss = config.longhunBoss || '1';
     config.autoDuanzao = config.autoDuanzao || '1';
     config.autoJunzhuang = config.autoJunzhuang || '1';
+    config.zbfsValue = config.zbfsValue || '';
+    config.zbjs = config.zbjs || '';
 
     // 弄到ui上
     if ((config.xiuluoCengshu || []).includes(1)) {
@@ -1050,6 +1065,8 @@ var SamiraFight = (function () {
     $('.samira-guaji-maps').val(config.guajiMapNames);
     $('.samira-duanzao').prop('checked', config.autoDuanzao === '1');
     $('.samira-auto-junzhuang').prop('checked', config.autoDuanzao === '1');
+    $('.samira-zbfs').val(config.zbfsValue);
+    $('.samira-zbjs').val(config.zbjs);
   };
 
   // 从ui获取配置
@@ -1145,6 +1162,30 @@ var SamiraFight = (function () {
     const autoDuanzao = $('.samira-duanzao').prop('checked') ? '1' : '0';
     // 自动升级军装
     const autoJunzhuang = $('.samira-auto-junzhuang').prop('checked') ? '1' : '0';
+    // 装备发送/装备接受
+    const zbfsValue = $('.samira-zbfs').val().trim();
+    const zbfsItems = (zbfsValue || '').split('|').filter(x => x);
+    const zbfs = [];
+    for (const item of zbfsItems) {
+      const itemInfo = (item || '').split(',').filter(x => x);
+      if (itemInfo.length != 4) {
+        continue;
+      }
+      const name = itemInfo[0];
+      const jobName = itemInfo[1].trim();
+      const job = SamiraFight.getJobCodeByName(jobName);
+      const rank = parseInt(itemInfo[2]) + 15;
+      const count = parseInt(itemInfo[3]);
+      zbfs.push({
+        name: name,
+        job: job,
+        jobName: jobName,
+        rank: rank,
+        count: count
+      })
+    }
+
+    const zbjs = $('.samira-zbjs').val().trim().split('|').filter(x => x);
 
     SamiraFight.config = {
       xiuluoCengshu: xiuluoCengshu,
@@ -1197,7 +1238,10 @@ var SamiraFight = (function () {
       longhunBoss: longhunBoss,
       autoDuanzao: autoDuanzao,
       autoJunzhuang: autoJunzhuang,
-      yijieruqinIndex: yijieruqinIndex
+      yijieruqinIndex: yijieruqinIndex,
+      zbfs: zbfs,
+      zbfsValue: zbfsValue,
+      zbjs: zbjs
     };
 
     return SamiraFight.config;
@@ -1242,6 +1286,26 @@ var SamiraFight = (function () {
     console.log('[samira]获取修罗boss列表');
     com.logic.data.zone.tower.ZoneTowerCenter.sendC2S_WushenZoneInfoMessage(200000);
   };
+
+  // 获取背包内指定装备数量 
+  SamiraFight.getEnableDealItems = function (job, rank) { 
+    const bagItems = com.logic.data.item.BagItemCenter.itemList;
+    let enableItems = [];
+    for (const bagItem of bagItems) { 
+      if (!bagItem) {
+        continue;
+      }
+      const eqData = bagItem.getDataBean();
+      if (!eqData) {
+        continue;
+      }
+      
+      if (eqData.q_job == job && eqData.q_rank >= rank && !bagItem.isbind && !bagItem.islock) { 
+        enableItems.push(bagItem)
+      }
+    }
+    return enableItems;
+  }
 
   // 逻辑更新
   SamiraFight.update = function () {
@@ -1509,6 +1573,26 @@ var SamiraFight = (function () {
         }
       }
 
+      // 发送交易装备
+      if (SamiraFight.config.zbfs.length > 0 && (![11, 16, 19, 20, 21].includes(hours)) && minutes <= 50) { 
+        // Id|职业|等级|数量
+        const items = SamiraFight.config.zbfs || [];
+        for (const item of items) { 
+          const name = item.name;
+          const job = item.job;
+          const rank = item.rank;
+          const count = item.count;
+
+          let findCount = SamiraFight.getEnableDealItems(job, rank).length;
+          console.log('[samira]发现了' + findCount);
+          if (findCount >= count && ts >  SamiraFight.jiaoyi.allowTime) { 
+            console.log('[samira]满足条件, 请求交易: 发现了' + findCount);
+            SamiraFight.jiaoyi.allowTime = ts + 600;
+            com.game.modules.chats.data.ChatCenter.sendChat(2, '交易一下', name, true, null, 'ChatDialog');
+          }
+        }
+      }
+
       // 检查修罗天界地图
       if (SamiraFight.config.xiuluoCengshu.length > 0) {
         const xiuluoData = com.modules.boss.lianyu.LianyuCenter._dic[200000]._dic;
@@ -1684,7 +1768,7 @@ var SamiraFight = (function () {
           return;
         }
       }
-
+    
       // 获取所有挂机地图活着的boss
       {
         let selectBoss = null;
@@ -2217,7 +2301,102 @@ var SamiraFight = (function () {
           return;
         }
       }
+    } else if (SamiraFight.currentStatus === 'jiaoyi') {
+      const mapId = 21000;
+      console.log('[samira][jiaoyi]当前正在交易', SamiraFight.jiaoyi);
+
+      // 如果已经两分钟了, 就推出交易
+      if (ts > SamiraFight.jiaoyi.startTime + 60) { 
+        console.log('[samira]交易超时, 重新寻找boss');
+        SamiraFight.currentStatus = 'search';
+        // 如果超时了就20分钟内不再交易
+        SamiraFight.jiaoyi.allowTime = ts + 1200
+        return;
+      }
+
+      // 如果不在主城, 就先回城
+      if (playerMapId != mapId) { 
+        console.log('[samira][jiaoyi]角色不在主城,  马上回城');
+        com.App.returnCity();
+        return;
+      }
+
+      // 走到指定的交易地点
+      const playerPosition = SamiraFight.getPlayerPositionNode();
+      const jiaoyix = 222, jiaoyiy = 188;
+      if (!(playerPosition.x >= jiaoyix - 2 && playerPosition.x <= jiaoyix + 2 && playerPosition.y >= jiaoyiy - 2 && jiaoyiy + 2)) {
+        EventMgr.dispatch('ET.character_move_to_position', mapId, jiaoyix, jiaoyiy);
+        console.log('[samira][jiaoyi]角色不在指定位置,  正在赶路');
+        return;
+      }
+
+      // 发起方, 判断是否又可以交易的商品, 没有了的话就退出, 并且给接收方发送退出消息
+      const configItem = (SamiraFight.config.zbfs || []).find(x => x.name == SamiraFight.jiaoyi.targetUserName);
+      if (SamiraFight.jiaoyi.type == 1) {
+        if (!configItem) { 
+          console.log('[samira][jiaoyi]发起方没有找到交易商品1, 重新寻找boss');
+          SamiraFight.currentStatus = 'search';
+          com.game.modules.chats.data.ChatCenter.sendChat(2, '交易中止', SamiraFight.jiaoyi.targetUserName, true, null, 'ChatDialog');
+          return;
+        }
+
+        let findCount = SamiraFight.getEnableDealItems(configItem.job, configItem.rank).length;
+        console.log('[samira][jiaoyi]发起方找到交易商品:', configItem, '数量:', findCount);
+        if (findCount <= 0) {
+          console.log('[samira][jiaoyi]发起方没有找到交易商品2, 重新寻找boss');
+          SamiraFight.currentStatus = 'search';
+          com.game.modules.chats.data.ChatCenter.sendChat(2, '交易中止', SamiraFight.jiaoyi.targetUserName, true, null, 'ChatDialog');
+          return;
+        }
+      }
+      
+      // 判断交易栏是否打开, 如果打开就添加商品, 如果没打开就申请
+      if (!com.game.core.panel.PanelManager.isShowing(com.modules.jiaoyi.JiaoyiPanel)) {
+        console.log('[samira][jiaoyi]交易栏没有打开, 发送交易请求');
+        if (SamiraFight.jiaoyi.type == 1) {
+          com.logic.data.item.DealCenter.sendC2S_InviteTransactionMessage(SamiraFight.jiaoyi.targetUserId)
+        } else {
+          com.logic.data.item.DealCenter.sendC2S_DealInviteTransactionMessage(0, SamiraFight.jiaoyi.targetUserId)
+        }
+        return;
+      }
+
+      // 如果添加足够商品了, 就锁定
+      const submitItemsDic = com.game.core.panel.PanelManager.getPanel(com.modules.jiaoyi.JiaoyiPanel)._gouDic || {};
+      const submitItems = [];
+      for (const k in submitItemsDic) {
+        submitItems.push(k);
+      }
+      const eqList = SamiraFight.getEnableDealItems(configItem.job, configItem.rank);
+      const isAddComplete = submitItems.length >= 12 || submitItems.length >= eqList.length;
+      console.log('[samira][jiaoyi]交易栏已添加商品:', submitItems, '是否添加完成:', isAddComplete);
+
+      if (!isAddComplete) {
+        // 判断是否可以给对方装备, 如果可以, 就添加装备
+        console.log('[samira][jiaoyi]交易判断是否发送装备,', configItem);
+        if (configItem) {
+          console.log('[samira][jiaoyi]交易发送装备列表,', eqList);
+          // 添加装备
+          for (let i = 0; i < (eqList.length > 12 ? 12 : eqList.length); i++) {
+            com.logic.data.item.DealCenter.sendC2S_AddTransactionItemMessage(0, eqList[i].id);
+          }
+        }
+        return;
+      }
+
+      console.log('[samira][jiaoyi]交易栏已添加商品完成, 锁定并提交');
+
+      // 锁定并且提交
+      com.logic.data.item.DealCenter.sendC2S_AddTransactionItemMessage(2, null);
+      com.logic.data.item.DealCenter.sendC2S_ConfirmTransactionMessage();
     }
+  };
+
+  // 通过职业名获取职业编码
+  SamiraFight.getJobCodeByName = function (name) { 
+    if (name == '战士') return 1;
+    if (name == '法师') return 2;
+    if (name == '道士') return 3;
   };
 
   // 获取玩家位置(node)
@@ -2471,9 +2650,17 @@ var SamiraFight = (function () {
 														</div>
 												</div>
                         <div class="samira-settings-items-group">
-                          <div class="samira-settings-item" style="display: flex; width: 100%">
-																<span>挂机地图名称</span>
-																<input type="input" style="flex: 1" placeholder="多个地图名称用|隔开, 如果为空则使用巡航选择地图" class="samira-guaji-maps" />
+                            <div class="samira-settings-item">
+																<span>挂机地图</span>
+																<input type="input" style="width: 200px;" placeholder="多个地图名称用|隔开, 如果为空则使用巡航选择地图" class="samira-guaji-maps" />
+														</div>
+														<div class="samira-settings-item">
+																<span>发送装备</span>
+																<input type="input" style="width: 200px;" class="samira-zbfs" />
+														</div>
+														<div class="samira-settings-item">
+																<span>接受装备</span>
+																<input type="input" style="width: 200px;" class="samira-zbjs" />
 														</div>
 												</div>
                     </div>
@@ -2779,6 +2966,62 @@ var SamiraFight = (function () {
     }
   };
 
+  // 收到聊天信息
+  SamiraFight.onS2C_ChatResponseMessage = function (cmd) {
+    if (!SamiraFight.running) { 
+      return;
+    }
+    const ts = Math.floor(Date.now() / 1000);
+    for (const record of cmd.records || []) {
+      const content = (record.content || '').trim();
+      const playerName = record.sender ? record.sender.playerName : '';
+      const playerId = record.sender ? record.sender.playerId.toString() : '';
+      console.log('[samira][jiaoyi]收到chat消息',SamiraFight.jiaoyi,record, playerName, playerId, content, SamiraFight.config.zbjs, (SamiraFight.config.zbjs || []).includes(playerName));
+      
+      // 交易的时候只处理交易完成消息
+      if (SamiraFight.currentStatus == 'jiaoyi') {
+        if(content == '交易中止' && playerId == SamiraFight.jiaoyi.targetUserId) {
+          SamiraFight.currentStatus = 'search';
+          console.log('[samira][jiaoyi]收到交易中止信息, 交易中止', playerName);
+          return;
+        }
+      } else {
+        if (SamiraFight.currentStatus != 'wudao') {
+          // 收到交易一下, 如果允许接受,就回复ok, 并且回城
+          if (content === '交易一下' && (SamiraFight.config.zbjs || []).includes(playerName)) { 
+            // 状态为交易
+            SamiraFight.currentStatus = 'jiaoyi';
+            com.game.modules.chats.data.ChatCenter.sendChat(2, '交易一下ok', playerName, true, null, 'ChatDialog');
+            SamiraFight.jiaoyi.startTime = ts;
+            SamiraFight.jiaoyi.type = 2;
+            SamiraFight.jiaoyi.targetUserId = playerId;
+            SamiraFight.jiaoyi.targetUserName = playerName;
+            // 关闭自动攻击
+            com.App.closeAutoFight();
+            // 回城
+            com.App.returnCity();
+            return;
+          }
+
+          // 如果收到ok, 就开始交易
+          if (content === '交易一下ok' && (SamiraFight.config.zbfs || []).map(x => x.name).includes(playerName)) { 
+            // 状态为交易
+            SamiraFight.currentStatus = 'jiaoyi';
+            SamiraFight.jiaoyi.startTime = ts;
+            SamiraFight.jiaoyi.type = 1;
+            SamiraFight.jiaoyi.targetUserId = playerId;
+            SamiraFight.jiaoyi.targetUserName = playerName;
+            // 关闭自动攻击
+            com.App.closeAutoFight();
+            // 回城
+            com.App.returnCity();
+            return;
+          }
+        }
+      }
+    }
+  }
+
   // 角色死亡
   GameServer.register(S2C_PlayerDieMessage, GameHandler.create(SamiraFight, SamiraFight.onS2C_PlayerDieMessageHandler));
   // 注册攻击boss回调
@@ -2824,6 +3067,7 @@ var SamiraFight = (function () {
   GameServer.register(S2C_HongbaoActionMessage, GameHandler.create(SamiraFight, SamiraFight.onHongbaoActionMessage));
   GameServer.register(S2C_HongbaoListMessage, GameHandler.create(SamiraFight, SamiraFight.openRedPack));
   GameServer.register(S2C_TimeMessage, GameHandler.create(SamiraFight, SamiraFight.onS2C_TimeMessage));
+  GameServer.register(S2C_ChatResponseMessage,GameHandler.create(SamiraFight,SamiraFight.onS2C_ChatResponseMessage));
 
   window.SamiraFight = SamiraFight;
 
