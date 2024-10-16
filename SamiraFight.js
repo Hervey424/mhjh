@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1016-2125';
+  SamiraFight.version = '1016-2205';
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
   SamiraFight.autoOpenTime = 15;
@@ -1000,7 +1000,7 @@ var SamiraFight = (function () {
     config.autoDuanzao = config.autoDuanzao || '1';
     config.autoJunzhuang = config.autoJunzhuang || '1';
     config.zbfsValue = config.zbfsValue || '';
-    config.zbjs = config.zbjs || '';
+    config.zbjs = config.zbjs || [];
 
     // 弄到ui上
     if ((config.xiuluoCengshu || []).includes(1)) {
@@ -1066,7 +1066,7 @@ var SamiraFight = (function () {
     $('.samira-duanzao').prop('checked', config.autoDuanzao === '1');
     $('.samira-auto-junzhuang').prop('checked', config.autoDuanzao === '1');
     $('.samira-zbfs').val(config.zbfsValue);
-    $('.samira-zbjs').val(config.zbjs);
+    $('.samira-zbjs').val(config.zbjs.join('|'));
   };
 
   // 从ui获取配置
