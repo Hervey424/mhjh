@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1016-1502';
+  SamiraFight.version = '1016-1542';
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
   SamiraFight.autoOpenTime = 15;
@@ -2358,6 +2358,14 @@ var SamiraFight = (function () {
         } else {
           com.logic.data.item.DealCenter.sendC2S_DealInviteTransactionMessage(0, SamiraFight.jiaoyi.targetUserId)
         }
+        return;
+      }
+
+      // 如果不允许发送装备, 直接锁定并提交
+      if (!configItem) {
+        console.log('[samira][jiaoyi]不允许给交易对象发送装备, 直接确认');
+        com.logic.data.item.DealCenter.sendC2S_AddTransactionItemMessage(2, null);
+        com.logic.data.item.DealCenter.sendC2S_ConfirmTransactionMessage();
         return;
       }
 
