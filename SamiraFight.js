@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1016-2255';
+  SamiraFight.version = '1017-1113';
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
   SamiraFight.autoOpenTime = 15;
@@ -1339,8 +1339,8 @@ var SamiraFight = (function () {
 
     // 时间如果是11点, 16点, 21点, 进入战场
     if ((hours == 11 || hours == 16 || hours == 21) && SamiraFight.config.zhanchangBoss == '1') {
-      // 如果当前分钟是0-3, 进停止一切活动,  从新搜索并且进入战场
-      if (minutes >= 0 && minutes <= 3 && SamiraFight.currentStatus != 'kuafuboss' && SamiraFight.currentStatus != 'search') {
+      // 如果当前分钟是0-5, 进停止一切活动,  从新搜索并且进入战场
+      if (minutes >= 0 && minutes <= 5 && SamiraFight.currentStatus != 'kuafuboss' && SamiraFight.currentStatus != 'search') {
         com.App.returnCity();
         SamiraFight.currentStatus = 'search';
         SamiraFight.currentcheckTimes = 0;
@@ -1419,7 +1419,7 @@ var SamiraFight = (function () {
             // 获取当前boss自己已经打的血量
             const attact = SamiraFight.kuafuBossHpDic[x.monsterIn64Id] || 0;
             // 如果已经超过百分之二就不打了
-            if ((attact / x.allHp) * 100 > 2) {
+            if ((attact / x.allHp) * 100 > 20) {
               return false;
             } else {
               return true;
@@ -1440,6 +1440,11 @@ var SamiraFight = (function () {
         if (SamiraFight.kuafuBossData.some(x => x.remainTime == 0 || x.curHp > 0)) {
           console.log('[samira]等待跨服boss奖励');
           SamiraFight.currentStatus = 'search';
+
+          if (playerMapId !== SamiraFight.currentBoss.mapModelId) {
+            GameServer.sendCommand(new C2S_PlayerEnterNationWarMessage());
+          }
+
           return;
         }
       }
@@ -2022,7 +2027,7 @@ var SamiraFight = (function () {
 
       // boss被自己打掉百分之二以上
       const attact = SamiraFight.kuafuBossHpDic[boss.monsterIn64Id] || 0;
-      if ((attact / boss.allHp) * 100 > 2.05) {
+      if ((attact / boss.allHp) * 100 > 20.05) {
         console.log('[samira]boss已被自己攻击超过2%, 重新寻找boss');
         SamiraFight.currentStatus = 'search';
         return;
