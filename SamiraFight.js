@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1016-2205';
+  SamiraFight.version = '1016-2255';
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
   SamiraFight.autoOpenTime = 15;
@@ -1365,14 +1365,14 @@ var SamiraFight = (function () {
     }
 
     // 如果是星期一到星期五, 8点整进入跨服阵营战
-    if (dayOfweek >= 1 && dayOfweek <= 5 && hours == 20 && minutes >= 0 && minutes < 15 && SamiraFight.config.zhenyingzhan == '1' && SamiraFight.currentStatus != 'zhenyingzhan') {
+    if ([1,2,3,5,6].includes(dayOfweek) && hours == 20 && minutes >= 0 && minutes < 15 && SamiraFight.config.zhenyingzhan == '1' && SamiraFight.currentStatus != 'zhenyingzhan') {
       com.App.returnCity();
       SamiraFight.currentStatus = 'zhenyingzhan';
       return;
     }
 
     // 如果是周六八点到八点半, 进入沙巴克
-    if (dayOfweek == 6 && hours == 20 && minutes >= 0 && minutes < 30 && SamiraFight.config.sbk == '1' && SamiraFight.currentStatus != 'sbk') {
+    if (dayOfweek == 4 && hours == 20 && minutes >= 0 && minutes < 30 && SamiraFight.config.sbk == '1' && SamiraFight.currentStatus != 'sbk') {
       com.App.returnCity();
       SamiraFight.currentStatus = 'sbk';
       return;
@@ -1529,9 +1529,9 @@ var SamiraFight = (function () {
         if (selectMapAndBoss.length == 2 && datas.length > 0) {
           const selectMapIndex = selectMapAndBoss[0];
           const selectBossIndex = selectMapAndBoss[1];
-          const data = selectMapIndex >= 0 ? datas[selectMapIndex] : datas[datas.length + selectMapIndex];
+          const data = selectMapIndex >= 0 ? datas[selectMapIndex - 1] : datas[datas.length + selectMapIndex];
           const mapBean = data.bean;
-          const bossId = (selectBossIndex >= 0 ? data.ids[selectBossIndex] : data.ids[data.ids.length + selectBossIndex]).monster;
+          const bossId = (selectBossIndex >= 0 ? data.ids[selectBossIndex - 1] : data.ids[data.ids.length + selectBossIndex]).monster;
           const bosss = com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(mapBean.q_map_id);
           const boss = bosss.find(x => x.monsterModelId == bossId && (x.owner === playerName || x.owner == '' || x.owner == null) && x.remainTime == 0);
           if (boss) {
