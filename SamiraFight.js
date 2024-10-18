@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1018-1400';
+  SamiraFight.version = '1018-1425';
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
   SamiraFight.autoOpenTime = 15;
@@ -1189,7 +1189,7 @@ var SamiraFight = (function () {
 
     SamiraFight.config = {
       xiuluoCengshu: xiuluoCengshu,
-      bossTimeOut: 600,
+      bossTimeOut: 60 * 20,
       mapIds: [],
       fuli: fuli,
       shanggu: shanggu,
