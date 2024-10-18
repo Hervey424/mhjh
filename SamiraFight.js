@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1018-1339';
+  SamiraFight.version = '1018-1340';
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
   SamiraFight.autoOpenTime = 15;
@@ -2328,7 +2328,7 @@ var SamiraFight = (function () {
 
       // 走到指定的交易地点
       const playerPosition = SamiraFight.getPlayerPositionNode();
-      const jiaoyix = 222, jiaoyiy = 188;
+      const jiaoyix = 222, jiaoyiy = 214;
       if (!(playerPosition.x >= jiaoyix - 2 && playerPosition.x <= jiaoyix + 2 && playerPosition.y >= jiaoyiy - 2 && jiaoyiy + 2)) {
         EventMgr.dispatch('ET.character_move_to_position', mapId, jiaoyix, jiaoyiy);
         console.log('[samira][jiaoyi]角色不在指定位置,  正在赶路');
