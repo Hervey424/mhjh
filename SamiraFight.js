@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1018-1355';
+  SamiraFight.version = '1018-1400';
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
   SamiraFight.autoOpenTime = 15;
@@ -1276,8 +1276,14 @@ var SamiraFight = (function () {
     const bossMapIds = SamiraFight.getGuaJiMapIds();
     // 异界入侵boss
     const yijieruqinMapIds = com.App.dataMgr.q_activitiesContainer.getListByType(3000).map(x => com.logic.data.activity.ActivityCenter.getData(x.q_id)).filter(x => x.activityStates > -1).map(x => parseInt(x.bean.q_info))
+    // 锁魂塔
+    let suohunta = 0;
+    const sunhuntaArray = SamiraFight.config.yaoshouBoss.split('|').map(x => parseInt(x));
+    if (sunhuntaArray.length > 0) {
+      suohunta = sunhuntaArray[0];
+    }
 
-    const mapIds = [...bossMapIds, fuliMapId, ...azsmMapIds, yijiMapId, zhanqiMapId, kuafuMapId, ...shangguMapIds, ...shangguXiaoGuaiMapIds, ...yijieruqinMapIds];
+    const mapIds = [...bossMapIds, fuliMapId, ...azsmMapIds, yijiMapId, zhanqiMapId, kuafuMapId, ...shangguMapIds, ...shangguXiaoGuaiMapIds, ...yijieruqinMapIds, suohunta];
     BossCommandSender.sendC2S_AliveWildBossMessage(mapIds, 0, false);
   };
 
