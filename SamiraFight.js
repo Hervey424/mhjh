@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1018-1340';
+  SamiraFight.version = '1018-1355';
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
   SamiraFight.autoOpenTime = 15;
@@ -989,7 +989,7 @@ var SamiraFight = (function () {
     config.chatNmslText = config.chatNmslText || '【attname】在【mapname】击杀了【myname】， 但是【attname】的全家第二天就被大卡车撞死了';
     config.chatNmslColor = config.chatNmslColor || '#ff33ff';
     config.yaoshou = config.yaoshou || '0';
-    config.yaoshouBoss = config.yaoshouBoss || '-1|-1';
+    config.yaoshouBoss = config.yaoshouBoss || '-1';
     config.yaoshouLonglin = config.yaoshouLonglin || '0';
     config.yaoshouFengyin = config.yaoshouFengyin || '0';
     config.wudaoJuesai = config.wudaoJuesai || '0';
@@ -1490,7 +1490,7 @@ var SamiraFight = (function () {
         // 处理采集
         const selectMapAndBoss = SamiraFight.config.yaoshouBoss.split('|').map(x => parseInt(x));
         const datas = com.modules.boss.wanyao.WanyaoCenter.datas.filter(x => x.isEnter);
-        if (selectMapAndBoss.length == 2 && datas.length > 0) {
+        if (selectMapAndBoss.length > 0 && datas.length > 0) {
           const selectMapIndex = selectMapAndBoss[0];
           const data = selectMapIndex >= 0 ? datas[selectMapIndex] : datas[datas.length + selectMapIndex];
           const mapId = data.bean.q_map_id;
@@ -1531,14 +1531,12 @@ var SamiraFight = (function () {
       if (SamiraFight.kuafuActiveStatus && hours > 1 && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(180) > 0 && SamiraFight.config.yaoshou == '1') {
         const selectMapAndBoss = SamiraFight.config.yaoshouBoss.split('|').map(x => parseInt(x));
         const datas = com.modules.boss.wanyao.WanyaoCenter.datas.filter(x => x.isEnter);
-        if (selectMapAndBoss.length == 2 && datas.length > 0) {
+        if (selectMapAndBoss.length > 0 && datas.length > 0) {
           const selectMapIndex = selectMapAndBoss[0];
-          const selectBossIndex = selectMapAndBoss[1];
           const data = selectMapIndex >= 0 ? datas[selectMapIndex - 1] : datas[datas.length + selectMapIndex];
           const mapBean = data.bean;
-          const bossId = (selectBossIndex >= 0 ? data.ids[selectBossIndex - 1] : data.ids[data.ids.length + selectBossIndex]).monster;
           const bosss = com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(mapBean.q_map_id);
-          const boss = bosss.find(x => x.monsterModelId == bossId && (x.owner === playerName || x.owner == '' || x.owner == null) && x.remainTime == 0);
+          const boss = bosss.find(x => (x.owner === playerName || x.owner == '' || x.owner == null) && x.remainTime == 0);
           if (boss) {
             SamiraFight.currentBoss = boss;
             console.log('[samira]找到锁魂塔boss:', boss);
@@ -2730,7 +2728,7 @@ var SamiraFight = (function () {
                         <div class="samira-settings-items-group">
                             <div class="samira-settings-item"><label><input type="checkbox" class="samira-yaoshou" />妖兽锁魂塔BOSS</label></div>
                             <div class="samira-settings-item">
-                                <span>妖兽锁魂塔层数和BOSS</span>
+                                <span>妖兽锁魂塔层数</span>
                                 <input type="input" style="width: 100px;" class="samira-yaoshou-boss" />
                             </div>
                             <div class="samira-settings-item"><label><input type="checkbox" class="samira-yaoshou-longlin" />采集龙鳞水晶</label></div>
