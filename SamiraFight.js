@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1022-2015';
+  SamiraFight.version = '1022-2030';
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
   SamiraFight.autoOpenTime = 15;
@@ -3088,7 +3088,10 @@ var SamiraFight = (function () {
   GameServer.register(S2C_HongbaoActionMessage, GameHandler.create(SamiraFight, SamiraFight.onHongbaoActionMessage));
   GameServer.register(S2C_HongbaoListMessage, GameHandler.create(SamiraFight, SamiraFight.openRedPack));
   GameServer.register(S2C_TimeMessage, GameHandler.create(SamiraFight, SamiraFight.onS2C_TimeMessage));
-  GameServer.register(S2C_ChatResponseMessage,GameHandler.create(SamiraFight,SamiraFight.onS2C_ChatResponseMessage));
+  GameServer.register(S2C_ChatResponseMessage, GameHandler.create(SamiraFight, SamiraFight.onS2C_ChatResponseMessage));
+  GameServer.register(S2C_RankListMessage, GameHandler.create(SamiraFight, cmd => { 
+    console.log('收到排行榜信息: ', cmd)
+  }));
 
   window.SamiraFight = SamiraFight;
 
