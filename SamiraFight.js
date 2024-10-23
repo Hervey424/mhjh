@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1018-1425';
+  SamiraFight.version = '1022-2015';
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
   SamiraFight.autoOpenTime = 15;
@@ -1425,7 +1425,7 @@ var SamiraFight = (function () {
             // 获取当前boss自己已经打的血量
             const attact = SamiraFight.kuafuBossHpDic[x.monsterIn64Id] || 0;
             // 如果已经超过百分之二就不打了
-            if ((attact / x.allHp) * 100 > 20) {
+            if ((attact / x.allHp) * 100 > 10) {
               return false;
             } else {
               return true;
@@ -2031,7 +2031,7 @@ var SamiraFight = (function () {
 
       // boss被自己打掉百分之二以上
       const attact = SamiraFight.kuafuBossHpDic[boss.monsterIn64Id] || 0;
-      if ((attact / boss.allHp) * 100 > 20.05) {
+      if ((attact / boss.allHp) * 100 > 10.05) {
         console.log('[samira]boss已被自己攻击超过2%, 重新寻找boss');
         SamiraFight.currentStatus = 'search';
         return;
