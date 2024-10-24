@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1022-2031';
+  SamiraFight.version = '1024-2031';
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
   SamiraFight.autoOpenTime = 15;
@@ -1371,14 +1371,14 @@ var SamiraFight = (function () {
     }
 
     // 如果是星期一到星期五, 8点整进入跨服阵营战
-    if ([1,2,3,5,6].includes(dayOfweek) && hours == 20 && minutes >= 0 && minutes < 15 && SamiraFight.config.zhenyingzhan == '1' && SamiraFight.currentStatus != 'zhenyingzhan') {
+    if ([1,2,3,4,5].includes(dayOfweek) && hours == 20 && minutes >= 0 && minutes < 15 && SamiraFight.config.zhenyingzhan == '1' && SamiraFight.currentStatus != 'zhenyingzhan') {
       com.App.returnCity();
       SamiraFight.currentStatus = 'zhenyingzhan';
       return;
     }
 
     // 如果是周六八点到八点半, 进入沙巴克
-    if (dayOfweek == 4 && hours == 20 && minutes >= 0 && minutes < 30 && SamiraFight.config.sbk == '1' && SamiraFight.currentStatus != 'sbk') {
+    if (dayOfweek == 6 && hours == 20 && minutes >= 0 && minutes < 30 && SamiraFight.config.sbk == '1' && SamiraFight.currentStatus != 'sbk') {
       com.App.returnCity();
       SamiraFight.currentStatus = 'sbk';
       return;
