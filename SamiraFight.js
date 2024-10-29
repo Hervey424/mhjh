@@ -825,7 +825,7 @@ var SamiraFight = (function () {
 
     // 查询奖励次数
     SamiraFight.ylgy.checkTimes += 1;
-    if (SamiraFight.ylgy.checkTimes >= 60 * (parseInt(Math.random() * 10) + 10)) {
+    if (SamiraFight.ylgy.checkTimes >= 60) {
       com.modules.yanglegeyang.YangCenter.sendC2S_ClgsActionMessage(0, 0, 0);
     }
 
@@ -833,7 +833,8 @@ var SamiraFight = (function () {
     if (com.modules.yanglegeyang.YangCenter.chessData.rewardRemainTimes <= 0) {
       SamiraFight.ylgy = {
         level: 0,
-        levelTs: 0
+        levelTs: 0,
+        checkTimes: 0
       };
       return;
     }
