@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1107-1949';
+  SamiraFight.version = '1107-1957';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -1234,6 +1234,12 @@ var SamiraFight = (function () {
     const zbjs = $('.samira-zbjs').val().trim().split('|').filter(x => x);
     // 登录奖励
     const dljiangli = $('.samira-auto-denglu').prop('checked') ? '1' : '0';
+    // 天天赞助
+    const tiantianzanzhu = $('.samira-tiantianzanzhu').prop('checked') ? '1' : '0';
+    // 每日直购
+    const meirizhigou = $('.samira-meirizhigou').prop('checked') ? '1' : '0';
+    // 在线奖励
+    const zaixianjiangli = $('.samira-zaixianjiangli').prop('checked') ? '1' : '0';
 
     SamiraFight.config = {
       xiuluoCengshu: xiuluoCengshu,
@@ -1291,7 +1297,10 @@ var SamiraFight = (function () {
       zbfs: zbfs,
       zbfsValue: zbfsValue,
       zbjs: zbjs,
-      dljiangli: dljiangli
+      dljiangli: dljiangli,
+      tiantianzanzhu: tiantianzanzhu,
+      meirizhigou: meirizhigou,
+      zaixianjiangli: zaixianjiangli
     };
 
     return SamiraFight.config;
