@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1107-1932';
+  SamiraFight.version = '1107-1949';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -222,6 +222,42 @@ var SamiraFight = (function () {
     SamiraFight.autoDuanzao();
     SamiraFight.autoJunzhuang();
     SamiraFight.denglujiangli();
+    SamiraFight.tiantianzanzhu();
+    SamiraFight.meirizhigou();
+    SamiraFight.zaixianjiangli();
+  };
+
+  // 天天赞助
+  SamiraFight.tiantianzanzhu = function () { 
+    if (SamiraFight.config.tiantianzanzhu == '1') {
+      const acts = com.logic.data.activity.ActivityUtil.getOpenList(293, 4);
+      const act = acts.find(x => x.playerStates == 1);
+      if (act) { 
+        com.logic.connect.sender.ActivitiesCommandSender.C2S_JoinActivityById(act.id);
+      }
+    }
+  };
+
+  // 每日直购
+  SamiraFight.meirizhigou = function () { 
+    if (SamiraFight.config.meirizhigou == '1') {
+      const acts = com.logic.data.activity.ActivityUtil.getOpenList(216, 4);
+      const act = acts.find(x => x.playerStates == 1);
+      if (act) { 
+        com.logic.connect.sender.ActivitiesCommandSender.C2S_JoinActivityById(act.id);
+      }
+    }
+  };
+
+  // 在线奖励
+  SamiraFight.zaixianjiangli = function () { 
+    if (SamiraFight.config.zaixianjiangli == '1') {
+      const acts = com.logic.data.activity.ActivityUtil.getOpenList(115, 4);
+      const act = acts.find(x => x.playerStates == 1);
+      if (act) { 
+        com.logic.connect.sender.ActivitiesCommandSender.C2S_JoinActivityById(act.id);
+      }
+    }
   };
 
   // 登录奖励
@@ -230,7 +266,7 @@ var SamiraFight = (function () {
       const acts = com.logic.data.activity.ActivityUtil.getOpenList(9, 4);
       const act = acts.find(x => x.playerStates == 1);
       if (act) { 
-        ActivitiesCommandSender.C2S_JoinActivityById(act.id);
+        com.logic.connect.sender.ActivitiesCommandSender.C2S_JoinActivityById(act.id);
       }
     }
   };
@@ -1017,6 +1053,10 @@ var SamiraFight = (function () {
     config.zbfsValue = config.zbfsValue || '';
     config.zbjs = config.zbjs || [];
     config.dljiangli = config.dljiangli || '0';
+    config.tiantianzanzhu = config.tiantianzanzhu || '0';
+    config.meirizhigou = config.meirizhigou || '0';
+    config.zaixianjiangli = config.zaixianjiangli || '0';
+
 
     $('.samira-xiuluo').val(config.xiuluoCengshu.join('|'));
     $('.samira-fuli').prop('checked', config.fuli === '1');
@@ -1072,6 +1112,9 @@ var SamiraFight = (function () {
     $('.samira-auto-junzhuang').prop('checked', config.autoDuanzao === '1');
     $('.samira-zbfs').val(config.zbfsValue);
     $('.samira-zbjs').val(config.zbjs.join('|'));
+    $('.samira-tiantianzanzhu').prop('checked', config.tiantianzanzhu === '1');
+    $('.samira-meirizhigou').prop('checked', config.meirizhigou === '1');
+    $('.samira-zaixianjiangli').prop('checked', config.zaixianjiangli === '1');
   };
 
   // 从ui获取配置
@@ -2656,6 +2699,9 @@ var SamiraFight = (function () {
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-duanzao' />强化&精炼</label></div>
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-auto-junzhuang' />军装升级</label></div>
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-auto-denglu' />登录奖励</label></div>
+														<div class="samira-settings-item"><label><input type="checkbox" class='samira-tiantianzanzhu' />天天赞助</label></div>
+														<div class="samira-settings-item"><label><input type="checkbox" class='samira-meirizhigou' />每日直购</label></div>
+														<div class="samira-settings-item"><label><input type="checkbox" class='samira-zaixianjiangli' />在线奖励</label></div>
 												</div>
 												<div class="samira-settings-items-group">
 														<div class="samira-settings-item">
