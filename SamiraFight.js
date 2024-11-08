@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1107-1645';
+  SamiraFight.version = '1107-1932';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -221,6 +221,18 @@ var SamiraFight = (function () {
     SamiraFight.autoOpenRedpacket();
     SamiraFight.autoDuanzao();
     SamiraFight.autoJunzhuang();
+    SamiraFight.denglujiangli();
+  };
+
+  // 登录奖励
+  SamiraFight.denglujiangli = function () { 
+    if (SamiraFight.config.dljiangli == '1') {
+      const acts = com.logic.data.activity.ActivityUtil.getOpenList(9, 4);
+      const act = acts.find(x => x.playerStates == 1);
+      if (act) { 
+        ActivitiesCommandSender.C2S_JoinActivityById(act.id);
+      }
+    }
   };
 
   // 自动升级军装
@@ -1004,9 +1016,11 @@ var SamiraFight = (function () {
     config.autoJunzhuang = config.autoJunzhuang || '1';
     config.zbfsValue = config.zbfsValue || '';
     config.zbjs = config.zbjs || [];
+    config.dljiangli = config.dljiangli || '0';
 
     $('.samira-xiuluo').val(config.xiuluoCengshu.join('|'));
     $('.samira-fuli').prop('checked', config.fuli === '1');
+    $('.samira-auto-denglu').prop('checked', config.dljiangli === '1');
     $('.samira-shanggu').prop('checked', config.shanggu === '1');
     $('.samira-shanggu-xiaoguai').prop('checked', config.shangguxiaoguai === '1');
     $('.samira-zhanqi').prop('checked', config.zhanqi === '1');
@@ -1175,6 +1189,8 @@ var SamiraFight = (function () {
     }
 
     const zbjs = $('.samira-zbjs').val().trim().split('|').filter(x => x);
+    // 登录奖励
+    const dljiangli = $('.samira-auto-denglu').prop('checked') ? '1' : '0';
 
     SamiraFight.config = {
       xiuluoCengshu: xiuluoCengshu,
@@ -1231,7 +1247,8 @@ var SamiraFight = (function () {
       yijieruqinIndex: yijieruqinIndex,
       zbfs: zbfs,
       zbfsValue: zbfsValue,
-      zbjs: zbjs
+      zbjs: zbjs,
+      dljiangli: dljiangli
     };
 
     return SamiraFight.config;
@@ -2638,6 +2655,7 @@ var SamiraFight = (function () {
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-longhunboss' />龙魂BOSS</label></div>
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-duanzao' />强化&精炼</label></div>
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-auto-junzhuang' />军装升级</label></div>
+														<div class="samira-settings-item"><label><input type="checkbox" class='samira-auto-denglu' />登录奖励</label></div>
 												</div>
 												<div class="samira-settings-items-group">
 														<div class="samira-settings-item">
