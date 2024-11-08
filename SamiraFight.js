@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1027-1153';
+  SamiraFight.version = '1107-1645';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -1313,6 +1313,7 @@ var SamiraFight = (function () {
     const minutes = new Date().getMinutes();
     const dayOfweek = new Date().getDay();
     const yabiaoTili = com.modules.escort.EscortCenter.getData().remainCount;
+    const money = com.logic.data.MoneyCenter.getMoney(90);
     // 小怪任务
     const dayXiaoguaiTask = com.App.dataMgr.q_jitanContainer.getList().find(x => x.q_id === SamiraFight.kuafuXiaoGuai.taskId);
     const dayXiaoGuaiData = com.logic.data.jitian.JitanCenter.getJiTianTaskData(SamiraFight.kuafuXiaoGuai.taskId);
@@ -1468,7 +1469,7 @@ var SamiraFight = (function () {
       }
 
       // 押镖
-      if (SamiraFight.kuafuActiveStatus && yabiaoTili > 0 && minutes > 30 && (hours == 11 || hours == 16 || hours == 21) && SamiraFight.config.yabiao == '1') {
+      if (SamiraFight.kuafuActiveStatus && yabiaoTili > 0 && minutes > 30 && (hours == 11 || hours == 16 || hours == 21) && SamiraFight.config.yabiao == '1' && money >= 2000000) {
         console.log('[samira]准备押镖');
         SamiraFight.currentStatus = 'yabiao';
         return;
@@ -2063,6 +2064,12 @@ var SamiraFight = (function () {
       const status = data.taskState;
       // 未接任务
       if (status == 0) {
+        if (money < 2000000) {
+          console.log('[samira]金币不足, 无法接取任务');
+          SamiraFight.currentStatus = 'search';
+          return;
+        }
+
         EventMgr.dispatch('TE.taskTransfer', com.modules.escort.EscortCenter.getData().taskData.getConditionData(), JSON.stringify({ npcid: 2086 }), 1, true);
         TaskCommandSender.sendAccpetTask(data.taskID, data.taskType);
         PanelManager.removePanel(PanelRegister.ESCORT_ACCEPT);

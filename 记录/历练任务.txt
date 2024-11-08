@@ -1,0 +1,29 @@
+taskType: 29
+
+lilian_type: 
+1 - 找npc
+2 - 采集
+3 - 物品
+4 - 对话
+5 - 答题
+
+com.logic.data.setting.EnumSetup.isGou(41) - 是否自动快速完成
+
+taskState - 任务状态-1，不能接取，0可以接取(未接取)，1，已结接取，未达成 2，已达到条件未完成，可以领奖3已完成 */
+
+打开历练组队:
+npc: type == 64, 
+var npcId=cmd.npcId.toString();
+var npc=App.mapModule.mapAvatarModel.getNpc(npcId);
+var npcBean=App.dataMgr.q_npcContainer.getDataBean(npc.npcModelId);
+var type=npcBean.q_energy_type;
+if(type == 64) {
+  com.game.core.panel.PanelManager.openByClass(com.modules.lilian.LilianDialogPanel,com.logic.data.task.TaskModel.lilianTask);
+}
+
+
+com.App.dataMgr.q_taskLilianConter.getDataBean(com.logic.data.task.TaskModel.lilianTask.taskID,false);
+com.App.mapModule.mapMoveModel.walkToNpc(3007,false,false,"walk",0,null,true,false);
+
+打开历练组队:
+com.game.core.panel.PanelManager.openByClass(com.modules.lilian.LilianDialogPanel,com.logic.data.task.TaskModel.lilianTask);
