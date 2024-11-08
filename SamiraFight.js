@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1107-2012';
+  SamiraFight.version = '1107-2016';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -630,7 +630,6 @@ var SamiraFight = (function () {
           }
 
           if (need <= com.logic.data.MoneyCenter.getMoney(-31)) {
-            console.log(111111111111111, name, g, shopitem, need, com.logic.data.MoneyCenter.getMoney(-31))
             ItemBuyManager.buy(shopItem, 1, false, 1120000, need, 12, 0);
           }
         }
