@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1107-1957';
+  SamiraFight.version = '1107-2011';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -629,12 +629,7 @@ var SamiraFight = (function () {
             continue;
           }
 
-          // 钱不够了
-          if (shopItem.q_consume && !ConditionUtil.isItemEnoughJson(shopItem.q_consume)) {
-            return;
-          }
-
-          if (App.isMoneyEnough(need, shopItem.q_currency_type)) {
+          if (need <= com.logic.data.MoneyCenter.getMoney(-31)) {
             ItemBuyManager.buy(shopItem, 1, false, 1120000, need, 12, 0);
           }
         }
