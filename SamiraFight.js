@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1108-1059';
+  SamiraFight.version = '1108-2102';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -248,7 +248,6 @@ var SamiraFight = (function () {
       const item = com.App.dataMgr.q_itemContainer.list.find(x => x.q_id == shopActualId);
       if (buyItems.includes(item.q_name)) { 
         if (shop.remainNum <= 0) { 
-          console.log(1111, '[samira]购买次数已用完', item.q_name);
           continue;
         }
         const ctype = shopItem.q_currency_type;
@@ -1865,7 +1864,7 @@ var SamiraFight = (function () {
       // 如果有内功任务， 就去打上古boss，倒数三个
       if (SamiraFight.config.autoNeigong == '1' && SamiraFight.getNeigongTimes() > 0) {
         SamiraFight.config.shanggu = '1';
-        SamiraFight.config.shangguMap = '-1|-2|-3';
+        SamiraFight.config.shangguMap = SamiraFight.config.shangguMap || '-1|-2|-3';
       }
 
       // 处理上古禁地小怪
@@ -1929,7 +1928,7 @@ var SamiraFight = (function () {
       }
     
       // 跨服小怪
-      if (SamiraFight.kuafuActiveStatus && hours == 1 && SamiraFight.config.xiaoguai == '1' && dayXiaoGuaiTaskComplateTimes < dayXiaoGuaiTaskTimes) {
+      if (SamiraFight.kuafuActiveStatus && hours == 1 && minutes <= 15 && SamiraFight.config.xiaoguai == '1' && dayXiaoGuaiTaskComplateTimes < dayXiaoGuaiTaskTimes) {
         console.log('[samira]准备攻击跨服小怪');
         SamiraFight.kuafuXiaoGuai.pointTimes = 0;
         SamiraFight.kuafuXiaoGuai.pointIndex = 0;
