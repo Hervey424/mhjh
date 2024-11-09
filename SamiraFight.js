@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1108-1031';
+  SamiraFight.version = '1108-1059';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -226,6 +226,39 @@ var SamiraFight = (function () {
     SamiraFight.meirizhigou();
     SamiraFight.zaixianjiangli();
     SamiraFight.fangcangku();
+    SamiraFight.meirixiangou();
+  };
+
+  // 每日限购
+  SamiraFight.meirixiangou = function () { 
+    const buyItems = SamiraFight.config.meirixiangouwupin || [];
+    if (buyItems.length == 0) { 
+      return;
+    }
+    if (SamiraFight.config.meirixiangou != '1') { 
+      return;
+    }
+    var shops = com.logic.data.shop.MallCenter.getShopItemInfos(23, 1, true);
+    if (!shops) {
+      com.logic.connect.sender.ShopCommandSender.sendRequestShopListMessage(23);
+    }
+    for (const shop of shops) { 
+      const shopItem = com.App.dataMgr.q_shopContainer.list.find(x => x.q_id == shop.sellId);
+      const shopActualId = JSON.parse(shopItem.q_actual_item)[0].id;
+      const item = com.App.dataMgr.q_itemContainer.list.find(x => x.q_id == shopActualId);
+      if (buyItems.includes(item.q_name)) { 
+        if (shop.remainNum <= 0) { 
+          console.log(1111, '[samira]购买次数已用完', item.q_name);
+          continue;
+        }
+        const ctype = shopItem.q_currency_type;
+        const price = shopItem.q_price;
+        const has = com.logic.data.MoneyCenter.getMoney(ctype);
+        if (has >= price) { 
+          ItemBuyManager.buy(shopItem, 1,false,1120000,price,23);
+        }
+      }
+    }
   };
 
   // 物品放仓库
@@ -1085,7 +1118,8 @@ var SamiraFight = (function () {
     config.zaixianjiangli = config.zaixianjiangli || '0';
     config.fangcangku = config.fangcangku || '0';
     config.fangcangkuwupin = config.fangcangkuwupin || [];
-
+    config.meirixiangou = config.meirixiangou || '0';
+    config.meirixiangouwupin = config.meirixiangouwupin || [];
 
     $('.samira-xiuluo').val(config.xiuluoCengshu.join('|'));
     $('.samira-fuli').prop('checked', config.fuli === '1');
@@ -1146,6 +1180,8 @@ var SamiraFight = (function () {
     $('.samira-zaixianjiangli').prop('checked', config.zaixianjiangli === '1');
     $('.samira-fangcangku').prop('checked', config.fangcangku === '1');
     $('.samira-fangcangku-wupin').val(config.fangcangkuwupin.join('|'));
+    $('.samira-meirixiangou').prop('checked', config.meirixiangou === '1');
+    $('.samira-meirixiangou-wupin').val(config.meirixiangouwupin.join('|'));
   };
 
   // 从ui获取配置
@@ -1274,6 +1310,9 @@ var SamiraFight = (function () {
     // 物品放仓库
     const fangcangku = $('.samira-fangcangku').prop('checked') ? '1' : '0';
     const fangcangkuwupin = $('.samira-fangcangku-wupin').val().split('|').filter(x => x);
+    // 每日限购
+    const meirixiangou = $('.samira-meirixiangou').prop('checked') ? '1' : '0';
+    const meirixiangouwupin = $('.samira-meirixiangou-wupin').val().split('|').filter(x => x);
 
     SamiraFight.config = {
       xiuluoCengshu: xiuluoCengshu,
@@ -1336,7 +1375,9 @@ var SamiraFight = (function () {
       meirizhigou: meirizhigou,
       zaixianjiangli: zaixianjiangli,
       fangcangku: fangcangku,
-      fangcangkuwupin: fangcangkuwupin
+      fangcangkuwupin: fangcangkuwupin,
+      meirixiangou: meirixiangou,
+      meirixiangouwupin: meirixiangouwupin
     };
 
     return SamiraFight.config;
@@ -2760,6 +2801,10 @@ var SamiraFight = (function () {
 														<div class="samira-settings-item">
 																<span>BOSS提前蹲时间</span>
 																<input type="input" style="width: 50px;" class="samira-wait-boss-time" />
+														</div>
+                            <div class="samira-settings-item">
+																<label><input type="checkbox" class='samira-meirixiangou' />每日限购物品</label>
+																<input type="input" style="width: 150px;" class="samira-meirixiangou-wupin" />
 														</div>
 												</div>
                         <div class="samira-settings-items-group">
