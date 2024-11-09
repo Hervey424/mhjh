@@ -73,5 +73,7 @@ type: 5-雷钵
 3-附近
 2-私聊
 
-
-活动状态：
+背包:
+放入仓库: com.logic.connect.sender.ItemCommandSender.sendToDepot
+const items = com.logic.data.item.BagItemCenter.itemList;
+const goods = com.logic.data.item.BagItemCenter.itemList.filter(x => x).map(x => ({ bagItem: x, goods: com.App.dataMgr.q_itemContainer.list.find(z => z.q_id == x.itemId) }))

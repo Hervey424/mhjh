@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1108-0915';
+  SamiraFight.version = '1108-1031';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -225,6 +225,38 @@ var SamiraFight = (function () {
     SamiraFight.tiantianzanzhu();
     SamiraFight.meirizhigou();
     SamiraFight.zaixianjiangli();
+    SamiraFight.fangcangku();
+  };
+
+  // 物品放仓库
+  SamiraFight.fangcangku = function () { 
+    // 获取分钟数
+    const minutes = new Date().getMinutes();
+    const seconds = new Date().getSeconds();
+    const allowItems = SamiraFight.config.fangcangkuwupin || [];
+    if (seconds % 3 == 0 && SamiraFight.config.fangcangku == '1' && allowItems.length > 0) { 
+      const bagItems = com.logic.data.item.BagItemCenter.itemList.filter(x => x);
+      for (const item of bagItems) { 
+        if (!item) { 
+          continue;
+        }
+        const goods = com.App.dataMgr.q_itemContainer.list.find(x => x.q_id == item.itemId);
+        if (!goods) { 
+          continue;
+        }
+        let allow = false;
+        for(const name of allowItems) { 
+          if (goods.q_name.includes(name)) { 
+            allow = true;
+            break;
+          }
+        }
+        // 放入仓库
+        if (allow) { 
+          com.logic.connect.sender.ItemCommandSender.sendToDepot(item);
+        }
+      }
+    }
   };
 
   // 天天赞助
@@ -1051,6 +1083,8 @@ var SamiraFight = (function () {
     config.tiantianzanzhu = config.tiantianzanzhu || '0';
     config.meirizhigou = config.meirizhigou || '0';
     config.zaixianjiangli = config.zaixianjiangli || '0';
+    config.fangcangku = config.fangcangku || '0';
+    config.fangcangkuwupin = config.fangcangkuwupin || [];
 
 
     $('.samira-xiuluo').val(config.xiuluoCengshu.join('|'));
@@ -1110,6 +1144,8 @@ var SamiraFight = (function () {
     $('.samira-tiantianzanzhu').prop('checked', config.tiantianzanzhu === '1');
     $('.samira-meirizhigou').prop('checked', config.meirizhigou === '1');
     $('.samira-zaixianjiangli').prop('checked', config.zaixianjiangli === '1');
+    $('.samira-fangcangku').prop('checked', config.fangcangku === '1');
+    $('.samira-fangcangku-wupin').val(config.fangcangkuwupin.join('|'));
   };
 
   // 从ui获取配置
@@ -1235,6 +1271,9 @@ var SamiraFight = (function () {
     const meirizhigou = $('.samira-meirizhigou').prop('checked') ? '1' : '0';
     // 在线奖励
     const zaixianjiangli = $('.samira-zaixianjiangli').prop('checked') ? '1' : '0';
+    // 物品放仓库
+    const fangcangku = $('.samira-fangcangku').prop('checked') ? '1' : '0';
+    const fangcangkuwupin = $('.samira-fangcangku-wupin').val().split('|').filter(x => x);
 
     SamiraFight.config = {
       xiuluoCengshu: xiuluoCengshu,
@@ -1295,7 +1334,9 @@ var SamiraFight = (function () {
       dljiangli: dljiangli,
       tiantianzanzhu: tiantianzanzhu,
       meirizhigou: meirizhigou,
-      zaixianjiangli: zaixianjiangli
+      zaixianjiangli: zaixianjiangli,
+      fangcangku: fangcangku,
+      fangcangkuwupin: fangcangkuwupin
     };
 
     return SamiraFight.config;
@@ -1673,7 +1714,7 @@ var SamiraFight = (function () {
       // 检查修罗天界地图
       if (SamiraFight.config.xiuluoCengshu.length > 0) {
         const xiuluoData = com.modules.boss.lianyu.LianyuCenter._dic[200000]._dic;
-        for (const f of SamiraFight.config.xiuluoCengshu) {
+        for (const f of SamiraFight.config.xiuluoCengshu.filter(x => x)) {
           const key = '10000' + f;
           const bean = xiuluoData[key];
           const monsters = xiuluoData[key].monsters;
@@ -2735,15 +2776,19 @@ var SamiraFight = (function () {
                         <div class="samira-settings-items-group">
                             <div class="samira-settings-item">
 																<span>挂机地图</span>
-																<input type="input" style="width: 200px;" placeholder="多个地图名称用|隔开, 如果为空则使用巡航选择地图" class="samira-guaji-maps" />
+																<input type="input" style="width: 120px;" placeholder="多个地图名称用|隔开, 如果为空则使用巡航选择地图" class="samira-guaji-maps" />
 														</div>
 														<div class="samira-settings-item">
 																<span>发送装备</span>
-																<input type="input" style="width: 200px;" class="samira-zbfs" />
+																<input type="input" style="width: 120px;" class="samira-zbfs" />
 														</div>
 														<div class="samira-settings-item">
 																<span>接受装备</span>
-																<input type="input" style="width: 200px;" class="samira-zbjs" />
+																<input type="input" style="width: 120px;" class="samira-zbjs" />
+														</div>
+                            <div class="samira-settings-item">
+																<label><input type="checkbox" class='samira-fangcangku' />物品放仓库</label>
+																<input type="input" style="width: 120px;" class="samira-fangcangku-wupin" />
 														</div>
 												</div>
                     </div>
