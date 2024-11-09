@@ -47,6 +47,32 @@ http.createServer((req, res) => {
       res.end('Error fetching from a.com');
     });
   }
+  else if (pathname === '/Code.max.js') {
+    res.setHeader('Access-Control-Allow-Origin', '*');  // 允许所有来源
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');  // 允许的方法
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');  // 允许的请求头
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204);
+      res.end();
+      return;
+    }
+
+    https.get('https://cqsj-cdn3.7ronggame.com/cqsj/client/ly/Code.max_'+ version +'.js?r=' + Math.random(), (aRes) => {
+      let aData = '';
+      aRes.on('data', chunk => {
+        aData += chunk;
+      });
+      aRes.on('end', () => {
+        const modifiedText = aData.replace(/!Laya.stage.isVisibility/gi, 'false');
+        res.writeHead(200, { 'Content-Type': 'application/javascript' });
+        res.end(modifiedText);
+      });
+    }).on('error', (err) => {
+      console.error('Error fetching from a.com:', err);
+      res.writeHead(500, { 'Content-Type': 'text/plain' });
+      res.end('Error fetching from a.com');
+    });
+  }
   else if (pathname === '/css.css') {
     https.get('https://raw.githubusercontent.com/Hervey424/mhjh/refs/heads/master/css.css?r='+ Math.random(), (bRes) => {
       let bData = '';

@@ -1852,6 +1852,7 @@ var Laya = (window.Laya = (function (window, document) {
       }
       console.log('---URL.rootPath：' + URL.rootPath);
       console.log('---URL.basePath：' + URL.basePath);
+      console.log(1111111111111111111,222222222222)
       this._loader = new FLoader();
       Laya.stage.on('click', this, this.onClickStage);
       if (GameConfig.isLayaNative_1_0_8 || GameConfig.isWebView) {
@@ -1865,6 +1866,7 @@ var Laya = (window.Laya = (function (window, document) {
       if (!GameConfig.isLayaNative_1_0_8) {
         Laya.stage.on('visibilitychange', this, this.onVisibilitychange);
       }
+      console.log(11111111111111111111111)
       Laya.stage.isHide();
       GameHandler.initCheckTimer();
       GameConfig.resourceVersion = new VersionManager();

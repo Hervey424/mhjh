@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1107-2016';
+  SamiraFight.version = '1108-0915';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -1630,15 +1630,6 @@ var SamiraFight = (function () {
         }
       }
 
-      // 跨服小怪(下午五点之后再打)
-      if (SamiraFight.kuafuActiveStatus && SamiraFight.config.xiaoguai == '1' && dayXiaoGuaiTaskComplateTimes < dayXiaoGuaiTaskTimes) {
-        console.log('[samira]准备攻击跨服小怪');
-        SamiraFight.kuafuXiaoGuai.pointTimes = 0;
-        SamiraFight.kuafuXiaoGuai.pointIndex = 0;
-        SamiraFight.currentStatus = 'xiaoguai';
-        return;
-      }
-
       // 处理神魔boss
       if (SamiraFight.kuafuActiveStatus && hours > 2 && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(178) > 0 && SamiraFight.config.shenmoBoss == '1') {
         const bosses = com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(SamiraFight.kuafuBossMapId);
@@ -1853,6 +1844,15 @@ var SamiraFight = (function () {
           SamiraFight.currentStatus = 'fight';
           return;
         }
+      }
+    
+      // 跨服小怪
+      if (SamiraFight.kuafuActiveStatus && hours == 1 && SamiraFight.config.xiaoguai == '1' && dayXiaoGuaiTaskComplateTimes < dayXiaoGuaiTaskTimes) {
+        console.log('[samira]准备攻击跨服小怪');
+        SamiraFight.kuafuXiaoGuai.pointTimes = 0;
+        SamiraFight.kuafuXiaoGuai.pointIndex = 0;
+        SamiraFight.currentStatus = 'xiaoguai';
+        return;
       }
     
       // 获取所有挂机地图活着的boss
