@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1108-2102';
+  SamiraFight.version = '1108-2103';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -180,22 +180,6 @@ var SamiraFight = (function () {
   SamiraFight.commonTimerFunction = function () {
     console.log('[samira]commonTimer', SamiraFight.config);
     const hours = new Date().getHours();
-
-    // 取消所有屏蔽
-    {
-      App.showHideData.setAll(false);
-      EnumSetup.save(8, false, false);
-      EnumSetup.save(9, false, false);
-      EnumSetup.save(10, false, false);
-      EnumSetup.save(11, false, false);
-      EnumSetup.save(12, false, false);
-      EnumSetup.save(13, false, false);
-      EnumSetup.save(14, false, false);
-      EnumSetup.save(15, false, false);
-      EnumSetup.save(16, false, false);
-      EnumSetup.save(17, false, false);
-      EnumSetup.save(34, false, false);
-    }
 
     // 时间如果是11点, 16点, 21点, 自动开启boss伤害统计
     if (hours == 11 || hours == 16 || hours == 21) {
@@ -1928,7 +1912,7 @@ var SamiraFight = (function () {
       }
     
       // 跨服小怪
-      if (SamiraFight.kuafuActiveStatus && hours == 1 && minutes <= 15 && SamiraFight.config.xiaoguai == '1' && dayXiaoGuaiTaskComplateTimes < dayXiaoGuaiTaskTimes) {
+      if (SamiraFight.kuafuActiveStatus && SamiraFight.config.xiaoguai == '1' && dayXiaoGuaiTaskComplateTimes < dayXiaoGuaiTaskTimes) {
         console.log('[samira]准备攻击跨服小怪');
         SamiraFight.kuafuXiaoGuai.pointTimes = 0;
         SamiraFight.kuafuXiaoGuai.pointIndex = 0;
@@ -2248,27 +2232,11 @@ var SamiraFight = (function () {
       console.log('[samira]跨服小怪任务打怪中...(' + dayXiaoGuaiTaskComplateTimes + '/' + dayXiaoGuaiTaskTimes + ')', SamiraFight.kuafuXiaoGuai.target);
 
       // 重新寻找目标
-      const monsters = com.App.mapScene.mapAvatarContainer._avatarList.filter(x => {
-        // 没有roledata
-        if (!x._roleData) {
-          return false;
-        }
-        // 必须是怪物
-        if (!(x._roleData instanceof com.logic.data.role.MapMonsterRoleData)) {
-          return false;
-        }
-        if (x._roleData._monsterModelId != 30001115) {
-          return false;
-        }
-        if (x._roleData._isDead || x._roleData._hp <= 0) {
-          return false;
-        }
-        return true;
-      });
+      const monsters = com.App.mapModule.mapAvatarModel.getMonstersByModelId(30001115);
 
       // 如果有目标, 并且目标活着, 就去攻击, 否则重新寻找目标
-      if (SamiraFight.kuafuXiaoGuai.target && monsters.indexOf(SamiraFight.kuafuXiaoGuai.target) != -1 && SamiraFight.kuafuXiaoGuai.target._roleData._hp > 0) {
-        SamiraFight.toPointFight(SamiraFight.kuafuBossMapId, targetNode.x, targetNode.y);
+      if (SamiraFight.kuafuXiaoGuai.target && monsters.indexOf(SamiraFight.kuafuXiaoGuai.target) != -1 && SamiraFight.kuafuXiaoGuai.target.hp > 0) {
+        SamiraFight.toPointFight(SamiraFight.kuafuBossMapId, SamiraFight.kuafuXiaoGuai.target.nodex, SamiraFight.kuafuXiaoGuai.target.nodey);
         return;
       } else {
         SamiraFight.kuafuXiaoGuai.target = null;
