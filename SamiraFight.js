@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1108-2103';
+  SamiraFight.version = '1109-1348';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -26,7 +26,8 @@ var SamiraFight = (function () {
     suoyaotacaiji: '锁妖塔采集',
     wudaohuijuesai: '武道会决赛',
     longhunboss: '龙魂BOSS',
-    jiaoyi: '交易'
+    jiaoyi: '交易',
+    hunhuan: '魂环秘境'
   };
   // 当前boss
   SamiraFight.currentBoss = null;
@@ -89,6 +90,8 @@ var SamiraFight = (function () {
     targetUserId: '',
     targetUserName: ''
   };
+  // 当前进行的魂环boss
+  SamiraFight.currentHunhuanBoss = null;
 
   // 开启内挂
   SamiraFight.start = function () {
@@ -1039,7 +1042,10 @@ var SamiraFight = (function () {
     let config = {};
     try {
       config = JSON.parse(json);
-    } catch {}
+    } catch { }
+    if (!config) { 
+      config = {};
+    }
 
     config = config || {};
     config.xiuluoCengshu = config.xiuluoCengshu || [];
@@ -1103,6 +1109,7 @@ var SamiraFight = (function () {
     config.fangcangkuwupin = config.fangcangkuwupin || [];
     config.meirixiangou = config.meirixiangou || '0';
     config.meirixiangouwupin = config.meirixiangouwupin || [];
+    config.hunhuan = config.hunhuan || '0';
 
     $('.samira-xiuluo').val(config.xiuluoCengshu.join('|'));
     $('.samira-fuli').prop('checked', config.fuli === '1');
@@ -1165,6 +1172,7 @@ var SamiraFight = (function () {
     $('.samira-fangcangku-wupin').val(config.fangcangkuwupin.join('|'));
     $('.samira-meirixiangou').prop('checked', config.meirixiangou === '1');
     $('.samira-meirixiangou-wupin').val(config.meirixiangouwupin.join('|'));
+    $('.samira-hunhuan').prop('checked', config.hunhuan === '1');
   };
 
   // 从ui获取配置
@@ -1296,6 +1304,8 @@ var SamiraFight = (function () {
     // 每日限购
     const meirixiangou = $('.samira-meirixiangou').prop('checked') ? '1' : '0';
     const meirixiangouwupin = $('.samira-meirixiangou-wupin').val().split('|').filter(x => x);
+    // 魂环
+    const hunhuan = $('.samira-hunhuan').prop('checked') ? '1' : '0';
 
     SamiraFight.config = {
       xiuluoCengshu: xiuluoCengshu,
@@ -1360,7 +1370,8 @@ var SamiraFight = (function () {
       fangcangku: fangcangku,
       fangcangkuwupin: fangcangkuwupin,
       meirixiangou: meirixiangou,
-      meirixiangouwupin: meirixiangouwupin
+      meirixiangouwupin: meirixiangouwupin,
+      hunhuan: hunhuan
     };
 
     return SamiraFight.config;
@@ -1396,12 +1407,14 @@ var SamiraFight = (function () {
     const yijieruqinMapIds = com.App.dataMgr.q_activitiesContainer.getListByType(3000).map(x => com.logic.data.activity.ActivityCenter.getData(x.q_id)).filter(x => x.activityStates > -1).map(x => parseInt(x.bean.q_info))
     // 锁魂塔
     let suohunta = 0;
-    const sunhuntaArray = SamiraFight.config.yaoshouBoss.split('|').map(x => parseInt(x));
+    const sunhuntaArray = (SamiraFight.config.yaoshouBoss || '').split('|').filter(x => x && x.trim() != '').map(x => parseInt(x));
     if (sunhuntaArray.length > 0) {
       suohunta = sunhuntaArray[0];
     }
+    // 魂环地图
+    const hunhuanMapIds = SamiraFight.getHunhuanMaps();
 
-    const mapIds = [...bossMapIds, fuliMapId, ...azsmMapIds, yijiMapId, zhanqiMapId, kuafuMapId, ...shangguMapIds, ...shangguXiaoGuaiMapIds, ...yijieruqinMapIds, suohunta];
+    const mapIds = [...bossMapIds, fuliMapId, ...azsmMapIds, yijiMapId, zhanqiMapId, kuafuMapId, ...shangguMapIds, ...shangguXiaoGuaiMapIds, ...yijieruqinMapIds, suohunta, ...hunhuanMapIds];
     BossCommandSender.sendC2S_AliveWildBossMessage(mapIds, 0, false);
   };
 
@@ -1551,7 +1564,7 @@ var SamiraFight = (function () {
               return true;
             }
           })
-          .map(b => { 
+          .map(b => {
             // 计算距离
             if (playerMapId !== SamiraFight.kuafuBossMapId) {
               b.distance = 0;
@@ -1636,7 +1649,7 @@ var SamiraFight = (function () {
         }
 
         // 处理采集
-        const selectMapAndBoss = SamiraFight.config.yaoshouBoss.split('|').map(x => parseInt(x));
+        const selectMapAndBoss = (SamiraFight.config.yaoshouBoss || '').split('|').filter(x => x && x.trim() != '').map(x => parseInt(x));
         const datas = com.modules.boss.wanyao.WanyaoCenter.datas.filter(x => x.isEnter);
         if (selectMapAndBoss.length > 0 && datas.length > 0) {
           const selectMapIndex = selectMapAndBoss[0];
@@ -1677,7 +1690,7 @@ var SamiraFight = (function () {
 
       // 妖兽锁魂塔BOSS
       if (SamiraFight.kuafuActiveStatus && hours > 1 && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(180) > 0 && SamiraFight.config.yaoshou == '1') {
-        const selectMapAndBoss = SamiraFight.config.yaoshouBoss.split('|').map(x => parseInt(x));
+        const selectMapAndBoss = (SamiraFight.config.yaoshouBoss || '').split('|').filter(x => x && x.trim() != '').map(x => parseInt(x));
         const datas = com.modules.boss.wanyao.WanyaoCenter.datas.filter(x => x.isEnter);
         if (selectMapAndBoss.length > 0 && datas.length > 0) {
           const selectMapIndex = selectMapAndBoss[0];
@@ -1716,10 +1729,10 @@ var SamiraFight = (function () {
       }
 
       // 发送交易装备
-      if (SamiraFight.config.zbfs.length > 0 && (![11, 16, 19, 20, 21].includes(hours)) && minutes <= 50) { 
+      if (SamiraFight.config.zbfs.length > 0 && (![11, 16, 19, 20, 21].includes(hours)) && minutes <= 50) {
         // Id|职业|等级|数量
         const items = SamiraFight.config.zbfs || [];
-        for (const item of items) { 
+        for (const item of items) {
           const name = item.name;
           const job = item.job;
           const rank = item.rank;
@@ -1727,7 +1740,7 @@ var SamiraFight = (function () {
 
           let findCount = SamiraFight.getEnableDealItems(job, rank).length;
           console.log('[samira]发现了' + findCount);
-          if (findCount >= count && ts >  SamiraFight.jiaoyi.allowTime) { 
+          if (findCount >= count && ts > SamiraFight.jiaoyi.allowTime) {
             console.log('[samira]满足条件, 请求交易: 发现了' + findCount);
             SamiraFight.jiaoyi.allowTime = ts + 600;
             com.game.modules.chats.data.ChatCenter.sendChat(2, '交易一下', name, true, null, 'ChatDialog');
@@ -1842,6 +1855,25 @@ var SamiraFight = (function () {
           SamiraFight.currentcheckTimes = 0;
           SamiraFight.currentStatus = 'fight';
           return;
+        }
+      }
+
+      // 魂环(每天晚上10点之后再打)
+      if (SamiraFight.config.hunhuan == '1' && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(189) > 0) {
+        const mapIds = SamiraFight.getHunhuanMaps();
+        if (mapIds.length > 0) {
+          const mapId = mapIds[0];
+          // 判断boss数量是否大于5
+          const bosses = com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(mapId).filter(x => x.remainTime == 0 && (x.owner == '' || x.owner == playerName));
+          if (bosses.length >= 4) { 
+            console.log('[samira]开始进入魂环秘境');
+            SamiraFight.currentHunhuanBoss = null;
+            SamiraFight.currentStatus = 'hunhuan';
+            // 进入副本
+            TransferManager.toBossMap(12, mapId)
+
+            return;
+          }
         }
       }
 
@@ -2359,7 +2391,7 @@ var SamiraFight = (function () {
         return;
       }
 
-      SamiraFight.toPointFight(SamiraFight.yaoshou.npcInfo.mapModelId, SamiraFight.yaoshou.npcInfo.x, SamiraFight.yaoshou.npcInfo.y, GameHandler.create(SamiraFight, function () { 
+      SamiraFight.toPointFight(SamiraFight.yaoshou.npcInfo.mapModelId, SamiraFight.yaoshou.npcInfo.x, SamiraFight.yaoshou.npcInfo.y, GameHandler.create(SamiraFight, function () {
         if (!SamiraFight.yaoshou.gatherStatus) {
           const npcId = SamiraFight.yaoshou.npcInfo.npcId.toString();
           com.logic.connect.sender.TaskCommandSender.sendC2S_NpcServicesMessage(npcId);
@@ -2397,7 +2429,7 @@ var SamiraFight = (function () {
       console.log('[samira][jiaoyi]当前正在交易', SamiraFight.jiaoyi);
 
       // 如果已经两分钟了, 就推出交易
-      if (ts > SamiraFight.jiaoyi.startTime + 60) { 
+      if (ts > SamiraFight.jiaoyi.startTime + 60) {
         console.log('[samira]交易超时, 重新寻找boss');
         SamiraFight.currentStatus = 'search';
         // 如果超时了就20分钟内不再交易
@@ -2406,7 +2438,7 @@ var SamiraFight = (function () {
       }
 
       // 如果不在主城, 就先回城
-      if (playerMapId != mapId) { 
+      if (playerMapId != mapId) {
         console.log('[samira][jiaoyi]角色不在主城,  马上回城');
         com.App.returnCity();
         return;
@@ -2424,7 +2456,7 @@ var SamiraFight = (function () {
       // 发起方, 判断是否又可以交易的商品, 没有了的话就退出, 并且给接收方发送退出消息
       const configItem = (SamiraFight.config.zbfs || []).find(x => x.name == SamiraFight.jiaoyi.targetUserName);
       if (SamiraFight.jiaoyi.type == 1) {
-        if (!configItem) { 
+        if (!configItem) {
           console.log('[samira][jiaoyi]发起方没有找到交易商品1, 重新寻找boss');
           SamiraFight.currentStatus = 'search';
           com.game.modules.chats.data.ChatCenter.sendChat(2, '交易中止', SamiraFight.jiaoyi.targetUserName, true, null, 'ChatDialog');
@@ -2488,7 +2520,54 @@ var SamiraFight = (function () {
       // 锁定并且提交
       com.logic.data.item.DealCenter.sendC2S_AddTransactionItemMessage(2, null);
       com.logic.data.item.DealCenter.sendC2S_ConfirmTransactionMessage();
+    } else if (SamiraFight.currentStatus === 'hunhuan') { 
+      const mapIds = SamiraFight.getHunhuanMaps();
+      if (mapIds.length <= 0) {
+        console.log('[samira]魂环地图为空, 重新寻找boss');
+        SamiraFight.currentStatus = 'search';
+        SamiraFight.currentHunhuanBoss = null;
+        return;
+      }
+      const mapId = mapIds[0];
+      if (playerMapId != mapId) { 
+        console.log('[samira]已退出副本');
+        SamiraFight.currentStatus = 'search';
+        SamiraFight.currentHunhuanBoss = null;
+        return;
+      };
+
+      if (SamiraFight.currentHunhuanBoss && (SamiraFight.currentHunhuanBoss.curHp <= 0 || SamiraFight.currentHunhuanBoss.remainTime > 0)) { 
+        console.log('[samira]魂环boss已死亡, 重新寻找boss');
+        SamiraFight.currentHunhuanBoss = null;
+        return;
+      }
+
+      // 判断是否存在目标, 如果存在就去打, 不存在则寻找
+      if (!SamiraFight.currentHunhuanBoss) { 
+        const bosses = com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(mapId).filter(x => x.remainTime == 0 && (x.owner == '' || x.owner == playerName))
+          .sort((x, y) => x.bean.q_lvl - y.bean.q_lvl)
+        
+        if (bosses.length > 0) {
+          SamiraFight.currentHunhuanBoss = bosses[0];
+        } else {
+          return;
+        }
+      }
+      // 如果存在目标, 就走过去打
+      else {
+        SamiraFight.toPointFight(mapId,SamiraFight.currentHunhuanBoss.monsterX,SamiraFight.currentHunhuanBoss.monsterY)
+      }
     }
+  };
+
+  // 获取魂环地图
+  SamiraFight.getHunhuanMaps = function () { 
+    const items = com.logic.data.zone.boss.BossDataCenter.hhmijing.filter(x => x.isEnter);
+    if (items.length <= 0) { 
+      return [];
+    }
+    const mapId = items[items.length - 1].bean.q_map_id;
+    return [mapId];
   };
 
   // 去指定地点打怪
@@ -2843,6 +2922,7 @@ var SamiraFight = (function () {
                             </div>
                             <div class="samira-settings-item"><label><input type="checkbox" class="samira-yiji" />跨服遗迹</label></div>
                             <div class="samira-settings-item"><label><input type="checkbox" class="samira-xiaoguai" />跨服魔甲虫</label></div>
+                            <div class="samira-settings-item"><label><input type="checkbox" class="samira-hunhuan" />魂环秘境</label></div>
                         </div>
                         <div class="samira-settings-items-group">
                             <div class="samira-settings-item"><label><input type="checkbox" class="samira-shanggu" />上古禁地BOSS</label></div>
@@ -2978,6 +3058,8 @@ var SamiraFight = (function () {
       }
       return false;
     };
+
+    com.App.popExitAlert = function () { };
   };
 
   // 传送
@@ -3176,7 +3258,6 @@ var SamiraFight = (function () {
   GameServer.register(
     S2C_MyPlayerInfoMessage,
     GameHandler.create(this, cmd => {
-      console.log(111111111111111, '获取到用户信息！');
       if (!SamiraFight.isInit) {
         SamiraFight.isInit = true;
         const personId = cmd.personId.toString();
