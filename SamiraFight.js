@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1110-1414';
+  SamiraFight.version = '1110-1420';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -1467,6 +1467,10 @@ var SamiraFight = (function () {
     const dayXiaoGuaiTaskComplateTimes = dayXiaoGuaiData ? dayXiaoGuaiData.times : 0;
 
     console.log('[samira]currentStatus:' + SamiraFight.currentStatus, 'player: ' + playerName, mapIds, SamiraFight.currentBoss);
+
+    // 清除窗口
+    com.game.core.panel.PanelManager.closeByClass(com.modules.boss.fuli.SweepResultPanel);
+    com.game.core.panel.PanelManager.closeByClass(com.modules.main.prompt.BagFullPrompt);
 
     // 恢复武道会
     if (ts > SamiraFight.wudaoResumeTs) {
