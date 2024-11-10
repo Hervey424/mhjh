@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1109-1354';
+  SamiraFight.version = '1109-1403';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -275,6 +275,10 @@ var SamiraFight = (function () {
           com.logic.connect.sender.ItemCommandSender.sendToDepot(item);
         }
       }
+    }
+
+    if (seconds % 30 == 0) {
+      com.logic.connect.sender.ItemCommandSender.sendClearUpGoodsMessage(2);
     }
   };
 
