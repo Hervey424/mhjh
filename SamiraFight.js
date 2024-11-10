@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1109-1403';
+  SamiraFight.version = '1110-1414';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -1862,8 +1862,9 @@ var SamiraFight = (function () {
         }
       }
 
-      // 魂环(每天晚上10点之后再打)
-      if (SamiraFight.config.hunhuan == '1' && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(189) > 0) {
+      // 魂环(每天4点之后再打, 为了不让脚本都进入同一个副本, 随机分钟数)
+      const hunhuanMin = Math.floor(Math.random() * 50);
+      if (SamiraFight.config.hunhuan == '1' &&  ((hours == 4 && minutes > hunhuanMin) || hours > 4) && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(189) > 0) {
         const mapIds = SamiraFight.getHunhuanMaps();
         if (mapIds.length > 0) {
           const mapId = mapIds[0];
