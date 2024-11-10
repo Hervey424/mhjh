@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1109-1348';
+  SamiraFight.version = '1109-1354';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -2544,11 +2544,10 @@ var SamiraFight = (function () {
 
       // 判断是否存在目标, 如果存在就去打, 不存在则寻找
       if (!SamiraFight.currentHunhuanBoss) { 
-        const bosses = com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(mapId).filter(x => x.remainTime == 0 && (x.owner == '' || x.owner == playerName))
-          .sort((x, y) => x.bean.q_lvl - y.bean.q_lvl)
+        const bosses = com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(mapId).filter(x => x.remainTime == 0 && (x.owner == '' || x.owner == playerName));
         
         if (bosses.length > 0) {
-          SamiraFight.currentHunhuanBoss = bosses[0];
+          SamiraFight.currentHunhuanBoss = bosses[bosses.length - 1];
         } else {
           return;
         }
