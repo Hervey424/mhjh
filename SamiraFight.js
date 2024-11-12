@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1113-0900';
+  SamiraFight.version = '1113-1100';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -1485,10 +1485,13 @@ var SamiraFight = (function () {
     // 清除窗口
     com.game.core.panel.PanelManager.closeByClass(com.modules.boss.fuli.SweepResultPanel);
     com.game.core.panel.PanelManager.closeByClass(com.modules.main.prompt.BagFullPrompt);
-    // 如果强制退出了历练任务, 就取消自动任务
-    TaskAuto.isAutoLilian = false;
-    SamiraFight.currentLilian = 0;
-    SamiraFight.currentLilianBoss = null;
+    
+    if (SamiraFight.currentStatus != 'lilian') { 
+      // 如果强制退出了历练任务, 就取消自动任务
+      TaskAuto.isAutoLilian = false;
+      SamiraFight.currentLilian = 0;
+      SamiraFight.currentLilianBoss = null;
+    }
 
     // 恢复武道会
     if (ts > SamiraFight.wudaoResumeTs) {
@@ -2526,7 +2529,7 @@ var SamiraFight = (function () {
 
       // 如果任务层数不一致, 说明任务已经完成
       if (lilianTask.curCount != SamiraFight.currentLilian) {
-        console.log('[samira][历练]历练任务已完成, 重新寻找boss');
+        console.log('[samira][历练]历练任务已完成, 重新寻找boss',lilianTask.curCount,SamiraFight.currentLilian);
         SamiraFight.currentStatus = 'search';
         TaskAuto.isAutoLilian = false;
         return;
