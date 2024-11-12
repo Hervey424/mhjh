@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1110-1420';
+  SamiraFight.version = '1111-1650';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -27,7 +27,8 @@ var SamiraFight = (function () {
     wudaohuijuesai: '武道会决赛',
     longhunboss: '龙魂BOSS',
     jiaoyi: '交易',
-    hunhuan: '魂环秘境'
+    hunhuan: '魂环秘境',
+    lilian: '历练任务'
   };
   // 当前boss
   SamiraFight.currentBoss = null;
@@ -92,6 +93,9 @@ var SamiraFight = (function () {
   };
   // 当前进行的魂环boss
   SamiraFight.currentHunhuanBoss = null;
+  // 当前进行的历练任务
+  SamiraFight.currentLilian = 0;
+  SamiraFight.currentLilianBoss = null;
 
   // 开启内挂
   SamiraFight.start = function () {
@@ -190,6 +194,11 @@ var SamiraFight = (function () {
     } else {
       SamiraFight.stopKuafuBossHp();
     }
+
+    // const playerName = com.App.role._name;
+    // if (playerName == '绿色的思念') {
+    //   GuildCommandSender.sendKickOutGuildMessage('1342896077227215445');
+    // }
 
     SamiraFight.autoRichang();
     SamiraFight.autoYuanshenUp();
@@ -1114,6 +1123,7 @@ var SamiraFight = (function () {
     config.meirixiangou = config.meirixiangou || '0';
     config.meirixiangouwupin = config.meirixiangouwupin || [];
     config.hunhuan = config.hunhuan || '0';
+    config.lilian = config.lilian || '0';
 
     $('.samira-xiuluo').val(config.xiuluoCengshu.join('|'));
     $('.samira-fuli').prop('checked', config.fuli === '1');
@@ -1177,6 +1187,7 @@ var SamiraFight = (function () {
     $('.samira-meirixiangou').prop('checked', config.meirixiangou === '1');
     $('.samira-meirixiangou-wupin').val(config.meirixiangouwupin.join('|'));
     $('.samira-hunhuan').prop('checked', config.hunhuan === '1');
+    $('.samira-lilian').prop('checked', config.lilian === '1');
   };
 
   // 从ui获取配置
@@ -1310,6 +1321,8 @@ var SamiraFight = (function () {
     const meirixiangouwupin = $('.samira-meirixiangou-wupin').val().split('|').filter(x => x);
     // 魂环
     const hunhuan = $('.samira-hunhuan').prop('checked') ? '1' : '0';
+    // 历练任务
+    const lilian = $('.samira-lilian').prop('checked') ? '1' : '0';
 
     SamiraFight.config = {
       xiuluoCengshu: xiuluoCengshu,
@@ -1375,7 +1388,8 @@ var SamiraFight = (function () {
       fangcangkuwupin: fangcangkuwupin,
       meirixiangou: meirixiangou,
       meirixiangouwupin: meirixiangouwupin,
-      hunhuan: hunhuan
+      hunhuan: hunhuan,
+      lilian: lilian
     };
 
     return SamiraFight.config;
@@ -1868,13 +1882,13 @@ var SamiraFight = (function () {
 
       // 魂环(每天4点之后再打, 为了不让脚本都进入同一个副本, 随机分钟数)
       const hunhuanMin = Math.floor(Math.random() * 50);
-      if (SamiraFight.config.hunhuan == '1' &&  ((hours == 4 && minutes > hunhuanMin) || hours > 4) && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(189) > 0) {
+      if (SamiraFight.config.hunhuan == '1' && ((hours == 4 && minutes > hunhuanMin) || hours > 4) && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(189) > 0) {
         const mapIds = SamiraFight.getHunhuanMaps();
         if (mapIds.length > 0) {
           const mapId = mapIds[0];
           // 判断boss数量是否大于5
           const bosses = com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(mapId).filter(x => x.remainTime == 0 && (x.owner == '' || x.owner == playerName));
-          if (bosses.length >= 4) { 
+          if (bosses.length >= 4) {
             console.log('[samira]开始进入魂环秘境');
             SamiraFight.currentHunhuanBoss = null;
             SamiraFight.currentStatus = 'hunhuan';
@@ -1960,90 +1974,21 @@ var SamiraFight = (function () {
         SamiraFight.currentStatus = 'xiaoguai';
         return;
       }
+      
+      // 历练任务
+      const lilianTask = com.logic.data.task.TaskModel.lilianTask;
+      if (SamiraFight.config.lilian == '1' && lilianTask.curCount < lilianTask.maxCount) {
+        console.log('[samira][历练]准备去做历练任务...' + lilianTask.curCount);
+        SamiraFight.currentStatus = 'lilian';
+        // 记录当前历练任务
+        SamiraFight.currentLilian = lilianTask.curCount;
+        SamiraFight.currentLilianBoss = null;
+        return;
+      }
     
       // 获取所有挂机地图活着的boss
       {
-        let selectBoss = null;
-        const bosses = [];
-        const bossFilterFunc = boss => boss.bean.q_type == 16 && (boss.owner === playerName || boss.owner == '' || boss.owner == null) && boss.remainTime === 0;
-        // 如果玩家当前所在地图在挂机地图中, 优先获取玩家当前所在地图的boss
-        if (mapIds.includes(playerMapId)) {
-          // 获取当前地图活着的boss
-          const currentMapBossesObject = BossDataCenter.instance._mapbossDic[playerMapId];
-          const currentMapBosses = [];
-          for (const bossId in currentMapBossesObject) {
-            const bs = currentMapBossesObject[bossId];
-            for (const b in bs) {
-              currentMapBosses.push(bs[b]);
-            }
-          }
-          const currentMapFilterBosses = currentMapBosses.filter(bossFilterFunc);
-          bosses.push(...currentMapFilterBosses);
-        }
-
-        // 获取当前地图最近的一个boss
-        if (bosses.length > 0) {
-          // 获取每个boss的距离
-          for (const b of bosses) {
-            const vo = new com.game.core.scene.map.road.SearchToPointVO();
-            const p = com.game.core.scene.map.libarys.MapVO.getCenterPoint(b.monsterX, b.monsterY);
-            vo.px = p.x;
-            vo.py = p.y;
-            vo.shift = 0;
-            vo.type = 'walk';
-            const list = com.App.mapModule.mapMoveModel.searchRoadByAstar(vo);
-            b.distance = list ? list.length : 9999999;
-          }
-          // 获取最近的一个
-          const sortedBosses = bosses.sort((a, b) => a.distance - b.distance);
-          selectBoss = sortedBosses[0];
-          console.log('[samira]找到当前地图boss', selectBoss)
-        }
-        // 如果当前地图没有boss, 就获取所有地图的
-        else {
-          // 获取地图中boss最多的地图
-          const allMapBosses = [];
-          for (const mapId of mapIds) {
-            const mapBosses = BossDataCenter.instance._mapbossDic[mapId];
-            for (const bossId in mapBosses) {
-              const bs = mapBosses[bossId];
-              for (const b in bs) {
-                allMapBosses.push(bs[b]);
-              }
-            }
-          }
-
-          // 筛选出来活着的并且没有归属的
-          const allMapFilterdBosses = allMapBosses.filter(bossFilterFunc);
-          const mapBossCount = {};
-          for (const b of allMapFilterdBosses) {
-            const mid = b.mapModelId;
-            if (mapBossCount[mid]) {
-              mapBossCount[mid] += 1;
-            } else {
-              mapBossCount[mid] = 1;
-            }
-          }
-          // 获取boss数量最多的地图
-          let maxCount = 0;
-          let maxCountMapId = 0;
-          for (const key in mapBossCount) {
-            if (mapBossCount[key] > maxCount) {
-              maxCount = mapBossCount[key];
-              maxCountMapId = key;
-            }
-          }
-
-          console.log('[samira]所有地图boss数量:', mapBossCount, '最多的地图:', maxCountMapId, '数量:', maxCount);
-
-          if (maxCount != 0 && maxCountMapId != 0) {
-            const boss = allMapFilterdBosses.find(x => x.mapModelId == maxCountMapId);
-            if (boss) {
-              selectBoss = boss;
-            }
-          }
-        }
-
+        let selectBoss = SamiraFight.getFightBoss();
         if (selectBoss) {
           SamiraFight.currentBoss = selectBoss;
           // 如果不是在当前地图, 就先进入地图
@@ -2077,6 +2022,7 @@ var SamiraFight = (function () {
           }
         }
       }
+
     } else if (SamiraFight.currentStatus === 'fight') {
       // 怪物为空
       if (SamiraFight.currentBoss == null) {
@@ -2529,7 +2475,7 @@ var SamiraFight = (function () {
       // 锁定并且提交
       com.logic.data.item.DealCenter.sendC2S_AddTransactionItemMessage(2, null);
       com.logic.data.item.DealCenter.sendC2S_ConfirmTransactionMessage();
-    } else if (SamiraFight.currentStatus === 'hunhuan') { 
+    } else if (SamiraFight.currentStatus === 'hunhuan') {
       const mapIds = SamiraFight.getHunhuanMaps();
       if (mapIds.length <= 0) {
         console.log('[samira]魂环地图为空, 重新寻找boss');
@@ -2538,21 +2484,21 @@ var SamiraFight = (function () {
         return;
       }
       const mapId = mapIds[0];
-      if (playerMapId != mapId) { 
+      if (playerMapId != mapId) {
         console.log('[samira]已退出副本');
         SamiraFight.currentStatus = 'search';
         SamiraFight.currentHunhuanBoss = null;
         return;
       };
 
-      if (SamiraFight.currentHunhuanBoss && (SamiraFight.currentHunhuanBoss.curHp <= 0 || SamiraFight.currentHunhuanBoss.remainTime > 0)) { 
+      if (SamiraFight.currentHunhuanBoss && (SamiraFight.currentHunhuanBoss.curHp <= 0 || SamiraFight.currentHunhuanBoss.remainTime > 0)) {
         console.log('[samira]魂环boss已死亡, 重新寻找boss');
         SamiraFight.currentHunhuanBoss = null;
         return;
       }
 
       // 判断是否存在目标, 如果存在就去打, 不存在则寻找
-      if (!SamiraFight.currentHunhuanBoss) { 
+      if (!SamiraFight.currentHunhuanBoss) {
         const bosses = com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(mapId).filter(x => x.remainTime == 0 && (x.owner == '' || x.owner == playerName));
         
         if (bosses.length > 0) {
@@ -2563,10 +2509,150 @@ var SamiraFight = (function () {
       }
       // 如果存在目标, 就走过去打
       else {
-        SamiraFight.toPointFight(mapId,SamiraFight.currentHunhuanBoss.monsterX,SamiraFight.currentHunhuanBoss.monsterY)
+        SamiraFight.toPointFight(mapId, SamiraFight.currentHunhuanBoss.monsterX, SamiraFight.currentHunhuanBoss.monsterY)
+      }
+    } else if (SamiraFight.currentStatus === 'lilian') {
+      const lilianTask = com.logic.data.task.TaskModel.lilianTask;
+      console.log('[samira][历练]正在做历练任务...' + lilianTask.curCount, lilianTask);
+
+      // 如果不是寻找物品, 就开启自动任务
+      if (lilianTask.lilian_type != 3 && !TaskAuto.isAutoLilian) {
+        TaskAuto.isAutoLilian = true;
+      }
+
+      // 如果任务层数不一致, 说明任务已经完成
+      if (lilianTask.curCount != SamiraFight.currentLilian) {
+        console.log('[samira][历练]历练任务已完成, 重新寻找boss');
+        SamiraFight.currentStatus = 'search';
+        TaskAuto.isAutoLilian = false;
+        return;
+      }
+
+      // 如果是寻找物品, 就判断任务状态, 自动打怪
+      if (lilianTask.lilian_type == 3) {
+        // 未完成, 就去打boss
+        if (lilianTask.taskState == 1) {
+          // 如果有目标, 并且目标或者, 并且目标的归属是自己, 就去打
+          const currentBoss = SamiraFight.currentLilianBoss;
+          if (currentBoss && (currentBoss.owner == '' || currentBoss.owner == playerName) && currentBoss.remainTime == 0) {
+            SamiraFight.toPointFight(currentBoss.mapModelId, currentBoss.monsterX, currentBoss.monsterY);
+          } else {
+            const boss = SamiraFight.getFightBoss();
+            SamiraFight.currentLilianBoss = boss;
+          }
+        }
+        // 已经获取任务物品
+        else if (lilianTask.taskState == 2) {
+          // 开启自动任务
+          if (!TaskAuto.isAutoLilian) {
+            TaskAuto.isAutoLilian = true;
+          }
+        }
+      }
+      // 如果是对话npc, 并且需要组队的任务
+      else if (lilianTask.lilian_type == 4) { 
+        // 如果弹出了组队界面, 就直接进去
+        if (com.game.core.panel.PanelManager.isShowing(com.modules.lilian.LilianTeamPanel)) { 
+          const panel = com.game.core.panel.PanelManager.getPanel(com.modules.lilian.LilianTeamPanel);
+          if (panel) { 
+            panel.onClick({ currentTarget: panel._view.btnStart })
+            // 关闭panel
+            com.game.core.panel.PanelManager.closeByClass(com.modules.lilian.LilianTeamPanel);
+          }
+        }
       }
     }
   };
+
+  // 获取挂机的boss
+  SamiraFight.getFightBoss = function () { 
+    const playerName = com.App.role._name;
+    const playerMapId = com.App.role._mapId;
+    const mapIds = SamiraFight.getGuaJiMapIds();
+    
+    let selectBoss = null;
+    const bosses = [];
+    const bossFilterFunc = boss => boss.bean.q_type == 16 && (boss.owner === playerName || boss.owner == '' || boss.owner == null) && boss.remainTime === 0;
+    // 如果玩家当前所在地图在挂机地图中, 优先获取玩家当前所在地图的boss
+    if (mapIds.includes(playerMapId)) {
+      // 获取当前地图活着的boss
+      const currentMapBossesObject = BossDataCenter.instance._mapbossDic[playerMapId];
+      const currentMapBosses = [];
+      for (const bossId in currentMapBossesObject) {
+        const bs = currentMapBossesObject[bossId];
+        for (const b in bs) {
+          currentMapBosses.push(bs[b]);
+        }
+      }
+      const currentMapFilterBosses = currentMapBosses.filter(bossFilterFunc);
+      bosses.push(...currentMapFilterBosses);
+    }
+
+    // 获取当前地图最近的一个boss
+    if (bosses.length > 0) {
+      // 获取每个boss的距离
+      for (const b of bosses) {
+        const vo = new com.game.core.scene.map.road.SearchToPointVO();
+        const p = com.game.core.scene.map.libarys.MapVO.getCenterPoint(b.monsterX, b.monsterY);
+        vo.px = p.x;
+        vo.py = p.y;
+        vo.shift = 0;
+        vo.type = 'walk';
+        const list = com.App.mapModule.mapMoveModel.searchRoadByAstar(vo);
+        b.distance = list ? list.length : 9999999;
+      }
+      // 获取最近的一个
+      const sortedBosses = bosses.sort((a, b) => a.distance - b.distance);
+      selectBoss = sortedBosses[0];
+      console.log('[samira]找到当前地图boss', selectBoss)
+    }
+    // 如果当前地图没有boss, 就获取所有地图的
+    else {
+      // 获取地图中boss最多的地图
+      const allMapBosses = [];
+      for (const mapId of mapIds) {
+        const mapBosses = BossDataCenter.instance._mapbossDic[mapId];
+        for (const bossId in mapBosses) {
+          const bs = mapBosses[bossId];
+          for (const b in bs) {
+            allMapBosses.push(bs[b]);
+          }
+        }
+      }
+
+      // 筛选出来活着的并且没有归属的
+      const allMapFilterdBosses = allMapBosses.filter(bossFilterFunc);
+      const mapBossCount = {};
+      for (const b of allMapFilterdBosses) {
+        const mid = b.mapModelId;
+        if (mapBossCount[mid]) {
+          mapBossCount[mid] += 1;
+        } else {
+          mapBossCount[mid] = 1;
+        }
+      }
+      // 获取boss数量最多的地图
+      let maxCount = 0;
+      let maxCountMapId = 0;
+      for (const key in mapBossCount) {
+        if (mapBossCount[key] > maxCount) {
+          maxCount = mapBossCount[key];
+          maxCountMapId = key;
+        }
+      }
+
+      console.log('[samira]所有地图boss数量:', mapBossCount, '最多的地图:', maxCountMapId, '数量:', maxCount);
+
+      if (maxCount != 0 && maxCountMapId != 0) {
+        const boss = allMapFilterdBosses.find(x => x.mapModelId == maxCountMapId);
+        if (boss) {
+          selectBoss = boss;
+        }
+      }
+    }
+
+    return selectBoss;
+  }
 
   // 获取魂环地图
   SamiraFight.getHunhuanMaps = function () { 
@@ -2931,6 +3017,7 @@ var SamiraFight = (function () {
                             <div class="samira-settings-item"><label><input type="checkbox" class="samira-yiji" />跨服遗迹</label></div>
                             <div class="samira-settings-item"><label><input type="checkbox" class="samira-xiaoguai" />跨服魔甲虫</label></div>
                             <div class="samira-settings-item"><label><input type="checkbox" class="samira-hunhuan" />魂环秘境</label></div>
+                            <div class="samira-settings-item"><label><input type="checkbox" class="samira-lilian" />历练任务</label></div>
                         </div>
                         <div class="samira-settings-items-group">
                             <div class="samira-settings-item"><label><input type="checkbox" class="samira-shanggu" />上古禁地BOSS</label></div>
