@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1113-1133';
+  SamiraFight.version = '1113-1323';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -1988,7 +1988,7 @@ var SamiraFight = (function () {
       
       // 历练任务
       const lilianTask = com.logic.data.task.TaskModel.lilianTask;
-      if (SamiraFight.config.lilian == '1' && lilianTask && lilianTask.curCount < lilianTask.maxCount) {
+      if (SamiraFight.config.lilian == '1' && lilianTask && lilianTask.curCount <= lilianTask.maxCount) {
         console.log('[samira][历练]准备去做历练任务...' + lilianTask.curCount);
         SamiraFight.currentStatus = 'lilian';
         // 记录当前历练任务
