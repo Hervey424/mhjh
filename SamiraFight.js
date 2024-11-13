@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1113-1131';
+  SamiraFight.version = '1113-1132';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -128,6 +128,10 @@ var SamiraFight = (function () {
     Laya.workerTimer.clear(SamiraFight, com.modules.map.model.auto.SamiraFight.requestBoss);
     Laya.workerTimer.clear(SamiraFight, com.modules.map.model.auto.SamiraFight.update);
     Laya.workerTimer.clear(SamiraFight, com.modules.map.model.auto.SamiraFight.requestXiuLuoBoss);
+    // 关闭自动历练任务
+    TaskAuto.isAutoLilian = false;
+    SamiraFight.currentLilian = 0;
+    SamiraFight.currentLilianBoss = null;
   };
 
   // 自动开启
@@ -350,7 +354,7 @@ var SamiraFight = (function () {
         continue;
       }
       const level = com.logic.data.item.EquipPartCenter.getPartQiangHuaLevel(part, 10);
-      const beanId = com.modules.role.junxian.data.JunZhuangCenter.getQiangHuaNewID(3, level);
+      const beanId = com.modules.duanzao.EnumDuanzao.getQiangHuaNewID(3, level);
       const bean = com.App.dataMgr.q_equip_qianghua_newContainer.getDataBean(beanId);
       if (bean && bean.q_next_id != 0) {
         if (level < minLevel) {
@@ -362,7 +366,7 @@ var SamiraFight = (function () {
 
     if (minLevel != 999999 && minPart != 0) {
       const level = com.logic.data.item.EquipPartCenter.getPartQiangHuaLevel(minPart, 10);
-      const beanId = com.modules.role.junxian.data.JunZhuangCenter.getQiangHuaNewID(3, level);
+      const beanId = com.modules.duanzao.EnumDuanzao.getQiangHuaNewID(3, level);
       const bean = com.App.dataMgr.q_equip_qianghua_newContainer.getDataBean(beanId);
       if (bean && bean.q_next_id != 0) {
         const next = com.App.dataMgr.q_equip_qianghua_newContainer.getDataBean(bean.q_next_id);
