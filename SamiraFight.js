@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1113-1132';
+  SamiraFight.version = '1113-1133';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -1988,7 +1988,7 @@ var SamiraFight = (function () {
       
       // 历练任务
       const lilianTask = com.logic.data.task.TaskModel.lilianTask;
-      if (SamiraFight.config.lilian == '1' && lilianTask.curCount < lilianTask.maxCount) {
+      if (SamiraFight.config.lilian == '1' && lilianTask && lilianTask.curCount < lilianTask.maxCount) {
         console.log('[samira][历练]准备去做历练任务...' + lilianTask.curCount);
         SamiraFight.currentStatus = 'lilian';
         // 记录当前历练任务
@@ -2525,6 +2525,12 @@ var SamiraFight = (function () {
       }
     } else if (SamiraFight.currentStatus === 'lilian') {
       const lilianTask = com.logic.data.task.TaskModel.lilianTask;
+      if (!lilianTask) {
+        console.log('[samira][历练]历练任务已全部完成');
+        SamiraFight.currentStatus = 'search';
+        TaskAuto.isAutoLilian = false;
+        return;
+      }
       console.log('[samira][历练]正在做历练任务...' + lilianTask.curCount, lilianTask);
 
       // 如果不是寻找物品, 就开启自动任务
