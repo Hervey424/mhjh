@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1113-1816';
+  SamiraFight.version = '1115-1900';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -1130,9 +1130,12 @@ var SamiraFight = (function () {
     config.lilian = config.lilian || '0';
     config.sanguo = config.sanguo || '0';
     config.sanguoMapIndex = config.sanguoMapIndex || [];
+    config.sanguoTask = config.sanguoTask || '0';
+
 
     $('.samira-xiuluo').val(config.xiuluoCengshu.join('|'));
     $('.samira-fuli').prop('checked', config.fuli === '1');
+    $('.samira-sanguo-task').prop('checked', config.sanguoTask === '1');
     $('.samira-auto-denglu').prop('checked', config.dljiangli === '1');
     $('.samira-shanggu').prop('checked', config.shanggu === '1');
     $('.samira-shanggu-xiaoguai').prop('checked', config.shangguxiaoguai === '1');
@@ -1334,6 +1337,8 @@ var SamiraFight = (function () {
     // 三国
     const sanguo = $('.samira-sanguo').prop('checked') ? '1' : '0';
     const sanguoMapIndex = $('.samira-sanguo-map-index').val().split('|').map(x => parseInt(x));
+    // 三国任务
+    const sanguoTask = $('.samira-sanguo-task').prop('checked') ? '1' : '0';
 
     SamiraFight.config = {
       xiuluoCengshu: xiuluoCengshu,
@@ -1402,7 +1407,8 @@ var SamiraFight = (function () {
       hunhuan: hunhuan,
       lilian: lilian,
       sanguo: sanguo,
-      sanguoMapIndex: sanguoMapIndex
+      sanguoMapIndex: sanguoMapIndex,
+      sanguoTask: sanguoTask
     };
 
     return SamiraFight.config;
@@ -1922,10 +1928,18 @@ var SamiraFight = (function () {
         }
       }
 
-      // 如果有内功任务， 就去打上古boss，倒数三个
-      if (SamiraFight.config.autoNeigong == '1' && SamiraFight.getNeigongTimes() > 0) {
-        SamiraFight.config.shanggu = '1';
-        SamiraFight.config.shangguMap = SamiraFight.config.shangguMap || '-1|-2|-3';
+      // 烽火每日任务
+      const fenghuoTask = com.logic.data.task.TaskModel.taskDict[67002];
+      if (fenghuoTask && SamiraFight.config.sanguoTask == '1') {
+        // 未完成, 选中烽火地图
+        if (fenghuoTask.taskState == 1) {
+          console.log('[samira]三国任务未完成, 选中烽火地图');
+          SamiraFight.config.sanguo = '1';
+        }
+        // 已完成, 领取任务
+        else if (fenghuoTask.taskState == 2) {
+          TaskCommandSender.finishTask(fenghuoTask);
+        }
       }
 
       // 烽火三国
@@ -1952,6 +1966,12 @@ var SamiraFight = (function () {
           SamiraFight.currentStatus = 'fight';
           return;
         }
+      }
+
+      // 如果有内功任务， 就去打上古boss，倒数三个
+      if (SamiraFight.config.autoNeigong == '1' && SamiraFight.getNeigongTimes() > 0) {
+        SamiraFight.config.shanggu = '1';
+        SamiraFight.config.shangguMap = SamiraFight.config.shangguMap || '-1|-2|-3';
       }
 
       // 处理上古禁地小怪
@@ -2639,7 +2659,7 @@ var SamiraFight = (function () {
     
     const mapIds = [];
     for (const index of indexs) { 
-      const i = allowMaps.length + index;
+      const i = index < 0 ? allowMaps.length + index : index - 1;
       if (i < 0 || i >= allowMaps.length) { 
         continue;
       }
@@ -3013,6 +3033,7 @@ var SamiraFight = (function () {
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-tiantianzanzhu' />天天赞助</label></div>
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-meirizhigou' />每日直购</label></div>
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-zaixianjiangli' />在线奖励</label></div>
+														<div class="samira-settings-item"><label><input type="checkbox" class='samira-sanguo-task' />三国任务</label></div>
 												</div>
 												<div class="samira-settings-items-group">
 														<div class="samira-settings-item">
