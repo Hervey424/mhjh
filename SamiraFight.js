@@ -2571,7 +2571,7 @@ var SamiraFight = (function () {
         const bosses = com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(mapId).filter(x => x.remainTime == 0 && (x.owner == '' || x.owner == playerName));
         
         if (bosses.length > 0) {
-          SamiraFight.currentHunhuanBoss = bosses[bosses.length - 1];
+          SamiraFight.currentHunhuanBoss = bosses[0];
         } else {
           return;
         }
