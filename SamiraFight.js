@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1115-1900';
+  SamiraFight.version = '1123-2326';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -28,7 +28,9 @@ var SamiraFight = (function () {
     longhunboss: '龙魂BOSS',
     jiaoyi: '交易',
     hunhuan: '魂环秘境',
-    lilian: '历练任务'
+    lilian: '历练任务',
+    sanguoxiaoguai: '三国小怪',
+    sanguoxiaoguaiXinwu: '三国小怪信物'
   };
   // 当前boss
   SamiraFight.currentBoss = null;
@@ -96,6 +98,12 @@ var SamiraFight = (function () {
   // 当前进行的历练任务
   SamiraFight.currentLilian = 0;
   SamiraFight.currentLilianBoss = null;
+  // 三国小怪
+  SamiraFight.sanguoXiaoguaiMapId = 0;
+  SamiraFight.sanguoXiaoguaiEndTs = 0;
+  SamiraFight.sanguoXiaoguaiMeiriMapId = 0;
+  // 三国小怪每日已经完成的地图
+  SamiraFight.sanguoXiaoguaiMeiriComplateMapIds = [];
 
   // 开启内挂
   SamiraFight.start = function () {
@@ -191,12 +199,18 @@ var SamiraFight = (function () {
   SamiraFight.commonTimerFunction = function () {
     console.log('[samira]commonTimer', SamiraFight.config);
     const hours = new Date().getHours();
+    const minutes = new Date().getMinutes();
 
     // 时间如果是11点, 16点, 21点, 自动开启boss伤害统计
     if (hours == 11 || hours == 16 || hours == 21) {
       SamiraFight.startKuafuBossHp();
     } else {
       SamiraFight.stopKuafuBossHp();
+    }
+
+    // 每天0点清空三国每日
+    if (hours == 0 && minutes <= 1) {
+      SamiraFight.sanguoXiaoguaiMeiriComplateMapIds = [];
     }
 
     // const playerName = com.App.role._name;
@@ -290,7 +304,7 @@ var SamiraFight = (function () {
       }
     }
 
-    if (seconds % 30 == 0) {
+    if (seconds % 10 == 0) {
       com.logic.connect.sender.ItemCommandSender.sendClearUpGoodsMessage(2);
     }
   };
@@ -1131,7 +1145,10 @@ var SamiraFight = (function () {
     config.sanguo = config.sanguo || '0';
     config.sanguoMapIndex = config.sanguoMapIndex || [];
     config.sanguoTask = config.sanguoTask || '0';
-
+    config.sanguoXiaoguaiMeiri = config.sanguoXiaoguaiMeiri || '0';
+    config.sanguoXiaoguaiMeiriIndexs = config.sanguoXiaoguaiMeiriIndexs || ['1'];
+    config.sanguoXiaoguaiMeiriXinwu = config.sanguoXiaoguaiMeiriXinwu || '0';
+    config.sanguoXiaoguaiMeiriXinwuIndexs = config.sanguoXiaoguaiMeiriXinwuIndexs || ['1'];
 
     $('.samira-xiuluo').val(config.xiuluoCengshu.join('|'));
     $('.samira-fuli').prop('checked', config.fuli === '1');
@@ -1199,6 +1216,10 @@ var SamiraFight = (function () {
     $('.samira-lilian').prop('checked', config.lilian === '1');
     $('.samira-sanguo').prop('checked', config.sanguo === '1');
     $('.samira-sanguo-map-index').val(config.sanguoMapIndex.join('|'));
+    $('.samira-sanguo-xiaoguai-meiri').prop('checked', config.sanguoXiaoguaiMeiri === '1');
+    $('.samira-sanguo-xiaoguai-meiri-indexs').val(config.sanguoXiaoguaiMeiriIndexs.join('|'));
+    $('.samira-sanguo-xiaoguai-meiri-xinwu').prop('checked', config.sanguoXiaoguaiMeiriXinwu === '1');
+    $('.samira-sanguo-xiaoguai-meiri-xinwu-indexs').val(config.sanguoXiaoguaiMeiriXinwuIndexs.join('|'));
   };
 
   // 从ui获取配置
@@ -1339,6 +1360,11 @@ var SamiraFight = (function () {
     const sanguoMapIndex = $('.samira-sanguo-map-index').val().split('|').map(x => parseInt(x));
     // 三国任务
     const sanguoTask = $('.samira-sanguo-task').prop('checked') ? '1' : '0';
+    // 三国小怪
+    const sanguoXiaoguaiMeiri = $('.samira-sanguo-xiaoguai-meiri').prop('checked') ? '1' : '0';
+    const sanguoXiaoguaiMeiriIndexs = $('.samira-sanguo-xiaoguai-meiri-indexs').val().split('|').filter(x => x != null && x!= undefined && x != '').map(x => parseInt(x));
+    const sanguoXiaoguaiMeiriXinwu = $('.samira-sanguo-xiaoguai-meiri-xinwu').prop('checked') ? '1' : '0';
+    const sanguoXiaoguaiMeiriXinwuIndexs = $('.samira-sanguo-xiaoguai-meiri-xinwu-indexs').val().split('|').filter(x => x != null && x!= undefined && x != '').map(x => parseInt(x));
 
     SamiraFight.config = {
       xiuluoCengshu: xiuluoCengshu,
@@ -1408,7 +1434,11 @@ var SamiraFight = (function () {
       lilian: lilian,
       sanguo: sanguo,
       sanguoMapIndex: sanguoMapIndex,
-      sanguoTask: sanguoTask
+      sanguoTask: sanguoTask,
+      sanguoXiaoguaiMeiri: sanguoXiaoguaiMeiri,
+      sanguoXiaoguaiMeiriIndexs: sanguoXiaoguaiMeiriIndexs,
+      sanguoXiaoguaiMeiriXinwu: sanguoXiaoguaiMeiriXinwu,
+      sanguoXiaoguaiMeiriXinwuIndexs: sanguoXiaoguaiMeiriXinwuIndexs
     };
 
     return SamiraFight.config;
@@ -1451,7 +1481,7 @@ var SamiraFight = (function () {
     // 魂环地图
     const hunhuanMapIds = SamiraFight.getHunhuanMaps();
     // 三国地图
-    const sanguoMapIds = SamiraFight.getSanguoMapIds();
+    const sanguoMapIds = SamiraFight.getSanguoMapIds(SamiraFight.config.sanguoMapIndex || []);
 
     const mapIds = [...bossMapIds, fuliMapId, ...azsmMapIds, yijiMapId, zhanqiMapId, kuafuMapId, ...shangguMapIds, ...shangguXiaoGuaiMapIds, ...yijieruqinMapIds, suohunta, ...hunhuanMapIds,...sanguoMapIds];
     BossCommandSender.sendC2S_AliveWildBossMessage(mapIds, 0, false);
@@ -1945,7 +1975,7 @@ var SamiraFight = (function () {
       // 烽火三国
       if (SamiraFight.kuafuActiveStatus && SamiraFight.config.sanguo == '1') {
         const bosses = [];
-        const mapIds = SamiraFight.getSanguoMapIds();
+        const mapIds = SamiraFight.getSanguoMapIds(SamiraFight.config.sanguoMapIndex || []);
         for (const mapId of mapIds) {
           const mapBosses = BossDataCenter.instance._mapbossDic[mapId];
           for (const bossId in mapBosses) {
@@ -2041,6 +2071,42 @@ var SamiraFight = (function () {
         SamiraFight.kuafuXiaoGuai.pointIndex = 0;
         SamiraFight.currentStatus = 'xiaoguai';
         return;
+      }
+
+      // 三国小怪
+      if (SamiraFight.config.sanguoXiaoguaiMeiri === '1' && SamiraFight.config.sanguoXiaoguaiMeiriIndexs.length > 0) {
+        const mapIds = SamiraFight.getSanguoMapIds(SamiraFight.config.sanguoXiaoguaiMeiriIndexs);
+        if (mapIds.length > 0) {
+          SamiraFight.sanguoXiaoguaiMapId = mapIds[0];
+          SamiraFight.sanguoXiaoguaiEndTs = ts + 60 * 60;
+          SamiraFight.currentStatus = 'sanguoxiaoguai';
+          return;
+        }
+      }
+
+      // 三国小怪每日信物
+      if (SamiraFight.config.sanguoXiaoguaiMeiriXinwu === '1' && SamiraFight.config.sanguoXiaoguaiMeiriXinwuIndexs.length > 0) { 
+        const mapIds = SamiraFight.getSanguoMapIds(SamiraFight.config.sanguoXiaoguaiMeiriXinwuIndexs);
+        const map = JSON.parse(com.App.dataMgr.q_globalContainer.getDataBean(45027).q_string_value);
+        for (const mapId of mapIds) { 
+          // 如果已经完成了, 就退出
+          if ((SamiraFight.sanguoXiaoguaiMeiriComplateMapIds || []).includes(mapId)) {
+            continue;
+          }
+          const itemId = map[mapId].id;
+          const info = com.modules.zuoqi.ZuoQiCenter.getDrop(itemId);
+          if (!info) { 
+            SamiraFight.tp(mapId);
+            return;
+          }
+          const num= info ? info.num :0;
+          const max = info ? info.maxNum : 0;
+          if (num < max) { 
+            SamiraFight.currentStatus = 'sanguoxiaoguaimeiri';
+            SamiraFight.sanguoXiaoguaiMeiriMapId = mapId;
+            return;
+          }
+        }
       }
       
       // 历练任务
@@ -2636,12 +2702,53 @@ var SamiraFight = (function () {
           }
         }
       }
+    } else if (SamiraFight.currentStatus === 'sanguoxiaoguai') {
+      // 没在地图中就进入地图
+      if (playerMapId != SamiraFight.sanguoXiaoguaiMapId) {
+        SamiraFight.tp(SamiraFight.sanguoXiaoguaiMapId);
+      }
+
+      // 超时后重新寻找boss
+      if (ts > SamiraFight.sanguoXiaoguaiEndTs) {
+        console.log('[samira]三国小怪已结束, 重新寻找boss');
+        SamiraFight.currentStatus = 'search';
+        return;
+      }
+
+      // 开启自动攻击
+      com.App.openAutoFight();
+    } else if (SamiraFight.currentStatus === 'sanguoxiaoguaimeiri') {
+      const map = JSON.parse(App.dataMgr.q_globalContainer.getDataBean(45027).q_string_value);
+      const itemId = map[SamiraFight.sanguoXiaoguaiMeiriMapId].id;
+      const info = ZuoQiCenter.getDrop(itemId);
+      const num= info ? info.num :0;
+      const max = info ? info.maxNum : 0;
+      console.log('[samira]三国小怪任务打怪中...(' + num + '/' + max + ')');
+      if (num >= max) {
+        console.log('[samira]三国小怪任务已完成, 重新寻找boss');
+        SamiraFight.currentStatus = 'search';
+
+        if (!SamiraFight.sanguoXiaoguaiMeiriComplateMapIds) {
+          SamiraFight.sanguoXiaoguaiMeiriComplateMapIds = [];
+        }
+
+        SamiraFight.sanguoXiaoguaiMeiriComplateMapIds.push(playerMapId);
+
+        return;
+      }
+
+      // 没在地图中进入地图
+      if (playerMapId != SamiraFight.sanguoXiaoguaiMeiriMapId) {
+        SamiraFight.tp(SamiraFight.sanguoXiaoguaiMeiriMapId);
+      }
+
+      // 开启自动攻击
+      com.App.openAutoFight();
     }
   };
 
   // 获取三国地图
-  SamiraFight.getSanguoMapIds = function () {
-    const indexs = SamiraFight.config.sanguoMapIndex || [];
+  SamiraFight.getSanguoMapIds = function (indexs) {
     const data = com.logic.data.zone.boss.BossDataCenter.sanguo.sort((v1, v2) => {
       if (v1.bean.q_order == v2.bean.q_order) {
         return parseInt(v1.bean.q_image) - parseInt(v2.bean.q_image);
@@ -3127,6 +3234,14 @@ var SamiraFight = (function () {
                             <div class="samira-settings-item">
 																<label><input type="checkbox" class="samira-sanguo" />烽火三国</label>
 																<input type="input" style="width: 120px;" class="samira-sanguo-map-index" />
+														</div>
+                            <div class="samira-settings-item">
+																<label><input type="checkbox" class="samira-sanguo-xiaoguai-meiri-xinwu" />三国小怪每日信物</label>
+																<input type="input" style="width: 120px;" class="samira-sanguo-xiaoguai-meiri-xinwu-indexs" />
+														</div>
+                            <div class="samira-settings-item">
+																<label><input type="checkbox" class="samira-sanguo-xiaoguai-meiri" />三国小怪</label>
+																<input type="input" style="width: 120px;" class="samira-sanguo-xiaoguai-meiri-indexs" />
 														</div>
                         </div>
                         <div class="samira-settings-items-group">

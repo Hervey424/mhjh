@@ -1,4 +1,3 @@
-//class com.modules.zuoqi.ZuoQiCenter
 var ZuoQiCenter=(function(){
 	function ZuoQiCenter(){}
 	__class(ZuoQiCenter,'com.modules.zuoqi.ZuoQiCenter');
@@ -14,7 +13,23 @@ var ZuoQiCenter=(function(){
 	__getset(1,ZuoQiCenter,'zuoqiDic',function(){return ZuoQiCenter._dic;});
 	/**坐骑总等级*/
 	__getset(1,ZuoQiCenter,'allLevel',function(){return ZuoQiCenter._allLevel;});
-	ZuoQiCenter.getZuoqi=function(id){return ZuoQiCenter._dic[id];}
+	ZuoQiCenter.getZuoqi=function(id){
+		var info=ZuoQiCenter._dic[id];
+		if(info && info.lostTime > 0 && info.lostTime < ServerTime.getServerTime()){
+			return null;
+		}
+		return ZuoQiCenter._dic[id];
+	}
+
+	ZuoQiCenter.loadZuoqi=function(arr){
+		ZuoQiCenter._dic={};
+		var info;
+		for(var $each_info in arr){
+			info=arr[$each_info];
+			ZuoQiCenter.setZuoqi(info);
+		}
+	}
+
 	ZuoQiCenter.setZuoqi=function(info){
 		ZuoQiCenter._dic[info.faqiId]=info;
 	}
@@ -82,11 +97,12 @@ var ZuoQiCenter=(function(){
 			return;
 		ZuoQiCenter.zuoqiRed=false;
 		var mounts=App.dataMgr.q_mountContainer.mounts;
-		var lvBean,param;
+		var zuoqi,lvBean,param;
 		var bean;
 		for(var $each_bean in mounts){
 			bean=mounts[$each_bean];
-			if(!com.modules.zuoqi.ZuoQiCenter.getZuoqi(bean.q_id)&& ConditionUtil.isConditionEnoughJson(bean.q_open_demand)&& bean.q_open_cost){
+			zuoqi=com.modules.zuoqi.ZuoQiCenter.getZuoqi(bean.q_id);
+			if((!zuoqi || zuoqi.lostTime > 0)&& ConditionUtil.isConditionEnoughJson(bean.q_open_demand)&& bean.q_open_cost){
 				param=JSON.parse(bean.q_open_cost)[0];
 				if(BagItemCenter.getItemCount(param.id)>=param.num){
 					ZuoQiCenter.zuoqiRed=true;
@@ -100,12 +116,13 @@ var ZuoQiCenter=(function(){
 			}
 		}
 		if(!ZuoQiCenter.zuoqiRed){
-			var zuoqi;
 			var $each_bean;
 			for($each_bean in mounts){
 				bean=mounts[$each_bean];
 				zuoqi=ZuoQiCenter.getZuoqi(bean.q_id);
-				if(!zuoqi)continue ;
+				if(!zuoqi || zuoqi.lostTime > 0){
+					continue ;
+				}
 				lvBean=App.dataMgr.q_mountLvContainer.getDataBean(zuoqi.faqiId+zuoqi.lv,false);
 				if(!lvBean || (lvBean.q_next_id==0 && zuoqi.star >=lvBean.q_max_layer)|| !ConditionUtil.isConditionEnoughJson(lvBean.q_level_demand)){
 					continue ;
@@ -137,7 +154,7 @@ var ZuoQiCenter=(function(){
 		for(var $each_bean in beans){
 			bean=beans[$each_bean];
 			zuoqi=com.modules.zuoqi.ZuoQiCenter.getZuoqi(bean.q_id);
-			if(zuoqi){
+			if(zuoqi && zuoqi.lostTime < 0){
 				lvBean=App.dataMgr.q_mountLvContainer.getDataBean(zuoqi.faqiId+zuoqi.lv,false);
 				if(!lvBean || (lvBean.q_next_id==0 && zuoqi.star >=lvBean.q_max_layer)|| !ConditionUtil.isConditionEnoughJson(lvBean.q_level_demand)){
 					continue ;
