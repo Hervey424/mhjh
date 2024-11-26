@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1126-1322';
+  SamiraFight.version = '1126-1329';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -1805,7 +1805,7 @@ var SamiraFight = (function () {
 
       // 飞升boss
       if (SamiraFight.kuafuActiveStatus && hours > 1 && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(183) > 0 && SamiraFight.config.fsboss == '1') {
-        const mapIds = SamiraFight.getFeishengMapIds() || [];
+        const mapIds = SamiraFight.getFeishengMapIds(SamiraFight.config.fsbossIndexs || []) || [];
         const bosses = [];
         for(const mapId of mapIds) {
           bosses.push(...com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(mapId));
