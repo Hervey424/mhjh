@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1126-1330';
+  SamiraFight.version = '1126-1424';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -1098,6 +1098,7 @@ var SamiraFight = (function () {
     config.shenmoBoss = config.shenmoBoss || '0';
     config.xukongliehen = config.xukongliehen || '0';
     config.yabiao = config.yabiao || '0';
+    config.yabiaoType = config.yabiaoType || '1';
     config.xiaoguai = config.xiaoguai || '0';
     config.zhenyingzhan = config.zhenyingzhan || '0';
     config.autoRevive = config.autoRevive || '0';
@@ -1173,6 +1174,7 @@ var SamiraFight = (function () {
     $('.samira-map').val(config.mapIds.join('|'));
     $('.samira-xukongliehen').prop('checked', config.xukongliehen === '1');
     $('.samira-yabiao').prop('checked', config.yabiao === '1');
+    $('.samira-yabiao-type').val(config.yabiaoType);
     $('.samira-xiaoguai').prop('checked', config.xiaoguai === '1');
     $('.samira-zhenyingzhan').prop('checked', config.zhenyingzhan === '1');
     $('.samira-auto-revive').prop('checked', config.autoRevive === '1');
@@ -1394,6 +1396,7 @@ var SamiraFight = (function () {
       shenmoBoss: shenmoBoss,
       xukongliehen: xukongliehen,
       yabiao: yabiao,
+      yabiaoType: yabiaoType,
       xiaoguai: xiaoguai,
       zhenyingzhan: zhenyingzhan,
       autoRevive: autoRevive,
@@ -1539,6 +1542,7 @@ var SamiraFight = (function () {
     const dayOfweek = new Date().getDay();
     const yabiaoTili = com.modules.escort.EscortCenter.getData().remainCount;
     const money = com.logic.data.MoneyCenter.getMoney(90);
+    const diamond = com.logic.data.MoneyCenter.getMoney(1);
     // 小怪任务
     const dayXiaoguaiTask = com.App.dataMgr.q_jitanContainer.getList().find(x => x.q_id === SamiraFight.kuafuXiaoGuai.taskId);
     const dayXiaoGuaiData = com.logic.data.jitian.JitanCenter.getJiTianTaskData(SamiraFight.kuafuXiaoGuai.taskId);
@@ -2341,7 +2345,8 @@ var SamiraFight = (function () {
       // 开启自动攻击
       com.App.openAutoFight();
     } else if (SamiraFight.currentStatus === 'yabiao') {
-      const data = com.modules.escort.EscortCenter.getData();
+      const taskId = SamiraFight.config.yabiaoType === '1' ? 640004 : 640006;
+      const data = com.modules.escort.EscortCenter.getData(taskId);
       if (!data || !data.taskData) {
         return;
       }
@@ -2349,10 +2354,19 @@ var SamiraFight = (function () {
       const status = data.taskState;
       // 未接任务
       if (status == 0) {
-        if (money < 2000000) {
-          console.log('[samira]金币不足, 无法接取任务');
-          SamiraFight.currentStatus = 'search';
-          return;
+
+        if (SamiraFight.config.yabiaoType === '1') {
+          if (money < 2000000) {
+            console.log('[samira]金币不足, 无法接取任务');
+            SamiraFight.currentStatus = 'search';
+            return;
+          }
+        } else {
+          if (diamond < 5000) {
+            console.log('[samira]钻石不足, 无法接取任务');
+            SamiraFight.currentStatus = 'search';
+            return;
+          }
         }
 
         EventMgr.dispatch('TE.taskTransfer', com.modules.escort.EscortCenter.getData().taskData.getConditionData(), JSON.stringify({ npcid: 2086 }), 1, true);
@@ -3255,11 +3269,11 @@ var SamiraFight = (function () {
                         <div class="samira-settings-item"><label><input type="checkbox" class="samira-zhenyingzhan" />跨服阵营战</label></div>
                         <div class="samira-settings-item"><label><input type="checkbox" class="samira-zhanchang-boss" />跨服神尊BOSS</label></div>
                         <div class="samira-settings-item">
-                          <label>跨服神尊BOSS血量&nbsp:</label>
+                          <label>跨服神尊BOSS血量&nbsp</label>
 													<input type="input" style="width: 80px; height: 15px;" class="samira-zhanchang-boss-hp" />
                         </div>
                         <div class="samira-settings-item" style="display: flex; align-items: center;">
-                          <label><input type="checkbox" class="samira-yijieruqin" />异界入侵&nbsp:</label>
+                          <label><input type="checkbox" class="samira-yijieruqin" />异界入侵&nbsp</label>
 													<input type="input" style="width: 80px; height: 15px;" class="samira-yijieruqin-index" />
                         </div>
                         <div class="samira-settings-item"><label><input type="checkbox" class="samira-sbk" />沙巴克</label></div>
