@@ -65,6 +65,8 @@
   margin-right: 15px;
   margin-top: 3px;
   margin-bottom: 3px;
+  height: 25px;
+  overflow: hidden;
 }
 
 .samira-status-contaienr{

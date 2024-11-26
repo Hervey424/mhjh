@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1126-1329';
+  SamiraFight.version = '1126-1330';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -1257,6 +1257,7 @@ var SamiraFight = (function () {
     const xukongliehen = $('.samira-xukongliehen').prop('checked') ? '1' : '0';
     // 押镖
     const yabiao = $('.samira-yabiao').prop('checked') ? '1' : '0';
+    const yabiaoType = $('.samira-yabiao-type').val().trim();
     // 跨服战场小怪
     const xiaoguai = $('.samira-xiaoguai').prop('checked') ? '1' : '0';
     // 阵营战
@@ -1611,12 +1612,12 @@ var SamiraFight = (function () {
     }
 
     // 如果是周日八点到八点半, 进入武道会决赛
-    if (dayOfweek == 0 && hours == 20 && minutes >= 0 && minutes < 20 && SamiraFight.config.wudaoJuesai == '1' && SamiraFight.currentStatus != 'wudaojuesai') {
-      com.App.returnCity();
-      SamiraFight.currentStatus = 'wudaohuijuesai';
-      SamiraFight.tp(210041);
-      return;
-    }
+    // if (dayOfweek == 0 && hours == 20 && minutes >= 0 && minutes < 20 && SamiraFight.config.wudaoJuesai == '1' && SamiraFight.currentStatus != 'wudaojuesai') {
+    //   com.App.returnCity();
+    //   SamiraFight.currentStatus = 'wudaohuijuesai';
+    //   SamiraFight.tp(210041);
+    //   return;
+    // }
 
     // 显示当前状态
     $('.samira-current-task').text(SamiraFight.currentStatus ? SamiraFight.status[SamiraFight.currentStatus] || '未知任务(' + SamiraFight.currentStatus + ')' : '无');
@@ -3250,20 +3251,26 @@ var SamiraFight = (function () {
                 <fieldset class="samira-settings-fieldset">
                     <legend>活动</legend>
                     <div class="samira-settings-items">
-                        <div class="samira-settings-item"><label><input type="checkbox" class="samira-xukongliehen" />虚空裂痕【19.30】</label></div>
-                        <div class="samira-settings-item"><label><input type="checkbox" class="samira-zhenyingzhan" />跨服阵营战【20.00】</label></div>
-                        <div class="samira-settings-item"><label><input type="checkbox" class="samira-zhanchang-boss" />跨服神尊BOSS【11.00，16.00，21.00】</label></div>
+                        <div class="samira-settings-item"><label><input type="checkbox" class="samira-xukongliehen" />虚空裂痕</label></div>
+                        <div class="samira-settings-item"><label><input type="checkbox" class="samira-zhenyingzhan" />跨服阵营战</label></div>
+                        <div class="samira-settings-item"><label><input type="checkbox" class="samira-zhanchang-boss" />跨服神尊BOSS</label></div>
                         <div class="samira-settings-item">
-                          <label>跨服神尊BOSS血量&nbsp;</label>
+                          <label>跨服神尊BOSS血量&nbsp:</label>
 													<input type="input" style="width: 80px; height: 15px;" class="samira-zhanchang-boss-hp" />
                         </div>
                         <div class="samira-settings-item" style="display: flex; align-items: center;">
-                          <label><input type="checkbox" class="samira-yijieruqin" />异界入侵【20.30】</label>
+                          <label><input type="checkbox" class="samira-yijieruqin" />异界入侵&nbsp:</label>
 													<input type="input" style="width: 80px; height: 15px;" class="samira-yijieruqin-index" />
                         </div>
-                        <div class="samira-settings-item"><label><input type="checkbox" class="samira-sbk" />沙巴克【周六20.00】</label></div>
-                        <div class="samira-settings-item"><label><input type="checkbox" class="samira-wudao-juesai" />武道会决赛【周日20.00】</label></div>
-                        <div class="samira-settings-item"><label><input type="checkbox" class="samira-yabiao" />双倍押镖</label></div>
+                        <div class="samira-settings-item"><label><input type="checkbox" class="samira-sbk" />沙巴克</label></div>
+                        <div class="samira-settings-item" style="display: none"><label><input type="checkbox" class="samira-wudao-juesai" />武道会决赛【周日20.00】</label></div>
+                        <div class="samira-settings-item">
+                            <input type="checkbox" class="samira-yabiao" />双倍押镖</label>
+                            <select style="width: 60px;" class="samira-yabiao-type">
+                              <option value="1">金币</option>
+                              <option value="2">钻石</option>
+                            </select>
+                        </div>
                     </div>
                 </fieldset>
                 <fieldset class="samira-settings-fieldset">
