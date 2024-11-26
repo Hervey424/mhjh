@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1126-1316';
+  SamiraFight.version = '1126-1322';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -1373,7 +1373,7 @@ var SamiraFight = (function () {
     const sanguoXiaoguaiMeiriXinwuIndexs = $('.samira-sanguo-xiaoguai-meiri-xinwu-indexs').val().split('|').filter(x => x != null && x!= undefined && x != '').map(x => parseInt(x));
     // 飞升boss
     const fsboss = $('.samira-fsboss').prop('checked') ? '1' : '0';
-    const fsbossIndexs = $('.samira-fsboss-indexs').val().split('|').filter(x => x != null && x!= undefined && x != '');
+    const fsbossIndexs = $('.samira-fsboss-indexs').val().split('|').filter(x => x != null && x!= undefined && x != '').map(x => parseInt(x));;
 
     SamiraFight.config = {
       xiuluoCengshu: xiuluoCengshu,
