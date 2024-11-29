@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1129-0857';
+  SamiraFight.version = '1129-1102';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -1709,10 +1709,18 @@ var SamiraFight = (function () {
       }
 
       // 押镖
-      if (SamiraFight.kuafuActiveStatus && yabiaoTili > 0 && minutes > 30 && (hours == 11 || hours == 16 || hours == 21) && SamiraFight.config.yabiao == '1' && money >= 2000000) {
-        console.log('[samira]准备押镖');
-        SamiraFight.currentStatus = 'yabiao';
-        return;
+      if (SamiraFight.kuafuActiveStatus && yabiaoTili > 0 && minutes > 30 && (hours == 11 || hours == 16 || hours == 21) && SamiraFight.config.yabiao == '1') {
+        if (SamiraFight.config.yabiaoType === '1' && money >= 2000000) {
+          console.log('[samira]准备押镖');
+          SamiraFight.currentStatus = 'yabiao';
+          return;
+        }
+        
+        if (SamiraFight.config.yabiaoType === '2' && diamond >= 5000) {
+          console.log('[samira]准备押镖');
+          SamiraFight.currentStatus = 'yabiao';
+          return;
+        }
       }
 
       // 武道会
