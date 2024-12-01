@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1129-1628';
+  SamiraFight.version = '1201-1231';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -2066,8 +2066,31 @@ var SamiraFight = (function () {
         const filterShanguBoss = bosses
           .filter(x => x.bean.q_type == 4)
           .filter(boss => (boss.owner === playerName || boss.owner == '' || boss.owner == null) && boss.remainTime === 0)
+          .map(b => {
+            const vo = new com.game.core.scene.map.road.SearchToPointVO();
+            const p = com.game.core.scene.map.libarys.MapVO.getCenterPoint(b.monsterX, b.monsterY);
+            vo.px = p.x;
+            vo.py = p.y;
+            vo.shift = 0;
+            vo.type = 'walk';
+            const list = com.App.mapModule.mapMoveModel.searchRoadByAstar(vo);
+            b.distance = list ? list.length : 9999999;
+            return b;
+          })
           .sort((a, b) => {
-            return b.level - a.level;
+            // 如果 mapModelId 和 mapId 相同
+            let aIsSame = a.mapModelId === playerMapId;
+            let bIsSame = b.mapModelId === playerMapId;
+
+            if (aIsSame && !bIsSame) {
+              return -1; // a 排在 b 前
+            }
+            if (!aIsSame && bIsSame) {
+              return 1; // b 排在 a 前
+            }
+
+            // 如果两者都相同或都不同，则按 distance 排序
+            return a.distance - b.distance;
           });
 
         if (filterShanguBoss.length > 0) {
