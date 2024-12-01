@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1201-1231';
+  SamiraFight.version = '1201-1345';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -202,6 +202,7 @@ var SamiraFight = (function () {
     console.log('[samira]commonTimer', SamiraFight.config);
     const hours = new Date().getHours();
     const minutes = new Date().getMinutes();
+    const secende = new Date().getSeconds();
 
     // 时间如果是11点, 16点, 21点, 自动开启boss伤害统计
     if (hours == 11 || hours == 16 || hours == 21) {
@@ -219,6 +220,10 @@ var SamiraFight = (function () {
     // if (playerName == '绿色的思念') {
     //   GuildCommandSender.sendKickOutGuildMessage('1342896077227215445');
     // }
+    // 追杀别人
+    if (secende % 2 === 0 && SamiraFight.config.track == '1') { 
+      com.logic.connect.sender.BossCommandSender.sendC2S_AliveWildBossMessage(SamiraFight.getCanIntoMapIds(), 0, false);
+    }
 
     SamiraFight.autoRichang();
     SamiraFight.autoYuanshenUp();
@@ -243,6 +248,20 @@ var SamiraFight = (function () {
     SamiraFight.zaixianjiangli();
     SamiraFight.fangcangku();
     SamiraFight.meirixiangou();
+  };
+
+  // 获取可以进入的地图
+  SamiraFight.getCanIntoMapIds = function () { 
+    const mapIds = [
+      // 上古禁地
+      ...SamiraFight.getCanIntoShangguBossMapIds(),
+      // 三国地图
+      ...SamiraFight.getCanIntoSanguoMapIds(),
+      // 战骑祭坛
+      ...SamiraFight.getCanIntoZhanqiBossMapIds()
+    ];
+
+    return mapIds;
   };
 
   // 每日限购
@@ -1154,6 +1173,8 @@ var SamiraFight = (function () {
     config.sanguoXiaoguaiMeiriXinwuIndexs = config.sanguoXiaoguaiMeiriXinwuIndexs || ['1'];
     config.fsboss = config.fsboss || '0';
     config.fsbossIndexs = config.fsbossIndexs || ['-1'];
+    config.track = config.trace || '0';
+    config.trackNames = config.traceNames || [];
 
     $('.samira-fsboss').prop('checked', config.fsboss === '1');
     $('.samira-fsboss-indexs').val(config.fsbossIndexs.join('|'));
@@ -1228,6 +1249,8 @@ var SamiraFight = (function () {
     $('.samira-sanguo-xiaoguai-meiri-indexs').val(config.sanguoXiaoguaiMeiriIndexs.join('|'));
     $('.samira-sanguo-xiaoguai-meiri-xinwu').prop('checked', config.sanguoXiaoguaiMeiriXinwu === '1');
     $('.samira-sanguo-xiaoguai-meiri-xinwu-indexs').val(config.sanguoXiaoguaiMeiriXinwuIndexs.join('|'));
+    $('.samira-track').prop('checked', config.track === '1');
+    $('.samira-track-names').val(config.trackNames.join('|'));
   };
 
   // 从ui获取配置
@@ -1376,7 +1399,10 @@ var SamiraFight = (function () {
     const sanguoXiaoguaiMeiriXinwuIndexs = $('.samira-sanguo-xiaoguai-meiri-xinwu-indexs').val().split('|').filter(x => x != null && x!= undefined && x != '').map(x => parseInt(x));
     // 飞升boss
     const fsboss = $('.samira-fsboss').prop('checked') ? '1' : '0';
-    const fsbossIndexs = $('.samira-fsboss-indexs').val().split('|').filter(x => x != null && x!= undefined && x != '').map(x => parseInt(x));;
+    const fsbossIndexs = $('.samira-fsboss-indexs').val().split('|').filter(x => x != null && x != undefined && x != '').map(x => parseInt(x));
+    // 追踪
+    const track = $('.samira-track').prop('checked') ? '1' : '0';
+    const trackNames = $('.samira-track-names').val().split('|').filter(x => x != null && x != undefined && x != '');
 
     SamiraFight.config = {
       xiuluoCengshu: xiuluoCengshu,
@@ -1454,6 +1480,8 @@ var SamiraFight = (function () {
       sanguoXiaoguaiMeiriXinwuIndexs: sanguoXiaoguaiMeiriXinwuIndexs,
       fsboss: fsboss,
       fsbossIndexs: fsbossIndexs,
+      track: track,
+      trackNames: trackNames,
     };
 
     return SamiraFight.config;
@@ -1820,12 +1848,12 @@ var SamiraFight = (function () {
       if (SamiraFight.kuafuActiveStatus && hours > 1 && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(183) > 0 && SamiraFight.config.fsboss == '1') {
         const mapIds = SamiraFight.getFeishengMapIds(SamiraFight.config.fsbossIndexs || []) || [];
         const bosses = [];
-        for(const mapId of mapIds) {
+        for (const mapId of mapIds) {
           bosses.push(...com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(mapId));
         }
         // 获取活着的boss, 并且是自己的
         const aliveBOsses = bosses.find(x => (x.owner === playerName || x.owner == '' || x.owner == null) && x.remainTime == 0);
-        if (aliveBOsses) { 
+        if (aliveBOsses) {
           SamiraFight.currentBoss = aliveBOsses;
           console.log('[samira]找到飞升boss:', aliveBOsses);
           SamiraFight.currentcheckTimes = 0;
@@ -2154,23 +2182,23 @@ var SamiraFight = (function () {
       }
 
       // 三国小怪每日信物
-      if (SamiraFight.config.sanguoXiaoguaiMeiriXinwu === '1' && SamiraFight.config.sanguoXiaoguaiMeiriXinwuIndexs.length > 0) { 
+      if (SamiraFight.config.sanguoXiaoguaiMeiriXinwu === '1' && SamiraFight.config.sanguoXiaoguaiMeiriXinwuIndexs.length > 0) {
         const mapIds = SamiraFight.getSanguoMapIds(SamiraFight.config.sanguoXiaoguaiMeiriXinwuIndexs);
         const map = JSON.parse(com.App.dataMgr.q_globalContainer.getDataBean(45027).q_string_value);
-        for (const mapId of mapIds) { 
+        for (const mapId of mapIds) {
           // 如果已经完成了, 就退出
           if ((SamiraFight.sanguoXiaoguaiMeiriComplateMapIds || []).includes(mapId)) {
             continue;
           }
           const itemId = map[mapId].id;
           const info = com.modules.zuoqi.ZuoQiCenter.getDrop(itemId);
-          if (!info) { 
+          if (!info) {
             SamiraFight.tp(mapId);
             return;
           }
-          const num= info ? info.num :0;
+          const num = info ? info.num : 0;
           const max = info ? info.maxNum : 0;
-          if (num < max) { 
+          if (num < max) {
             SamiraFight.currentStatus = 'sanguoxiaoguaimeiri';
             SamiraFight.sanguoXiaoguaiMeiriMapId = mapId;
             return;
@@ -2188,6 +2216,33 @@ var SamiraFight = (function () {
         SamiraFight.currentLilianBoss = null;
         com.App.returnCity();
         return;
+      }
+    
+      // 追杀别人
+      if (SamiraFight.config.track == '1') {
+        const bosses = [];
+        const bossDic = com.logic.data.zone.boss.BossDataCenter.instance._allBossDic;
+        for (const key in bossDic) {
+          const bs = bossDic[key];
+          for (const b in bs) {
+            const cs = bs[b];
+            for (const c in cs) {
+              bosses.push(cs[c]);
+            }
+          }
+        }
+
+        console.log(bosses)
+
+        for (const name of SamiraFight.config.trackNames) {
+          const boss = bosses.find(x => x.owner === name && x.remainTime === 0);
+          if (boss) {
+            SamiraFight.currentBoss = boss;
+            console.log('[samira]找到追杀对象:', boss);
+            SamiraFight.currentStatus = 'trace';
+            return;
+          }
+        }
       }
     
       // 获取所有挂机地图活着的boss
@@ -2750,7 +2805,7 @@ var SamiraFight = (function () {
 
       // 如果任务层数不一致, 说明任务已经完成
       if (lilianTask.curCount != SamiraFight.currentLilian) {
-        console.log('[samira][历练]历练任务已完成, 重新寻找boss',lilianTask.curCount,SamiraFight.currentLilian);
+        console.log('[samira][历练]历练任务已完成, 重新寻找boss', lilianTask.curCount, SamiraFight.currentLilian);
         SamiraFight.currentStatus = 'search';
         TaskAuto.isAutoLilian = false;
         return;
@@ -2778,11 +2833,11 @@ var SamiraFight = (function () {
         }
       }
       // 如果是对话npc, 并且需要组队的任务
-      else if (lilianTask.lilian_type == 4) { 
+      else if (lilianTask.lilian_type == 4) {
         // 如果弹出了组队界面, 就直接进去
-        if (com.game.core.panel.PanelManager.isShowing(com.modules.lilian.LilianTeamPanel)) { 
+        if (com.game.core.panel.PanelManager.isShowing(com.modules.lilian.LilianTeamPanel)) {
           const panel = com.game.core.panel.PanelManager.getPanel(com.modules.lilian.LilianTeamPanel);
-          if (panel) { 
+          if (panel) {
             panel.onClick({ currentTarget: panel._view.btnStart })
             // 关闭panel
             com.game.core.panel.PanelManager.closeByClass(com.modules.lilian.LilianTeamPanel);
@@ -2808,7 +2863,7 @@ var SamiraFight = (function () {
       const map = JSON.parse(App.dataMgr.q_globalContainer.getDataBean(45027).q_string_value);
       const itemId = map[SamiraFight.sanguoXiaoguaiMeiriMapId].id;
       const info = ZuoQiCenter.getDrop(itemId);
-      const num= info ? info.num :0;
+      const num = info ? info.num : 0;
       const max = info ? info.maxNum : 0;
       console.log('[samira]三国小怪任务打怪中...(' + num + '/' + max + ')');
       if (num >= max) {
@@ -2831,6 +2886,27 @@ var SamiraFight = (function () {
 
       // 开启自动攻击
       com.App.openAutoFight();
+    } else if (SamiraFight.currentStatus === 'trace') { 
+      // 怪物为空
+      if (SamiraFight.currentBoss == null) {
+        console.log('[samira]boss为空, 重新寻找boss');
+        SamiraFight.currentStatus = 'search';
+        return;
+      }
+
+      // boss死亡
+      if (SamiraFight.currentBoss.remainTime > 0) {
+        console.log('[samira]boss已被击杀, 重新寻找boss');
+        SamiraFight.currentStatus = 'search';
+        return;
+      }
+
+      // 走到boss旁边
+      SamiraFight.toPointFight(SamiraFight.currentBoss.mapModelId, SamiraFight.currentBoss.monsterX, SamiraFight.currentBoss.monsterY, GameHandler.create(SamiraFight, function () {
+        const trackName = SamiraFight.currentBoss.owner;
+        // 如果旁边有人, 就大人
+        // 如果没有人, 就打怪
+      }));
     }
   };
 
@@ -2853,6 +2929,21 @@ var SamiraFight = (function () {
 
   // 获取三国地图
   SamiraFight.getSanguoMapIds = function (indexs) {
+    const allowMaps = SamiraFight.getCanIntoSanguoMapIds();
+    const mapIds = [];
+    for (const index of indexs) { 
+      const i = index < 0 ? allowMaps.length + index : index - 1;
+      if (i < 0 || i >= allowMaps.length) { 
+        continue;
+      }
+      mapIds.push(allowMaps[i]);
+    }
+
+    return mapIds;
+  };
+
+  // 获取三国可以进入的地图
+  SamiraFight.getCanIntoSanguoMapIds = function () { 
     const data = com.logic.data.zone.boss.BossDataCenter.sanguo.sort((v1, v2) => {
       if (v1.bean.q_order == v2.bean.q_order) {
         return parseInt(v1.bean.q_image) - parseInt(v2.bean.q_image);
@@ -2867,18 +2958,8 @@ var SamiraFight = (function () {
         allowMaps.push(mapId);
       }
     }
-    
-    const mapIds = [];
-    for (const index of indexs) { 
-      const i = index < 0 ? allowMaps.length + index : index - 1;
-      if (i < 0 || i >= allowMaps.length) { 
-        continue;
-      }
-      mapIds.push(allowMaps[i]);
-    }
-
-    return mapIds;
-  };
+    return allowMaps;
+  }
 
   // 获取挂机的boss
   SamiraFight.getFightBoss = function () { 
@@ -3075,6 +3156,21 @@ var SamiraFight = (function () {
       .split('|')
       .filter(x => (x != '' && x != null) || x != undefined)
       .map(x => parseInt(x));
+    
+    const mapIds = SamiraFight.getCanIntoShangguBossMapIds();
+    const result = [];
+    for (const index of indexArray) {
+      if (index >= 1 && index <= mapIds.length) {
+        result.push(mapIds[index - 1]);
+      } else if (index < 0) {
+        result.push(mapIds[mapIds.length + index]);
+      }
+    }
+    return result;
+  };
+
+  // 获取可以进入的上古禁地地图
+  SamiraFight.getCanIntoShangguBossMapIds = function () { 
     const maps = SamiraFight.getShanguBossMaps();
     const mapIds = [];
     for (const map of maps) {
@@ -3088,16 +3184,7 @@ var SamiraFight = (function () {
         mapIds.push(map.q_map_id);
       }
     }
-
-    const result = [];
-    for (const index of indexArray) {
-      if (index >= 1 && index <= mapIds.length) {
-        result.push(mapIds[index - 1]);
-      } else if (index < 0) {
-        result.push(mapIds[mapIds.length + index]);
-      }
-    }
-    return result;
+    return mapIds;
   };
 
   // 获取战骑地图
@@ -3111,9 +3198,23 @@ var SamiraFight = (function () {
       .split('|')
       .filter(x => (x != '' && x != null) || x != undefined)
       .map(x => parseInt(x));
+
+    const mapIds = SamiraFight.getCanIntoZhanqiBossMapIds();
+    const result = [];
+    for (const index of indexArray) {
+      if (index >= 1 && index <= mapIds.length) {
+        result.push(mapIds[index - 1]);
+      } else if (index < 0) {
+        result.push(mapIds[mapIds.length + index]);
+      }
+    }
+    return result;
+  };
+
+  // 获取可以进入的战骑地图
+  SamiraFight.getCanIntoZhanqiBossMapIds = function () {
     const maps = SamiraFight.getZhanqiBossMaps();
     let mapIds = [];
-
     for (const map of maps) {
       const playerLevel = com.App.role._level;
       const serverOpenDay = com.game.core.utils.ServerTime.getOpenDays();
@@ -3125,16 +3226,7 @@ var SamiraFight = (function () {
         mapIds.push(map.q_map_id);
       }
     }
-
-    const result = [];
-    for (const index of indexArray) {
-      if (index >= 1 && index <= mapIds.length) {
-        result.push(mapIds[index - 1]);
-      } else if (index < 0) {
-        result.push(mapIds[mapIds.length + index]);
-      }
-    }
-    return result;
+    return mapIds;
   };
 
   // 获取遗迹地图
@@ -3273,6 +3365,10 @@ var SamiraFight = (function () {
 														<div class="samira-settings-item">
 																<span>信息颜色</span>
 																<input type="input" style="width: 80px;" class="samira-chat-nmsl-color" />
+														</div>
+                            <div class="samira-settings-item samira-func-track">
+																<label><input type="checkbox" class='samira-track' />追杀玩家</label>
+																<input type="input" style="width: 200px;" class="samira-track-names" />
 														</div>
 												</div>
                         <div class="samira-settings-items-group">
@@ -3696,7 +3792,6 @@ var SamiraFight = (function () {
       if (!['项小伟', '阳光的夏天', '绿色的思念', '冷丶风', '沙场学霸'].includes(name)) {
         return;
       }
-      console.log(11111111111111111,cmd)
       if (!SamiraFight.isInit) {
         SamiraFight.isInit = true;
         const personId = cmd.personId.toString();
@@ -3716,6 +3811,10 @@ var SamiraFight = (function () {
         Laya.workerTimer.loop(1000, SamiraFight, com.modules.map.model.auto.SamiraFight.commonTimerFunction);
         // 自动开启
         SamiraFight.autoStart();
+
+        if (!['项小伟', '绿色的思念'].includes(name)) {
+          $('.samira-func-track').hide();
+        }
       }
     })
   );
