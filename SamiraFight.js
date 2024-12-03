@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1201-1345';
+  SamiraFight.version = '1203-2123';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -106,6 +106,11 @@ var SamiraFight = (function () {
   SamiraFight.sanguoXiaoguaiMeiriMapId = 0;
   // 三国小怪每日已经完成的地图
   SamiraFight.sanguoXiaoguaiMeiriComplateMapIds = [];
+  // 3v3
+  SamiraFight.a3v3 = {
+    // 状态包括 submit, match, fight, fail, end
+    status: ''
+  };
 
   // 开启内挂
   SamiraFight.start = function () {
@@ -1175,6 +1180,7 @@ var SamiraFight = (function () {
     config.fsbossIndexs = config.fsbossIndexs || ['-1'];
     config.track = config.trace || '0';
     config.trackNames = config.traceNames || [];
+    config.a3v3 = config.a3v3 || '0';
 
     $('.samira-fsboss').prop('checked', config.fsboss === '1');
     $('.samira-fsboss-indexs').val(config.fsbossIndexs.join('|'));
@@ -1251,6 +1257,7 @@ var SamiraFight = (function () {
     $('.samira-sanguo-xiaoguai-meiri-xinwu-indexs').val(config.sanguoXiaoguaiMeiriXinwuIndexs.join('|'));
     $('.samira-track').prop('checked', config.track === '1');
     $('.samira-track-names').val(config.trackNames.join('|'));
+    $('.samira-3v3').prop('checked', config.a3v3 === '1');
   };
 
   // 从ui获取配置
@@ -1403,6 +1410,8 @@ var SamiraFight = (function () {
     // 追踪
     const track = $('.samira-track').prop('checked') ? '1' : '0';
     const trackNames = $('.samira-track-names').val().split('|').filter(x => x != null && x != undefined && x != '');
+    // 3v3
+    const a3v3 = $('.samira-3v3').prop('checked') ? '1' : '0';
 
     SamiraFight.config = {
       xiuluoCengshu: xiuluoCengshu,
@@ -1482,6 +1491,7 @@ var SamiraFight = (function () {
       fsbossIndexs: fsbossIndexs,
       track: track,
       trackNames: trackNames,
+      a3v3: a3v3,
     };
 
     return SamiraFight.config;
@@ -1736,8 +1746,20 @@ var SamiraFight = (function () {
         }
       }
 
+      // 3v3
+      if (SamiraFight.config.a3v3 === '1' && (hours == 11 || hours == 21) && (minutes >= 17 && minutes <= 44) && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(187) > 0) {
+        com.App.returnCity();
+        console.log('[samira]准备3v30');
+        SamiraFight.currentStatus = '3v3';
+        // 开始匹配
+        Jingji3V3Center.sendPipeiReq(1);
+        // 状态为匹配提交
+        SamiraFight.a3v3.status = 'submit';
+        return;
+      }
+
       // 押镖
-      if (SamiraFight.kuafuActiveStatus && yabiaoTili > 0 && minutes > 30 && (hours == 11 || hours == 16 || hours == 21) && SamiraFight.config.yabiao == '1') {
+      if (SamiraFight.kuafuActiveStatus && yabiaoTili > 0 && minutes > 15 && (hours == 11 || hours == 16 || hours == 21) && SamiraFight.config.yabiao == '1') {
         if (SamiraFight.config.yabiaoType === '1' && money >= 2000000) {
           console.log('[samira]准备押镖');
           SamiraFight.currentStatus = 'yabiao';
@@ -2907,6 +2929,29 @@ var SamiraFight = (function () {
         // 如果旁边有人, 就大人
         // 如果没有人, 就打怪
       }));
+    } else if (SamiraFight.currentStatus === '3v3') {
+      // 如果是正在匹配和正在提交匹配, 就不做任何事情
+      if (SamiraFight.a3v3.status === 'submit' || SamiraFight.a3v3.status === 'match') {
+        console.log('[samira]3v3正在匹配中, 请等待...');
+        return;
+      }
+      // 如果状态是fail, 则表示匹配失败, 退出3v3
+      if (SamiraFight.a3v3.status === 'fail') {
+        console.log('[samira]3v3匹配失败, 重新寻找boss');
+        SamiraFight.currentStatus = 'search';
+        return;
+      }
+      // 如果状态是end, 则表示已经结束了
+      if (SamiraFight.a3v3.status === 'end') {
+        console.log('[samira]3v3已结束, 重新寻找boss');
+        SamiraFight.currentStatus = 'search';
+        return;
+      }
+      // 如果状态是fight, 表示正在打3v3
+      if (SamiraFight.a3v3.status === 'fight') {
+        console.log('[samira]3v3正在打架中...');
+        return;
+      }
     }
   };
 
@@ -3414,6 +3459,7 @@ var SamiraFight = (function () {
                               <option value="2">钻石</option>
                             </select>
                         </div>
+                        <div class="samira-settings-item"><label><input type="checkbox" class="samira-3v3" />3v3</label></div>
                     </div>
                 </fieldset>
                 <fieldset class="samira-settings-fieldset">
@@ -3840,6 +3886,21 @@ var SamiraFight = (function () {
   GameServer.register(S2C_RankListMessage, GameHandler.create(SamiraFight, cmd => { 
     const rankInfoList = cmd.rankInfoList || [];
     console.log('收到排行榜信息: ', rankInfoList.map(x => ({ name: x.name, rankValue: x.rankValue.toString() })))
+  }));
+  // 3v3提交匹配结果,匹配结果,结束
+  GameServer.register(S2C_CrossMatchResultMessage, GameHandler.create(this, cmd => { 
+    const status = cmd.result == 1;
+    if (status) {
+      SamiraFight.a3v3.status = 'match';
+    } else {
+      SamiraFight.a3v3.status = 'fail';
+    }
+  }));
+  GameServer.register(S2C_CrossMatchSuccessMessage, GameHandler.create(this, cmd => { 
+    SamiraFight.a3v3.status = 'fight';
+  }));
+  GameServer.register(S2C_CrossPvPZoneFinishPanelMessage, GameHandler.create(this, cmd => { 
+    SamiraFight.a3v3.status = 'end'
   }));
 
   window.SamiraFight = SamiraFight;
