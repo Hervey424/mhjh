@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1203-2130';
+  SamiraFight.version = '1203-2150';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -3693,22 +3693,22 @@ var SamiraFight = (function () {
       const mapId = record.mapModelid;
 
       // 如果在战骑祭坛, 上古禁地, 锁魂塔,  跨服地图并且状态不是跨服boss, 就5分钟内不进行跨服活动
-      if (
-        SamiraFight.getShanguBossMaps()
-          .map(x => x.q_map_id)
-          .includes(mapId) ||
-        SamiraFight.getZhanqiBossMaps()
-          .map(x => x.q_map_id)
-          .includes(mapId) ||
-        com.modules.boss.wanyao.WanyaoCenter.datas.map(x => x.bean.q_map_id).includes(mapId) ||
-        mapId == SamiraFight.kuafuBossMapId ||
-        SamiraFight.currentStatus != 'kuafuboss'
-      ) {
-        // SamiraFight.kuafuActiveStatus = false;
-        // SamiraFight.kuafuActiveResumeTs = Math.floor(Date.now() / 1000) + 300;
-        SamiraFight.currentStatus = 'search';
-        console.log('[samira]角色已死亡, 5分钟内不进行跨服活动');
-      }
+      // if (
+      //   SamiraFight.getShanguBossMaps()
+      //     .map(x => x.q_map_id)
+      //     .includes(mapId) ||
+      //   SamiraFight.getZhanqiBossMaps()
+      //     .map(x => x.q_map_id)
+      //     .includes(mapId) ||
+      //   com.modules.boss.wanyao.WanyaoCenter.datas.map(x => x.bean.q_map_id).includes(mapId) ||
+      //   mapId == SamiraFight.kuafuBossMapId ||
+      //   SamiraFight.currentStatus != 'kuafuboss'
+      // ) {
+      //   // SamiraFight.kuafuActiveStatus = false;
+      //   // SamiraFight.kuafuActiveResumeTs = Math.floor(Date.now() / 1000) + 300;
+      //   SamiraFight.currentStatus = 'search';
+      //   console.log('[samira]角色已死亡, 5分钟内不进行跨服活动');
+      // }
 
       // 跨服频道发送辱骂
       if (SamiraFight.config.chatNmsl == '1') {
@@ -3869,12 +3869,20 @@ var SamiraFight = (function () {
   GameServer.register(
     S2C_StartGatherMessage,
     GameHandler.create(SamiraFight, function () {
+      if (SamiraFight.currentStatus != 'suoyaotacaiji') {
+        return;
+      }
       SamiraFight.yaoshou.gatherStatus = true;
     })
   );
   GameServer.register(
     S2C_StopGatherMessage,
     GameHandler.create(SamiraFight, function () {
+      if (SamiraFight.currentStatus != 'suoyaotacaiji') {
+        return;
+      }
+
+      console.log('[samira]采集中断或者完成, 重新搜索search');
       SamiraFight.currentStatus = 'search';
       // 采集中断或者完成
       SamiraFight.yaoshou.gatherStatus = false;
@@ -3901,7 +3909,9 @@ var SamiraFight = (function () {
     SamiraFight.a3v3.status = 'fight';
   }));
   GameServer.register(S2C_CrossPvPZoneFinishPanelMessage, GameHandler.create(this, cmd => { 
-    SamiraFight.a3v3.status = 'end'
+    if (cmd.winTeamType > 0) {
+      SamiraFight.a3v3.status = 'end'
+    }
   }));
 
   window.SamiraFight = SamiraFight;
