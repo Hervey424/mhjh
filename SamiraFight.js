@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1203-2123';
+  SamiraFight.version = '1203-2130';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -2950,6 +2950,7 @@ var SamiraFight = (function () {
       // 如果状态是fight, 表示正在打3v3
       if (SamiraFight.a3v3.status === 'fight') {
         console.log('[samira]3v3正在打架中...');
+        SamiraFight.toPointFight(210046, 40,40);
         return;
       }
     }
