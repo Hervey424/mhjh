@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1204-1247';
+  SamiraFight.version = '1204-1250';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -3870,6 +3870,10 @@ var SamiraFight = (function () {
   GameServer.register(
     S2C_StartGatherMessage,
     GameHandler.create(SamiraFight, function () {
+      if (com.App.role.mapId === Jingji3V3Center.MAP_ID) {
+        console.log('[samira]开始采集: 因为在3v3地图中, 不处理');
+        return;
+      }
       console.log('[samira]开始采集:' + SamiraFight.currentStatus)
       SamiraFight.yaoshou.gatherStatus = true;
     })
@@ -3877,6 +3881,10 @@ var SamiraFight = (function () {
   GameServer.register(
     S2C_StopGatherMessage,
     GameHandler.create(SamiraFight, function () {
+      if (com.App.role.mapId === Jingji3V3Center.MAP_ID) {
+        console.log('[samira]采集中断或者完成: 因为在3v3地图中, 不处理');
+        return;
+      }
       console.log('[samira]采集中断或者完成, 重新搜索search');
       SamiraFight.currentStatus = 'search';
       // 采集中断或者完成
