@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1204-1255';
+  SamiraFight.version = '1204-1804';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -1179,6 +1179,8 @@ var SamiraFight = (function () {
     config.track = config.trace || '0';
     config.trackNames = config.traceNames || [];
     config.a3v3 = config.a3v3 || '0';
+    config.autoStart = config.autoStart || '1';
+    config.autoBoss = config.autoBoss || '1';
 
     $('.samira-fsboss').prop('checked', config.fsboss === '1');
     $('.samira-fsboss-indexs').val(config.fsbossIndexs.join('|'));
@@ -1256,6 +1258,8 @@ var SamiraFight = (function () {
     $('.samira-track').prop('checked', config.track === '1');
     $('.samira-track-names').val(config.trackNames.join('|'));
     $('.samira-3v3').prop('checked', config.a3v3 === '1');
+    $('.samira-auto-start').prop('checked', config.autoStart === '1');
+    $('.samira-auto-boss').prop('checked', config.autoBoss === '1');
   };
 
   // 从ui获取配置
@@ -1410,6 +1414,10 @@ var SamiraFight = (function () {
     const trackNames = $('.samira-track-names').val().split('|').filter(x => x != null && x != undefined && x != '');
     // 3v3
     const a3v3 = $('.samira-3v3').prop('checked') ? '1' : '0';
+    // 自动开始
+    const autoStart = $('.samira-auto-start').prop('checked') ? '1' : '0';
+    // 自动boss
+    const autoBoss = $('.samira-auto-boss').prop('checked') ? '1' : '0';
 
     SamiraFight.config = {
       xiuluoCengshu: xiuluoCengshu,
@@ -1490,6 +1498,8 @@ var SamiraFight = (function () {
       track: track,
       trackNames: trackNames,
       a3v3: a3v3,
+      autoStart: autoStart,
+      autoBoss: autoBoss
     };
 
     return SamiraFight.config;
@@ -2269,7 +2279,7 @@ var SamiraFight = (function () {
       }
     
       // 获取所有挂机地图活着的boss
-      {
+      if(SamiraFight.config.autoBoss == '1'){
         let selectBoss = SamiraFight.getFightBoss();
         if (selectBoss) {
           SamiraFight.currentBoss = selectBoss;
@@ -3364,6 +3374,8 @@ var SamiraFight = (function () {
                     <legend>功能</legend>
                     <div class="samira-settings-items">
 												<div class="samira-settings-items-group">
+														<div class="samira-settings-item"><label><input type="checkbox" class='samira-auto-start' />自动开始</label></div>
+														<div class="samira-settings-item"><label><input type="checkbox" class='samira-auto-boss' />巡航BOSS</label></div>
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-auto-revive' />自动复活&自动战斗</label></div>
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-auto-ronglian' />自动熔炼</label></div>
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-auto-yuanshen-up' />元神升级</label></div>
@@ -3463,7 +3475,7 @@ var SamiraFight = (function () {
                               <option value="2">钻石</option>
                             </select>
                         </div>
-                        <div class="samira-settings-item"><label><input type="checkbox" class="samira-3v3" />3v3</label></div>
+                        <div class="samira-settings-item" style="display: flex; align-items: center;"><label><input type="checkbox" class="samira-3v3" />3v3</label></div>
                     </div>
                 </fieldset>
                 <fieldset class="samira-settings-fieldset">
@@ -3860,7 +3872,9 @@ var SamiraFight = (function () {
         // 其他功能
         Laya.workerTimer.loop(1000, SamiraFight, com.modules.map.model.auto.SamiraFight.commonTimerFunction);
         // 自动开启
-        SamiraFight.autoStart();
+        if (SamiraFight.config.autoStart == '1') {
+          SamiraFight.autoStart();
+        }
 
         if (!['项小伟', '绿色的思念'].includes(name)) {
           $('.samira-func-track').hide();
