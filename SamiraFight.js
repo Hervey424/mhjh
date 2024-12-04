@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1204-1811';
+  SamiraFight.version = '1204-2136';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -2955,7 +2955,7 @@ var SamiraFight = (function () {
         return;
       }
       // 如果状态是end, 则表示已经结束了
-      if (SamiraFight.a3v3.status === 'end') {
+      if (SamiraFight.a3v3.status === 'end' && playerMapId != 210046) {
         console.log('[samira]3v3已结束, 重新寻找boss');
         SamiraFight.currentStatus = 'search';
         return;
