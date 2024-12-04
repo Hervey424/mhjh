@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1204-1233';
+  SamiraFight.version = '1204-1237';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -3873,10 +3873,10 @@ var SamiraFight = (function () {
     S2C_StartGatherMessage,
     GameHandler.create(SamiraFight, function () {
       console.log('[samira]开始采集:' + SamiraFight.currentStatus)
-      if (SamiraFight.currentStatus != 'suoyaotacaiji') {
-        console.log('[samira]开始采集, 因为当前不是锁妖塔哦, 所以不处理:' + SamiraFight.currentStatus)
-        return;
-      }
+      // if (SamiraFight.currentStatus != 'suoyaotacaiji') {
+      //   console.log('[samira]开始采集, 因为当前不是锁妖塔哦, 所以不处理:' + SamiraFight.currentStatus)
+      //   return;
+      // }
       SamiraFight.yaoshou.gatherStatus = true;
     })
   );
