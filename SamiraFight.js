@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1204-1213';
+  SamiraFight.version = '1204-1233';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -120,12 +120,10 @@ var SamiraFight = (function () {
       SamiraFight.requestBoss();
       SamiraFight.running = true;
       SamiraFight.currentStatus = 'search';
+      console.log('[samira]内挂已开启, 当前状态: search');
       Laya.workerTimer.loop(1000, SamiraFight, com.modules.map.model.auto.SamiraFight.requestBoss);
       Laya.workerTimer.loop(10000, SamiraFight, com.modules.map.model.auto.SamiraFight.requestXiuLuoBoss);
       Laya.workerTimer.loop(1000, SamiraFight, com.modules.map.model.auto.SamiraFight.update);
-
-      console.log('[samira]上古禁地地图: ', SamiraFight.getMaxLevelShangguBossMapIds(SamiraFight.config.shangguMap));
-      console.log('[samira]上古禁地小怪地图: ', SamiraFight.getMaxLevelShangguBossMapIds(SamiraFight.config.shangguXiaoGuaiMap));
     }
   };
 
@@ -1619,6 +1617,7 @@ var SamiraFight = (function () {
         com.App.returnCity();
         SamiraFight.currentStatus = 'search';
         SamiraFight.currentcheckTimes = 0;
+        console.log('[samira]检测到跨服boss时间到了, 重新搜索boss: search');
         return;
       }
     }
@@ -2284,6 +2283,7 @@ var SamiraFight = (function () {
             }
             // 进入地图后重新寻找boss
             SamiraFight.currentStatus = 'search';
+            console.log('[samira]找到boss, 但是不在当前地图, 切换状态: search, 先进入地图:', selectBoss);
             SamiraFight.update();
             return;
           } else {
@@ -2492,6 +2492,7 @@ var SamiraFight = (function () {
         EventMgr.dispatch('TE.taskTransfer', data.taskData.getConditionData(), JSON.stringify({ npcid: 2087 }), 1, true);
         com.logic.connect.sender.TaskCommandSender.sendFinishTask(data.taskID, data.taskType);
         SamiraFight.currentStatus = 'search';
+        console.log('[samira]押镖任务已完成, 重新寻找boss');
       } else {
         console.log('[samira]押镖状态异常:', status);
         SamiraFight.currentStatus = 'search';
@@ -2664,6 +2665,7 @@ var SamiraFight = (function () {
       if (!zones.includes(SamiraFight.currentLongHunZoneId)) {
         SamiraFight.currentStatus = 'search';
         SamiraFight.currentLongHunZoneId = 0;
+        console.log('[samira]龙魂副本已经打完, 重新寻找boss');
         return;
       }
 
@@ -2675,6 +2677,7 @@ var SamiraFight = (function () {
         if (com.App.role.mapId != mapId) {
           SamiraFight.currentStatus = 'search';
           SamiraFight.currentLongHunZoneId = 0;
+          console.log('[samira]龙魂副本已经打完, 重新寻找boss');
           return;
         }
       }
@@ -3869,6 +3872,7 @@ var SamiraFight = (function () {
   GameServer.register(
     S2C_StartGatherMessage,
     GameHandler.create(SamiraFight, function () {
+      console.log('[samira]开始采集:' + SamiraFight.currentStatus)
       if (SamiraFight.currentStatus != 'suoyaotacaiji') {
         console.log('[samira]开始采集, 因为当前不是锁妖塔哦, 所以不处理:' + SamiraFight.currentStatus)
         return;
