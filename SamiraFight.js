@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1204-1804';
+  SamiraFight.version = '1204-1811';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -3375,7 +3375,7 @@ var SamiraFight = (function () {
                     <div class="samira-settings-items">
 												<div class="samira-settings-items-group">
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-auto-start' />自动开始</label></div>
-														<div class="samira-settings-item"><label><input type="checkbox" class='samira-auto-boss' />巡航BOSS</label></div>
+														<div class="samira-settings-item"><label><input type="checkbox" class='samira-auto-boss' />自动打BOSS</label></div>
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-auto-revive' />自动复活&自动战斗</label></div>
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-auto-ronglian' />自动熔炼</label></div>
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-auto-yuanshen-up' />元神升级</label></div>
