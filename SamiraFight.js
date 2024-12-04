@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1204-1243';
+  SamiraFight.version = '1204-1247';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -2284,13 +2284,11 @@ var SamiraFight = (function () {
             // 进入地图后重新寻找boss
             SamiraFight.currentStatus = 'search';
             console.log('[samira]找到boss, 但是不在当前地图, 切换状态: search, 先进入地图:', selectBoss);
-            SamiraFight.update();
             return;
           } else {
             console.log('[samira]找到boss:', selectBoss);
             SamiraFight.currentcheckTimes = 0;
             SamiraFight.currentStatus = 'fight';
-            SamiraFight.update();
           }
         } else {
           console.log('[samira]没有找到boss, 开启自动攻击, 重新寻找boss');
