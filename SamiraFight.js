@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1204-1250';
+  SamiraFight.version = '1204-1253';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -1826,6 +1826,7 @@ var SamiraFight = (function () {
               SamiraFight.yaoshou.npcInfo = npc.info;
               SamiraFight.yaoshou.gatherTimeoutTs = ts + 180;
               SamiraFight.currentStatus = 'suoyaotacaiji';
+              SamiraFight.yaoshou.gatherStatus = false;
               console.log('[samira]找到龙鳞水晶:', npc);
               return;
             }
@@ -1838,6 +1839,7 @@ var SamiraFight = (function () {
               SamiraFight.yaoshou.npcInfo = npc.info;
               SamiraFight.yaoshou.gatherTimeoutTs = ts + 180;
               SamiraFight.currentStatus = 'suoyaotacaiji';
+              SamiraFight.yaoshou.gatherStatus = false;
               console.log('[samira]找到凤吟水晶:', npc);
               return;
             }
