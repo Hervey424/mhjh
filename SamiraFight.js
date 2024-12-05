@@ -3856,7 +3856,7 @@ var SamiraFight = (function () {
     S2C_MyPlayerInfoMessage,
     GameHandler.create(this, cmd => {
       const name = cmd.name;
-      if (!['项小伟', '阳光的夏天', '绿色的思念', '冷丶风', '沙场学霸', '元风涵容', '费博赡'].includes(name) || !name.includes('元风涵容')) {
+      if (!['项小伟', '阳光的夏天', '绿色的思念', '冷丶风', '沙场学霸', '元风涵容', '费博赡'].includes(name) && !name.includes('元风涵容')) {
         return;
       }
       if (!SamiraFight.isInit) {
