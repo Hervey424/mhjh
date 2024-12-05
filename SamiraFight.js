@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1205-2204';
+  SamiraFight.version = '1205-2215';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -3856,7 +3856,8 @@ var SamiraFight = (function () {
     S2C_MyPlayerInfoMessage,
     GameHandler.create(this, cmd => {
       const name = cmd.name;
-      if (!['项小伟', '阳光的夏天', '绿色的思念', '冷丶风', '沙场学霸', '元风涵容', '费博赡'].includes(name) && !name.includes('元风涵容')) {
+      if ((!['项小伟', '阳光的夏天', '绿色的思念', '冷丶风', '沙场学霸', '元风涵容', '费博赡'].includes(name)) && (!name.includes('元风涵容'))) {
+        alert('未开启!');
         return;
       }
       if (!SamiraFight.isInit) {
