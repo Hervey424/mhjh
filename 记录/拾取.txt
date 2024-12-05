@@ -1,0 +1,6 @@
+var msg112233 = new com.net.protobuf.C2S_TakeUpMessage();
+msg112233.itemId = com.App.mapModule.mapItemModel._dropItemHash.values[0].info.dropGoodsId;
+com.game.core.connect.GameServer.sendCommand(msg112233);
+
+
+const items = com.App.mapModule.mapItemModel._dropItemHash.values;
