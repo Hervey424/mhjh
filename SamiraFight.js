@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1204-2136';
+  SamiraFight.version = '1205-0941';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -1585,6 +1585,7 @@ var SamiraFight = (function () {
     const ts = Math.floor(Date.now() / 1000);
     const hours = new Date().getHours();
     const minutes = new Date().getMinutes();
+    const seconds = new Date().getSeconds();
     const dayOfweek = new Date().getDay();
     const yabiaoTili = com.modules.escort.EscortCenter.getData().remainCount;
     const money = com.logic.data.MoneyCenter.getMoney(90);
@@ -1807,76 +1808,6 @@ var SamiraFight = (function () {
         }
       }
 
-      // 妖兽锁魂塔采集
-      if (SamiraFight.kuafuActiveStatus && hours > 1 && (com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(181) > 0 || com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(182) > 0)) {
-        if (SamiraFight.config.yaoshouLonglin == '1' || SamiraFight.config.yaoshouFengyin == '1') {
-          WanyaoCenter.sendC2S_NpcInfoMessage();
-        }
-
-        // 处理采集
-        const selectMapAndBoss = (SamiraFight.config.yaoshouBoss || '').split('|').filter(x => x && x.trim() != '').map(x => parseInt(x));
-        const datas = com.modules.boss.wanyao.WanyaoCenter.datas.filter(x => x.isEnter);
-        if (selectMapAndBoss.length > 0 && datas.length > 0) {
-          const selectMapIndex = selectMapAndBoss[0];
-          const data = selectMapIndex >= 0 ? datas[selectMapIndex] : datas[datas.length + selectMapIndex];
-          const mapId = data.bean.q_map_id;
-
-          const npcs = [];
-          for (var $each_info in com.modules.boss.wanyao.WanyaoCenter._npcs[mapId]) {
-            const info = com.modules.boss.wanyao.WanyaoCenter._npcs[mapId][$each_info];
-            const bean = com.App.dataMgr.q_npcContainer.getDataBean(info.modelId, false);
-            npcs.push({ info, bean });
-          }
-
-          // 采集龙鳞水晶
-          if (com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(181) > 0 && SamiraFight.config.yaoshouLonglin == '1') {
-            const aliveNpcs = npcs.filter(x => x.bean.q_name == '龙鳞水晶' && x.info.refreshTime == 0);
-            if (aliveNpcs.length > 0) {
-              const npc = aliveNpcs[0];
-              SamiraFight.yaoshou.npcInfo = npc.info;
-              SamiraFight.yaoshou.gatherTimeoutTs = ts + 180;
-              SamiraFight.currentStatus = 'suoyaotacaiji';
-              SamiraFight.yaoshou.gatherStatus = false;
-              console.log('[samira]找到龙鳞水晶:', npc);
-              return;
-            }
-          }
-          // 采集凤吟水晶
-          if (com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(182) > 0 && SamiraFight.config.yaoshouFengyin == '1') {
-            const aliveNpcs = npcs.filter(x => x.bean.q_name == '凤吟水晶' && x.info.refreshTime == 0);
-            if (aliveNpcs.length > 0) {
-              const npc = aliveNpcs[0];
-              SamiraFight.yaoshou.npcInfo = npc.info;
-              SamiraFight.yaoshou.gatherTimeoutTs = ts + 180;
-              SamiraFight.currentStatus = 'suoyaotacaiji';
-              SamiraFight.yaoshou.gatherStatus = false;
-              console.log('[samira]找到凤吟水晶:', npc);
-              return;
-            }
-          }
-        }
-      }
-
-      // 妖兽锁魂塔BOSS
-      if (SamiraFight.kuafuActiveStatus && hours > 1 && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(180) > 0 && SamiraFight.config.yaoshou == '1') {
-        const selectMapAndBoss = (SamiraFight.config.yaoshouBoss || '').split('|').filter(x => x && x.trim() != '').map(x => parseInt(x));
-        const datas = com.modules.boss.wanyao.WanyaoCenter.datas.filter(x => x.isEnter);
-        if (selectMapAndBoss.length > 0 && datas.length > 0) {
-          const selectMapIndex = selectMapAndBoss[0];
-          const data = selectMapIndex >= 0 ? datas[selectMapIndex - 1] : datas[datas.length + selectMapIndex];
-          const mapBean = data.bean;
-          const bosss = com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(mapBean.q_map_id);
-          const boss = bosss.find(x => (x.owner === playerName || x.owner == '' || x.owner == null) && x.remainTime == 0);
-          if (boss) {
-            SamiraFight.currentBoss = boss;
-            console.log('[samira]找到锁魂塔boss:', boss);
-            SamiraFight.currentcheckTimes = 0;
-            SamiraFight.currentStatus = 'fight';
-            return;
-          }
-        }
-      }
-
       // 飞升boss
       if (SamiraFight.kuafuActiveStatus && hours > 1 && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(183) > 0 && SamiraFight.config.fsboss == '1') {
         const mapIds = SamiraFight.getFeishengMapIds(SamiraFight.config.fsbossIndexs || []) || [];
@@ -2060,6 +1991,77 @@ var SamiraFight = (function () {
             // 进入副本
             TransferManager.toBossMap(12, mapId)
 
+            return;
+          }
+        }
+      }
+
+      // 妖兽锁魂塔采集
+      if (SamiraFight.kuafuActiveStatus && hours > 1 && (com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(181) > 0 || com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(182) > 0)) {
+        if (SamiraFight.config.yaoshouLonglin == '1' || SamiraFight.config.yaoshouFengyin == '1') {
+          WanyaoCenter.sendC2S_NpcInfoMessage();
+        }
+
+        // 处理采集
+        const selectMapAndBoss = (SamiraFight.config.yaoshouBoss || '').split('|').filter(x => x && x.trim() != '').map(x => parseInt(x));
+        const datas = com.modules.boss.wanyao.WanyaoCenter.datas.filter(x => x.isEnter);
+        if (selectMapAndBoss.length > 0 && datas.length > 0) {
+          const selectMapIndex = selectMapAndBoss[0];
+          const data = selectMapIndex >= 0 ? datas[selectMapIndex] : datas[datas.length + selectMapIndex];
+          const mapId = data.bean.q_map_id;
+
+          const npcs = [];
+          for (var $each_info in com.modules.boss.wanyao.WanyaoCenter._npcs[mapId]) {
+            const info = com.modules.boss.wanyao.WanyaoCenter._npcs[mapId][$each_info];
+            const bean = com.App.dataMgr.q_npcContainer.getDataBean(info.modelId, false);
+            if (info.refreshTime > 0) {
+              continue;
+            }
+            npcs.push({ info, bean });
+          }
+
+          // 采集龙鳞水晶
+          if (com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(181) > 0 && SamiraFight.config.yaoshouLonglin == '1') {
+            const aliveNpcs = npcs.filter(x => x.bean.q_name == '龙鳞水晶' && x.info.refreshTime == 0);
+            if (aliveNpcs.length > 0) {
+              const npc = aliveNpcs[0];
+              SamiraFight.yaoshou.npcInfo = npc.info;
+              SamiraFight.yaoshou.gatherTimeoutTs = ts + 180;
+              SamiraFight.currentStatus = 'suoyaotacaiji';
+              console.log('[samira]找到龙鳞水晶:', npc);
+              return;
+            }
+          }
+          // 采集凤吟水晶
+          if (com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(182) > 0 && SamiraFight.config.yaoshouFengyin == '1') {
+            const aliveNpcs = npcs.filter(x => x.bean.q_name == '凤吟水晶' && x.info.refreshTime == 0);
+            if (aliveNpcs.length > 0) {
+              const npc = aliveNpcs[0];
+              SamiraFight.yaoshou.npcInfo = npc.info;
+              SamiraFight.yaoshou.gatherTimeoutTs = ts + 180;
+              SamiraFight.currentStatus = 'suoyaotacaiji';
+              console.log('[samira]找到凤吟水晶:', npc);
+              return;
+            }
+          }
+        }
+      }
+
+      // 妖兽锁魂塔BOSS
+      if (SamiraFight.kuafuActiveStatus && hours > 1 && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(180) > 0 && SamiraFight.config.yaoshou == '1') {
+        const selectMapAndBoss = (SamiraFight.config.yaoshouBoss || '').split('|').filter(x => x && x.trim() != '').map(x => parseInt(x));
+        const datas = com.modules.boss.wanyao.WanyaoCenter.datas.filter(x => x.isEnter);
+        if (selectMapAndBoss.length > 0 && datas.length > 0) {
+          const selectMapIndex = selectMapAndBoss[0];
+          const data = selectMapIndex >= 0 ? datas[selectMapIndex - 1] : datas[datas.length + selectMapIndex];
+          const mapBean = data.bean;
+          const bosss = com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(mapBean.q_map_id);
+          const boss = bosss.find(x => (x.owner === playerName || x.owner == '' || x.owner == null) && x.remainTime == 0);
+          if (boss) {
+            SamiraFight.currentBoss = boss;
+            console.log('[samira]找到锁魂塔boss:', boss);
+            SamiraFight.currentcheckTimes = 0;
+            SamiraFight.currentStatus = 'fight';
             return;
           }
         }
@@ -2643,26 +2645,29 @@ var SamiraFight = (function () {
         return;
       }
 
-      // 如果是采集中, 就等着采集完成
-      if (SamiraFight.yaoshou.gatherStatus) {
-        console.log('[samira]正在采集水晶...');
-        return;
-      }
-
-      // 判断npc
       if (SamiraFight.yaoshou.npcInfo == null) {
         console.log('[samira]找不到要采集的水晶, 重新寻找BOSS');
         SamiraFight.currentStatus = 'search';
         return;
       }
 
-      SamiraFight.toPointFight(SamiraFight.yaoshou.npcInfo.mapModelId, SamiraFight.yaoshou.npcInfo.x, SamiraFight.yaoshou.npcInfo.y, GameHandler.create(SamiraFight, function () {
-        if (!SamiraFight.yaoshou.gatherStatus) {
-          const npcId = SamiraFight.yaoshou.npcInfo.npcId.toString();
+      // 判断npc
+      const npc = com.modules.boss.wanyao.WanyaoCenter._npcs[SamiraFight.yaoshou.npcInfo.mapModelId][SamiraFight.yaoshou.npcInfo.npcId.toString()];
+      console.log('[samira]找到水晶:', npc);
+      if (npc == null || npc.refreshTime > 0) {
+        console.log('[samira]水晶还没有复活, 重新寻找BOSS');
+        SamiraFight.currentStatus = 'search';
+        return;
+      }
+
+      SamiraFight.toPointFight(npc.mapModelId, npc.x, npc.y, GameHandler.create(SamiraFight, function () {
+        if (seconds % 15 == 0) { 
+          console.log('[samira]发送采集水晶请求...');
+          const npcId = npc.npcId.toString();
           com.logic.connect.sender.TaskCommandSender.sendC2S_NpcServicesMessage(npcId);
           com.logic.connect.sender.TaskCommandSender.sendServiceMessage(npcId, 2, 1);
         }
-      }))
+      }));
     } else if (SamiraFight.currentStatus === 'wudaohuijuesai') {
       if (minutes >= 25) {
         console.log('[samira]武道会决赛, 重新寻找boss');
@@ -3880,31 +3885,6 @@ var SamiraFight = (function () {
           $('.samira-func-track').hide();
         }
       }
-    })
-  );
-  // 采集
-  GameServer.register(
-    S2C_StartGatherMessage,
-    GameHandler.create(SamiraFight, function () {
-      if (com.App.role.mapId === Jingji3V3Center.MAP_ID) {
-        console.log('[samira]开始采集: 因为在3v3地图中, 不处理');
-        return;
-      }
-      console.log('[samira]开始采集:' + SamiraFight.currentStatus)
-      SamiraFight.yaoshou.gatherStatus = true;
-    })
-  );
-  GameServer.register(
-    S2C_StopGatherMessage,
-    GameHandler.create(SamiraFight, function () {
-      if (com.App.role.mapId === Jingji3V3Center.MAP_ID) {
-        console.log('[samira]采集中断或者完成: 因为在3v3地图中, 不处理');
-        return;
-      }
-      console.log('[samira]采集中断或者完成, 重新搜索search');
-      SamiraFight.currentStatus = 'search';
-      // 采集中断或者完成
-      SamiraFight.yaoshou.gatherStatus = false;
     })
   );
   GameServer.register(S2C_HongbaoActionMessage, GameHandler.create(SamiraFight, SamiraFight.onHongbaoActionMessage));
