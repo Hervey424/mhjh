@@ -3628,8 +3628,8 @@ var SamiraFight = (function () {
     };
 
     FunctionManager.isFunctionOpen = function (functionId, needNotice, noticeType, noticeColor) {
-      // 105-自动合成, 108-自动历练任务
-      if ([105, 108].includes(functionId)) {
+      // 105-自动合成, 108-自动历练任务, 6新玩家
+      if ([105, 108, 6].includes(functionId)) {
         return true;
       }
 
