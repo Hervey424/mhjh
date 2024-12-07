@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1207-2236';
+  SamiraFight.version = '1207-2250';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -499,8 +499,8 @@ var SamiraFight = (function () {
         }
         // 自动挂机了
         else if(mainTask.taskId > 10401){
-          const mapIds = [80201,
-            80202,
+          const mapIds = [80203, 80204,
+            80205,
             80002,
             80003,
             80004,
