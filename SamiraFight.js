@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1207-1549';
+  SamiraFight.version = '1207-2213';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -456,17 +456,6 @@ var SamiraFight = (function () {
               // 找npc
               com.logic.manager.TransferManager.transferToNPC(2004);
             }
-          }
-        }
-        // 领取vip奖励后去找老兵
-        else if (mainTask.taskID == 10061) {
-          if (isFinish) {
-            if (secende % 30 == 0) {
-              com.logic.manager.TransferManager.transferToNPC(2004)
-            }
-          } else {
-            // 打开自动攻击
-            com.App.openAutoFight();
           }
         }
         // 胆量历练
