@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1207-2253';
+  SamiraFight.version = '1207-2255';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -467,7 +467,7 @@ var SamiraFight = (function () {
           }
         }
         // 传世之路
-        else if ([10241, 10251, 10261, 10321, 10331, 10351, 10361, 10381, 10391, 10401].includes(mainTask.taskID)) { 
+        else if ([10241, 10251, 10261, 10321, 10331, 10351, 10361, 10381, 10391].includes(mainTask.taskID)) { 
           const mapId = {
             10241: 160005,
             10251: 160008,
@@ -478,7 +478,6 @@ var SamiraFight = (function () {
             10361: 160020,
             10381: 80001,
             10391: 80001,
-            10401: 80001
           };
 
           if (isFinish) {
