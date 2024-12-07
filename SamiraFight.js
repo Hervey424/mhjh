@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1207-2250';
+  SamiraFight.version = '1207-2253';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -499,15 +499,18 @@ var SamiraFight = (function () {
         }
         // 自动挂机了
         else if(mainTask.taskId > 10401){
-          const mapIds = [80203, 80204,
+          const mapIds = [
+            80201,
+            80202,
+            80203,
+            80204,
             80205,
+            80206,
             80002,
             80003,
             80004,
-            160025,
-            160024,
-            160023,
-            160022];
+            80005
+          ];
           NeiGuaFight.setSaveMapIds(mapIds);
           if (NeiGuaFight._saveMapIds.length <= 0) {
             NeiGuaFight.stop();
