@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1207-2352';
+  SamiraFight.version = '1208-0016';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -273,9 +273,7 @@ var SamiraFight = (function () {
     }
 
     // 设置自动回收
-    if (!com.logic.data.item.HuishouCenter.isAutoHuishou) {
-      com.logic.data.item.HuishouCenter.isAutoHuishou = true;
-    }
+    com.logic.data.item.HuishouCenter.isAutoHuishou = secende % 2 == 0;
 
     // 自动领取VIP
     try { 
