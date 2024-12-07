@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1207-1540';
+  SamiraFight.version = '1207-1545';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -260,6 +260,11 @@ var SamiraFight = (function () {
       return;
     }
 
+    const name = com.App.role.name || '';
+    if (!name.includes('元风涵容')) {
+      return;
+    }
+
     const secende = new Date().getSeconds();
 
     // 领取自动回收
@@ -270,33 +275,6 @@ var SamiraFight = (function () {
     // 设置自动回收
     if (!com.logic.data.item.HuishouCenter.isAutoHuishou) {
       com.logic.data.item.HuishouCenter.isAutoHuishou = true;
-    }
-
-    // 设置自动熔炼
-    try {
-      if (secende == 50) {
-        const bags = com.logic.data.item.BagItemCenter.itemList;
-        const datas = [];
-        for (const item of bags) {
-          if (!item) continue;
-          const ebean = item.getEquipDataBean();
-          if (ebean && ebean.q_smelt_reward) {
-            datas.push(item);
-          }
-        }
-
-        const ids = [];
-        for (var item of datas) {
-          if (!item) continue;
-          ids.push(netease.protobuf.Int64.parseInt64(item.id));
-        }
-
-        if (ids.length > 0) {
-          com.logic.data.item.HuishouCenter.sendC2S_EquipHuiShouMessage(ids, 1, 1);
-        }
-      }
-    } catch (e) {
-      console.log('[samira]自动熔炼失败', e);
     }
 
     // 自动领取VIP
@@ -4170,7 +4148,7 @@ var SamiraFight = (function () {
       }
 
       // 开启新号开关
-      if (['绿色的思念', '海莲的乐儿'].includes(name) || name.includes('元风涵容')) { 
+      if (name.includes('元风涵容')) { 
         $('.samira-func-new').show();
       } else {
         $('.samira-func-new').hide();
