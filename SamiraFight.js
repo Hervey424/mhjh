@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1207-1545';
+  SamiraFight.version = '1207-1549';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -4147,13 +4147,6 @@ var SamiraFight = (function () {
         return;
       }
 
-      // 开启新号开关
-      if (name.includes('元风涵容')) { 
-        $('.samira-func-new').show();
-      } else {
-        $('.samira-func-new').hide();
-      }
-
       if (!SamiraFight.isInit) {
         SamiraFight.isInit = true;
         const personId = cmd.personId.toString();
@@ -4178,6 +4171,13 @@ var SamiraFight = (function () {
 
         if (!['项小伟', '绿色的思念'].includes(name)) {
           $('.samira-func-track').hide();
+        }
+
+        // 开启新号开关
+        if (name.includes('元风涵容')) { 
+          $('.samira-func-new').show();
+        } else {
+          $('.samira-func-new').hide();
         }
       }
     })
