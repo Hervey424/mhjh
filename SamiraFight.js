@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1207-2255';
+  SamiraFight.version = '1207-2258';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -497,7 +497,7 @@ var SamiraFight = (function () {
           }
         }
         // 自动挂机了
-        else if(mainTask.taskId > 10401){
+        else if(mainTask.taskId > 10391){
           const mapIds = [
             80201,
             80202,
