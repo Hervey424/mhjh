@@ -175,7 +175,6 @@ var PetPanel=(function(_super){
 				}
 			}
     }
-    console
 		this.isOpenFun();
 	}
 

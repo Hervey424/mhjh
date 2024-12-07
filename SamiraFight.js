@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1207-2305';
+  SamiraFight.version = '1207-2352';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -300,6 +300,17 @@ var SamiraFight = (function () {
       }
     } catch (e) {
       console.log('[samira]自动元神殿升级失败', e);
+    }
+
+    // 召唤第二元神
+    try {
+      const bean = com.modules.role.shenshi.ShenShiCenter.getData(22);
+      const level = bean ? bean.level : 0;
+      if (level >= 30) {
+        FunctionManager.c2s_openFunction(44);
+      }
+    } catch (e) {
+      console.log('[samira]召唤第二元神失败', e);
     }
 
     // 传世宝物
