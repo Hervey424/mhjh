@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1208-0016';
+  SamiraFight.version = '1208-0935';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -272,8 +272,23 @@ var SamiraFight = (function () {
       com.logic.connect.sender.ActivitiesCommandSender.C2S_JoinActivityById(3382);
     }
 
-    // 设置自动回收
-    com.logic.data.item.HuishouCenter.isAutoHuishou = secende % 2 == 0;
+    // 自动回收
+    try {
+      if (secende % 3 == 0) { 
+        com.logic.data.item.HuishouCenter.updateHuishouGou()
+        var items = com.logic.data.item.BagItemCenter.itemList;
+        var ids = [];
+        for(const item of items) {
+          if (item != null && com.logic.data.item.HuishouCenter.huishouItemDict[item.id]) {
+                ids.push(netease.protobuf.Int64.parseInt64(item.id));
+            }
+        }
+        com.logic.data.item.HuishouCenter.huishouItemDict={};
+        com.logic.data.item.HuishouCenter.sendC2S_EquipHuiShouMessage(ids);
+      }
+    } catch (e) {
+      console.log('[samira]自动回收失败', e);
+    }
 
     // 自动领取VIP
     try { 
@@ -507,23 +522,26 @@ var SamiraFight = (function () {
         }
         // 自动挂机了
         else if(mainTask.taskID > 10391){
-          const mapIds = [
-            80201,
-            80202,
-            80203,
-            80204,
-            80205,
-            80206,
-            80002,
-            80003,
-            80004,
-            80005
-          ];
-          NeiGuaFight.setSaveMapIds(mapIds);
-          if (NeiGuaFight._saveMapIds.length <= 0) {
-            NeiGuaFight.stop();
+          if (secende % 30 == 0) { 
+            const mapIds = [
+              80201,
+              80202,
+              80203,
+              80204,
+              80205,
+              80206,
+              80002,
+              80003,
+              80004,
+              80005
+            ];
+            NeiGuaFight.setSaveMapIds(mapIds);
+            if (NeiGuaFight._saveMapIds.length <= 0) {
+              NeiGuaFight.stop();
+              return;
+            }
+            NeiGuaFight.start();
           }
-          NeiGuaFight.start();
         }
       }
     } catch (e) {
