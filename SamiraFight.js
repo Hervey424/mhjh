@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1208-1626';
+  SamiraFight.version = '1208-1659';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -556,17 +556,24 @@ var SamiraFight = (function () {
         else if(mainTask.taskID > 10391){
           if (secende % 30 == 0) { 
             const mapIds = [
+              // 炼狱魔境
               80201,
               80202,
               80203,
               80204,
               80205,
               80206,
+              // boss之家
               80002,
               80003,
               80004,
-              80005
-            ];
+              80005,
+              // 等级
+              160025,
+              160024,
+              160023,
+              160022,
+            ].sort(() => Math.random() - 0.5);
             NeiGuaFight.setSaveMapIds(mapIds);
 
             if (NeiGuaFight._saveMapIds.length <= 0) {
