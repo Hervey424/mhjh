@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1208-0935';
+  SamiraFight.version = '1208-0948';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -488,6 +488,9 @@ var SamiraFight = (function () {
             if (secende % 30 == 0) {
               com.logic.manager.TransferManager.transferToNPC(2024)
             }
+          } else {
+            // 开启自动攻击
+            com.App.openAutoFight();
           }
         }
         // 传世之路
