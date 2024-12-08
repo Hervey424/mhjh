@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1208-1019';
+  SamiraFight.version = '1208-1626';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -272,6 +272,33 @@ var SamiraFight = (function () {
       com.logic.connect.sender.ActivitiesCommandSender.C2S_JoinActivityById(3382);
     }
 
+    // 自动熔炼装备
+    try {
+      if (seconds == 30) {
+        const bags = com.logic.data.item.BagItemCenter.itemList;
+        const datas = [];
+        for (const item of bags) {
+          if (!item) continue;
+          const ebean = item.getEquipDataBean();
+          if (ebean && ebean.q_smelt_reward) {
+            datas.push(item);
+          }
+        }
+  
+        const ids = [];
+        for (var item of datas) {
+          if (!item) continue;
+          ids.push(netease.protobuf.Int64.parseInt64(item.id));
+        }
+  
+        if (ids.length > 0) {
+          com.logic.data.item.HuishouCenter.sendC2S_EquipHuiShouMessage(ids, 1, 1);
+        }
+      }
+    } catch (e) {
+      console.log('[samira]自动熔炼装备失败', e);
+    }
+
     // 自动回收
     try {
       if (secende % 3 == 0) { 
@@ -320,7 +347,9 @@ var SamiraFight = (function () {
       const bean = com.modules.role.shenshi.ShenShiCenter.getData(22);
       const level = bean ? bean.level : 0;
       if (level >= 30) {
-        FunctionManager.c2s_openFunction(44);
+        if(!FunctionManager.isFunctionOpen(44)) {
+          FunctionManager.c2s_openFunction(44);
+        }
       }
     } catch (e) {
       console.log('[samira]召唤第二元神失败', e);
