@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1208-1659';
+  SamiraFight.version = '1208-1703';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -260,8 +260,13 @@ var SamiraFight = (function () {
       return;
     }
 
+    const level = com.App.role.level;
     const name = com.App.role.name || '';
     if (!name.includes('元风涵容')) {
+      return;
+    }
+
+    if (level >= 1000) {
       return;
     }
 
