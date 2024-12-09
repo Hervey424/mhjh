@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1209-0952';
+  SamiraFight.version = '1209-1010';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -482,6 +482,7 @@ var SamiraFight = (function () {
           isCanFinish = true;
         }
       }
+      console.log(111111, '任务id:' + mainTask.taskID, '任务状态:' + mainTask.taskState, '是否完成:' + isFinish, '是否可以完成:' + isCanFinish);
       if (mainTask) { 
         // 小试牛刀1
         if (mainTask.taskID == 10161) {
@@ -510,6 +511,7 @@ var SamiraFight = (function () {
         // vip
         else if (mainTask.taskID == 10051) { 
           if (isFinish) {
+            console.log('[samira]任务完成, 去找npc2004');
             if (secende % 30 == 0) {
               com.logic.manager.TransferManager.transferToNPC(2004);
             }
@@ -518,12 +520,19 @@ var SamiraFight = (function () {
         // 胆量历练
         else if (mainTask.taskID == 10061) {
           if (isFinish) {
+            console.log('[samira]任务完成, 去找npc2024');
             if (secende % 30 == 0) {
               com.logic.manager.TransferManager.transferToNPC(2024)
             }
           } else {
             // 开启自动攻击
             com.App.openAutoFight();
+          }
+        }
+        // 探索尸王殿
+        else if (mainTask.taskID == 10071) {
+          if (!isFinish) {
+            SamiraFight.tp(160001)
           }
         }
         // 传世之路
@@ -4210,7 +4219,7 @@ var SamiraFight = (function () {
     S2C_MyPlayerInfoMessage,
     GameHandler.create(this, cmd => {
       const name = cmd.name;
-      if ((!['项小伟', '海莲的乐儿', '阳光的夏天', '绿色的思念', '冷丶风', '沙场学霸', '元风涵容', '费博赡', '若男', '听话的珊珊', '傲慢的新儿'].includes(name)) && (!name.includes('元风涵容'))) {
+      if ((!['项小伟', '海莲的乐儿', '阳光的夏天', '绿色的思念', '冷丶风', '沙场学霸', '元风涵容', '费博赡', '若男', '听话的珊珊', '傲慢的新儿', '刚炮'].includes(name)) && (!name.includes('元风涵容'))) {
         alert('未开启!');
         return;
       }
