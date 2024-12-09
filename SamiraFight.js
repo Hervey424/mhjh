@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1208-1703';
+  SamiraFight.version = '1209-0952';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -340,7 +340,7 @@ var SamiraFight = (function () {
       const cost = JSON.parse(bean.q_choose_item).find(x => x.id == -90);
       const num = cost.num;
       const have = com.logic.data.item.BagItemCenter.getItemCount(-90);
-      if (have >= num) { 
+      if (have >= num && have > 5000) { 
         com.modules.role.shenshi.ShenShiCenter.sendC2S_ShenjiUpgradeMessage(bean.q_id)
       }
     } catch (e) {
@@ -511,7 +511,6 @@ var SamiraFight = (function () {
         else if (mainTask.taskID == 10051) { 
           if (isFinish) {
             if (secende % 30 == 0) {
-              // 找npc
               com.logic.manager.TransferManager.transferToNPC(2004);
             }
           }
@@ -4211,7 +4210,7 @@ var SamiraFight = (function () {
     S2C_MyPlayerInfoMessage,
     GameHandler.create(this, cmd => {
       const name = cmd.name;
-      if ((!['项小伟', '海莲的乐儿', '阳光的夏天', '绿色的思念', '冷丶风', '沙场学霸', '元风涵容', '费博赡'].includes(name)) && (!name.includes('元风涵容'))) {
+      if ((!['项小伟', '海莲的乐儿', '阳光的夏天', '绿色的思念', '冷丶风', '沙场学霸', '元风涵容', '费博赡', '若男', '听话的珊珊', '傲慢的新儿'].includes(name)) && (!name.includes('元风涵容'))) {
         alert('未开启!');
         return;
       }
