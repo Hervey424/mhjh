@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1209-1010';
+  SamiraFight.version = '1210-1257';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -279,7 +279,7 @@ var SamiraFight = (function () {
 
     // 自动熔炼装备
     try {
-      if (seconds == 30) {
+      if (secende == 30) {
         const bags = com.logic.data.item.BagItemCenter.itemList;
         const datas = [];
         for (const item of bags) {
@@ -520,7 +520,7 @@ var SamiraFight = (function () {
         // 胆量历练
         else if (mainTask.taskID == 10061) {
           if (isFinish) {
-            console.log('[samira]任务完成, 去找npc2024');
+            console.log('[samira]任务10061完成, 去找npc2024');
             if (secende % 30 == 0) {
               com.logic.manager.TransferManager.transferToNPC(2024)
             }
@@ -533,6 +533,20 @@ var SamiraFight = (function () {
         else if (mainTask.taskID == 10071) {
           if (!isFinish) {
             SamiraFight.tp(160001)
+          } else {
+            console.log('[samira]任务10071完成, 去找npc2025');
+            if (secende % 30 == 0) {
+              com.logic.manager.TransferManager.transferToNPC(2025)
+            }
+          }
+        }
+        // 装备回收
+        else if (mainTask.taskID == 10271) {
+          if (isFinish) {
+            console.log('[samira]任务10271完成, 去找npc2046');
+            if (secende % 30 == 0) {
+              com.logic.manager.TransferManager.transferToNPC(2046)
+            }
           }
         }
         // 传世之路
