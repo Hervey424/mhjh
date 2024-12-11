@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1210-1257';
+  SamiraFight.version = '1211-1256';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -601,19 +601,13 @@ var SamiraFight = (function () {
               160023,
               160022,
             ].sort(() => Math.random() - 0.5);
-            NeiGuaFight.setSaveMapIds(mapIds);
 
-            if (NeiGuaFight._saveMapIds.length <= 0) {
-              NeiGuaFight.stop();
-              return;
+            if (!NeiGuaFight._isRuning) {
+              NeiGuaFight.setSaveMapIds(mapIds);
+              if(NeiGuaFight.updateMapIds()){
+                NeiGuaFight.start(true);
+              }
             }
-
-            if (!mapIds.includes(com.App.role.mapId)) {
-              NeiGuaFight.stop();
-              NeiGuaFight.start();
-            }
-
-            NeiGuaFight.start();
           }
         }
       }
