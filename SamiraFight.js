@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1214-1134';
+  SamiraFight.version = '1216-1008';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -219,10 +219,6 @@ var SamiraFight = (function () {
       SamiraFight.sanguoXiaoguaiMeiriComplateMapIds = [];
     }
 
-    // const playerName = com.App.role._name;
-    // if (playerName == '绿色的思念') {
-    //   GuildCommandSender.sendKickOutGuildMessage('1342896077227215445');
-    // }
     // 追杀别人
     if (secende % 2 === 0 && SamiraFight.config.track == '1') { 
       com.logic.connect.sender.BossCommandSender.sendC2S_AliveWildBossMessage(SamiraFight.getCanIntoMapIds(), 0, false);
@@ -275,6 +271,11 @@ var SamiraFight = (function () {
     // 领取自动回收
     if (com.logic.data.activity.ActivityCenter.getData(3382).playerStates === 1) {
       com.logic.connect.sender.ActivitiesCommandSender.C2S_JoinActivityById(3382);
+    }
+
+    // 开启自动回收
+    if (secende % 10 == 0) {
+      com.logic.data.item.HuishouCenter.isAutoHuishou = true;
     }
 
     // 自动熔炼装备
@@ -462,12 +463,43 @@ var SamiraFight = (function () {
           continue;
         }
         const goodsInfo = com.App.dataMgr.q_itemContainer.list.find(x => x.q_id == item.itemId);
-        if (goodsInfo && (['背包扩展卡'].includes(goodsInfo.q_name) || goodsInfo.q_name.includes('元充值卡'))) {
+        if (goodsInfo && (['背包扩展卡'].includes(goodsInfo.q_name) || goodsInfo.q_name.includes('元充值卡') || goodsInfo.q_name == '钻石' || goodsInfo.q_name.includes('装备自动回收'))) {
           com.logic.manager.ItemUseManager.useItemByItemId(item.id, item.count);
         }
       }
     } catch (e) {
       console.log('[samira]自动使用失败', e);
+    }
+
+    // 转生福利
+    try {
+      const items = com.logic.data.activity.ActivityUtil.getOpenList(1260, 4);
+      for (const item of items) {
+        if (item.playerStates == 1) {
+          com.logic.connect.sender.ActivitiesCommandSender.C2S_JoinActivityById(item.id);
+        }
+      }
+    } catch (e) {
+      console.log('[samira]转生福利失败', e);
+    }
+
+    // 龙魂福利
+    try {
+      const items = com.logic.data.activity.ActivityUtil.getOpenList(1266, 4);
+      for (const item of items) {
+        if (item.playerStates == 1) {
+          com.logic.connect.sender.ActivitiesCommandSender.C2S_JoinActivityById(item.id);
+        }
+      }
+    } catch (e) {
+      console.log('[samira]转生福利失败', e);
+    }
+    
+    // 领取更新奖励
+    try {
+      com.logic.connect.sender.ActivitiesCommandSender.sendC2S_GetGameUpdateRewardMessage();
+    } catch (e) {
+      console.log('[samira]领取更新奖励失败', e);
     }
 
     // 任务
@@ -540,17 +572,94 @@ var SamiraFight = (function () {
             }
           }
         }
+        // 元神传说
+        else if (mainTask.taskID == 10081) {
+          if (secende % 20 == 0) {
+            com.logic.manager.TransferManager.transferToNPC(2039)
+          }
+        }
+        // 随机和回城
+        else if (mainTask.taskID == 10091) {
+          if (secende % 20 == 0) {
+            com.logic.manager.TransferManager.transferToNPC(2051)
+          }
+        }
+        // 探访元神殿
+        else if (mainTask.taskID == 10101) {
+          if (secende % 20 == 0) {
+            com.logic.manager.TransferManager.transferToNPC(2168)
+          }
+        }
+        // 元神殿·壹
+        else if (mainTask.taskID == 10111) {
+          if (secende % 20 == 0) {
+            com.logic.manager.TransferManager.transferToNPC(2040)
+          }
+        }
+        // 中州买药
+        else if (mainTask.taskID == 10121) {
+          if (secende % 20 == 0) {
+            com.logic.manager.TransferManager.transferToNPC(2047)
+          }
+        }
+        // 购买药品
+        else if (mainTask.taskID == 10131) {
+          if (isFinish) {
+            if (secende % 20 == 0) {
+              com.logic.manager.TransferManager.transferToNPC(2049);
+            }
+          } else {
+            var shops = com.logic.data.shop.MallCenter.getShopItemInfos(1, 5, true);
+            if (shops.length > 0) {
+              const shopItem = com.App.dataMgr.q_shopContainer.list.find(x => x.q_id == shops[0].sellId);
+              ItemBuyManager.buy(shopItem, 1,false, 1120000, shopItem.q_price,1);
+            }
+          }
+        }
+        // 药品说明
+        else if (mainTask.taskID == 10141) {
+          if (secende % 20 == 0) {
+            com.logic.manager.TransferManager.transferToNPC(2037)
+          }
+        }
         // 装备回收
         else if (mainTask.taskID == 10271) {
           if (isFinish) {
-            console.log('[samira]任务10271完成, 去找npc2046');
-            if (secende % 30 == 0) {
+            if (secende % 20 == 0) {
               com.logic.manager.TransferManager.transferToNPC(2046)
             }
           }
         }
+        // 装备回收
+        else if (mainTask.taskID == 10281) {
+          if (isFinish) {
+            if (secende % 20 == 0) {
+              com.logic.manager.TransferManager.transferToNPC(2010);
+            }
+          }
+        }
+        // 加入行会
+        else if (mainTask.taskID == 10291) {
+          if (isFinish) {
+            if (secende % 30 == 0) {
+              com.logic.manager.TransferManager.transferToNPC(2107);
+            }
+          }
+        }
+        // 怀旧沙巴克
+        else if (mainTask.taskID == 10301) {
+          if (!isFinish) {
+            if (com.App.role.mapId != 88004) {
+              com.logic.connect.sender.ZoneCommandSender.enterZoneMap(88004);
+            }
+          } else {
+            if (secende % 20 == 0) {
+              com.modules.track.TrackPanel._instance._trackDic['1']._task._itemDic['1'].onClick({currentTarget: {}})
+            }
+          }
+        }
         // 传世之路
-        else if ([10241, 10251, 10261, 10321, 10331, 10351, 10361, 10381, 10391].includes(mainTask.taskID)) { 
+        else if ([10241, 10251, 10261, 10321, 10331, 10351, 10361, 10381, 10391, 10401].includes(mainTask.taskID)) { 
           const mapId = {
             10241: 160005,
             10251: 160008,
@@ -560,7 +669,8 @@ var SamiraFight = (function () {
             10351: 160018,
             10361: 160020,
             10381: 80001,
-            10391: 80001,
+            10391: 80201,
+            10401: 80202,
           };
 
           if (isFinish) {
@@ -580,12 +690,10 @@ var SamiraFight = (function () {
           }
         }
         // 自动挂机了
-        else if(mainTask.taskID > 10391){
+        else if(mainTask.taskID > 10404){
           if (secende % 30 == 0) { 
             const mapIds = [
               // 炼狱魔境
-              80201,
-              80202,
               80203,
               80204,
               80205,
