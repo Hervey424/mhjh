@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1216-1008';
+  SamiraFight.version = '1216-1642';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -659,7 +659,7 @@ var SamiraFight = (function () {
           }
         }
         // 传世之路
-        else if ([10241, 10251, 10261, 10321, 10331, 10351, 10361, 10381, 10391, 10401].includes(mainTask.taskID)) { 
+        else if ([10241, 10251, 10261, 10321, 10331, 10351, 10361, 10381, 10391].includes(mainTask.taskID)) { 
           const mapId = {
             10241: 160005,
             10251: 160008,
@@ -668,9 +668,8 @@ var SamiraFight = (function () {
             10331: 160016,
             10351: 160018,
             10361: 160020,
-            10381: 80001,
-            10391: 80201,
-            10401: 80202,
+            10381: 80201,
+            10391: 80202,
           };
 
           if (isFinish) {
@@ -690,7 +689,7 @@ var SamiraFight = (function () {
           }
         }
         // 自动挂机了
-        else if(mainTask.taskID > 10404){
+        else if(mainTask.taskID > 10391){
           if (secende % 30 == 0) { 
             const mapIds = [
               // 炼狱魔境
@@ -699,6 +698,7 @@ var SamiraFight = (function () {
               80205,
               80206,
               // boss之家
+              80001,
               80002,
               80003,
               80004,
