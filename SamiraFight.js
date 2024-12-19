@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1218-0953';
+  SamiraFight.version = '1219-0806';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -110,6 +110,13 @@ var SamiraFight = (function () {
   SamiraFight.a3v3 = {
     // 状态包括 submit, match, fight, fail, end
     status: ''
+  };
+  // 历练帮助
+  SamiraFight.lilianHelp = {
+    // 状态包括 wait-组队后等待, fight-打boss, none-无
+    status: 'none',
+    // 超时时间
+    timeout: 0
   };
 
   // 开启内挂
@@ -1279,7 +1286,7 @@ var SamiraFight = (function () {
     }
 
     // 坐骑化形
-    const items = com.App.dataMgr.q_mountContainer.mounts;
+    const items = com.App.dataMgr.q_mountContainer.list;
     for (const item of items) {
       const itemData = com.modules.zuoqi.ZuoQiCenter.getZuoqi(item.q_id);
       // 已激活
@@ -2076,7 +2083,22 @@ var SamiraFight = (function () {
 
     // 清除窗口
     com.game.core.panel.PanelManager.closeByClass(com.modules.boss.fuli.SweepResultPanel);
-    
+
+    // 如果实在帮别人历练, 就开启自动攻击, 并且停止一切活动
+    if (SamiraFight.lilianHelp && SamiraFight.lilianHelp.status == 'fight') {
+      if (SamiraFight.lilianHelp.timeout > ts) {
+        SamiraFight.lilianHelp.status = 'none';
+        SamiraFight.lilianHelp.timeout = 0;
+        SamiraFight.currentStatus = 'search';
+        return;
+      }
+      else {
+        // 打开自动攻击
+        com.App.autoFight();
+        return;
+      }
+    }
+
     if (SamiraFight.currentStatus != 'lilian') { 
       // 如果强制退出了历练任务, 就取消自动任务
       TaskAuto.isAutoLilian = false;
