@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1219-0806';
+  SamiraFight.version = '1219-0858';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -283,33 +283,6 @@ var SamiraFight = (function () {
     // 开启自动回收
     if (secende % 10 == 0) {
       com.logic.data.item.HuishouCenter.isAutoHuishou = true;
-    }
-
-    // 自动熔炼装备
-    try {
-      if (secende == 30) {
-        const bags = com.logic.data.item.BagItemCenter.itemList;
-        const datas = [];
-        for (const item of bags) {
-          if (!item) continue;
-          const ebean = item.getEquipDataBean();
-          if (ebean && ebean.q_smelt_reward) {
-            datas.push(item);
-          }
-        }
-  
-        const ids = [];
-        for (var item of datas) {
-          if (!item) continue;
-          ids.push(netease.protobuf.Int64.parseInt64(item.id));
-        }
-  
-        if (ids.length > 0) {
-          com.logic.data.item.HuishouCenter.sendC2S_EquipHuiShouMessage(ids, 1, 1);
-        }
-      }
-    } catch (e) {
-      console.log('[samira]自动熔炼装备失败', e);
     }
 
     // 自动回收
