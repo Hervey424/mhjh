@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1219-0858';
+  SamiraFight.version = '1230-0907';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -721,7 +721,22 @@ var SamiraFight = (function () {
   // 每日限购
   SamiraFight.meirixiangou = function () { 
     const buyItems = SamiraFight.config.meirixiangouwupin || [];
-    if (buyItems.length == 0) { 
+    const infos = [];
+    for (const item of buyItems) { 
+      const arr = item.split(',').filter(x => x);
+      if (arr.length != 2) {
+        continue;
+      }
+      const name = arr[0].trim();
+      const num = parseInt(arr[1].trim());
+      // 检查num是否为number类型
+      if (isNaN(num)) {
+        continue;
+      }
+
+      infos.push({ name, num });
+    }
+    if (infos.length == 0) { 
       return;
     }
     if (SamiraFight.config.meirixiangou != '1') { 
@@ -735,8 +750,12 @@ var SamiraFight = (function () {
       const shopItem = com.App.dataMgr.q_shopContainer.list.find(x => x.q_id == shop.sellId);
       const shopActualId = JSON.parse(shopItem.q_actual_item)[0].id;
       const item = com.App.dataMgr.q_itemContainer.list.find(x => x.q_id == shopActualId);
-      if (buyItems.includes(item.q_name)) { 
+      const wb = infos.find(x => x.name == item.q_name);
+      if (wb) { 
         if (shop.remainNum <= 0) { 
+          continue;
+        }
+        if (shop.dynamicShopBuyTimes >= wb.num) { 
           continue;
         }
         const ctype = shopItem.q_currency_type;
