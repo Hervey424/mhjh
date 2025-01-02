@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '1230-0907';
+  SamiraFight.version = '0102-0939';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -255,6 +255,28 @@ var SamiraFight = (function () {
     SamiraFight.fangcangku();
     SamiraFight.meirixiangou();
     SamiraFight.autoNewPlayer();
+    SamiraFight.autoFisher();
+  };
+
+  // 自动钓鱼
+  SamiraFight.autoFisher = function () { 
+    if (SamiraFight.config.autoFisher != '1') { 
+      return;
+    }
+
+    // 发送查询钓鱼
+    com.modules.feisheng.FeiShengCenter.sendC2S_FisherActionMessage(1);
+
+    // 没有钓鱼
+    if (com.modules.feisheng.FeiShengCenter.diaoyu_end == 0 && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(185) > 0) {
+      com.modules.feisheng.FeiShengCenter.sendC2S_FisherActionMessage(5);
+      return;
+    }
+    else {
+      if (com.modules.feisheng.FeiShengCenter.diaoyu_end - com.game.core.utils.ServerTime.getServerTime() < 0) {
+        com.modules.feisheng.FeiShengCenter.sendC2S_FisherActionMessage(4);
+      }
+    }
   };
 
   // 自动处理新玩家模式
@@ -991,7 +1013,7 @@ var SamiraFight = (function () {
     const minutes = new Date().getMinutes();
     const seconds = new Date().getSeconds();
 
-    if (minutes % 2 == 0 && seconds == 30) {
+    if (seconds == 30) {
       const bags = com.logic.data.item.BagItemCenter.itemList;
       const datas = [];
       for (const item of bags) {
@@ -1652,6 +1674,7 @@ var SamiraFight = (function () {
     config.autoStart = config.autoStart || '0';
     config.autoBoss = config.autoBoss || '0';
     config.newPlayer = config.newPlayer || '0';
+    config.fisher = config.fisher || '0';
 
     $('.samira-fsboss').prop('checked', config.fsboss === '1');
     $('.samira-fsboss-indexs').val(config.fsbossIndexs.join('|'));
@@ -1732,6 +1755,7 @@ var SamiraFight = (function () {
     $('.samira-auto-start').prop('checked', config.autoStart === '1');
     $('.samira-auto-boss').prop('checked', config.autoBoss === '1');
     $('.samira-new').prop('checked', config.newPlayer === '1');
+    $('.samira-fisher').prop('checked', config.fisher === '1');
   };
 
   // 从ui获取配置
@@ -1892,6 +1916,8 @@ var SamiraFight = (function () {
     const autoBoss = $('.samira-auto-boss').prop('checked') ? '1' : '0';
     // 新号模式
     const newPlayer = $('.samira-new').prop('checked') ? '1' : '0';
+    // 钓鱼
+    const fisher = $('.samira-fisher').prop('checked') ? '1' : '0';
 
     SamiraFight.config = {
       xiuluoCengshu: xiuluoCengshu,
@@ -1974,7 +2000,8 @@ var SamiraFight = (function () {
       a3v3: a3v3,
       autoStart: autoStart,
       autoBoss: autoBoss,
-      newPlayer: newPlayer
+      newPlayer: newPlayer,
+      fisher: fisher
     };
 
     return SamiraFight.config;
@@ -3893,6 +3920,7 @@ var SamiraFight = (function () {
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-meirizhigou' />每日直购</label></div>
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-zaixianjiangli' />在线奖励</label></div>
 														<div class="samira-settings-item"><label><input type="checkbox" class='samira-sanguo-task' />三国任务</label></div>
+														<div class="samira-settings-item"><label><input type="checkbox" class='samira-fisher' />自动钓鱼</label></div>
 												</div>
 												<div class="samira-settings-items-group">
 														<div class="samira-settings-item">
