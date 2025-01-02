@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '0102-1051';
+  SamiraFight.version = '0102-1231';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -30,7 +30,8 @@ var SamiraFight = (function () {
     hunhuan: '魂环秘境',
     lilian: '历练任务',
     sanguoxiaoguai: '三国小怪',
-    sanguoxiaoguaiXinwu: '三国小怪信物'
+    sanguoxiaoguaiXinwu: '三国小怪信物',
+    feishengmijing: '飞升秘境'
   };
   // 当前boss
   SamiraFight.currentBoss = null;
@@ -1678,6 +1679,7 @@ var SamiraFight = (function () {
     config.autoBoss = config.autoBoss || '0';
     config.newPlayer = config.newPlayer || '0';
     config.fisher = config.fisher || '0';
+    config.fsmj = config.fsmj || '0';
 
     $('.samira-fsboss').prop('checked', config.fsboss === '1');
     $('.samira-fsboss-indexs').val(config.fsbossIndexs.join('|'));
@@ -1759,6 +1761,7 @@ var SamiraFight = (function () {
     $('.samira-auto-boss').prop('checked', config.autoBoss === '1');
     $('.samira-new').prop('checked', config.newPlayer === '1');
     $('.samira-fisher').prop('checked', config.fisher === '1');
+    $('.samira-fsmj').prop('checked', config.fsmj === '1');
   };
 
   // 从ui获取配置
@@ -1921,6 +1924,8 @@ var SamiraFight = (function () {
     const newPlayer = $('.samira-new').prop('checked') ? '1' : '0';
     // 钓鱼
     const fisher = $('.samira-fisher').prop('checked') ? '1' : '0';
+    // 飞升秘境
+    const fsmj = $('.samira-fsmj').prop('checked') ? '1' : '0';
 
     SamiraFight.config = {
       xiuluoCengshu: xiuluoCengshu,
@@ -2004,7 +2009,8 @@ var SamiraFight = (function () {
       autoStart: autoStart,
       autoBoss: autoBoss,
       newPlayer: newPlayer,
-      fisher: fisher
+      fisher: fisher,
+      fsmj: fsmj
     };
 
     return SamiraFight.config;
@@ -2156,6 +2162,13 @@ var SamiraFight = (function () {
     if (hours == 19 && minutes >= 30 && minutes <= 50 && SamiraFight.config.xukongliehen == '1' && SamiraFight.currentStatus != 'xukongliehen') {
       com.App.returnCity();
       SamiraFight.currentStatus = 'xukongliehen';
+      return;
+    }
+
+    // 如果是12:00,19:00, 进入飞升秘境
+    if ((hours == 12 || hours == 19) && minutes >= 0 && minutes <= 30 && SamiraFight.config.fsmj == '1' && SamiraFight.currentStatus != 'feishengmijing') {
+      com.App.returnCity();
+      SamiraFight.currentStatus = 'feishengmijing';
       return;
     }
 
@@ -2366,7 +2379,7 @@ var SamiraFight = (function () {
       }
 
       // 发送交易装备
-      if (SamiraFight.config.zbfs.length > 0 && (![11, 16, 19, 20, 21].includes(hours)) && minutes <= 50) {
+      if (SamiraFight.config.zbfs.length > 0 && (![11, 12, 16, 19, 20, 21].includes(hours)) && minutes <= 50) {
         // Id|职业|等级|数量
         const items = SamiraFight.config.zbfs || [];
         for (const item of items) {
@@ -3490,6 +3503,23 @@ var SamiraFight = (function () {
         SamiraFight.toPointFight(210046, 40,40);
         return;
       }
+    } else if (SamiraFight.currentStatus === 'feishengmijing') {
+      // 时间过了就退出, 重新寻找boss
+      if(hours != 12 && hours != 19) {
+        console.log('[samira]飞升秘境已结束1, 重新寻找boss');
+        SamiraFight.currentStatus = 'search';
+        return;
+      }
+      if(minutes > 30) {
+        console.log('[samira]飞升秘境已结束2, 重新寻找boss');
+        SamiraFight.currentStatus = 'search';
+        return;
+      }
+
+      // 如果不在地图中, 就进入地图
+      if (playerMapId != 5000) {
+        ZoneCommandSender.enterZoneMap(5000);
+      }
     }
   };
 
@@ -4002,6 +4032,7 @@ var SamiraFight = (function () {
                             </select>
                         </div>
                         <div class="samira-settings-item" style="display: flex; align-items: center;"><label><input type="checkbox" class="samira-3v3" />3v3</label></div>
+                        <div class="samira-settings-item" style="display: flex; align-items: center;"><label><input type="checkbox" class="samira-fsmj" />飞升秘境</label></div>
                     </div>
                 </fieldset>
                 <fieldset class="samira-settings-fieldset">
