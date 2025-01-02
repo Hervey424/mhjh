@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '0102-0944';
+  SamiraFight.version = '0102-0950';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -269,11 +269,14 @@ var SamiraFight = (function () {
 
     // 没有钓鱼
     if (com.modules.feisheng.FeiShengCenter.diaoyu_end == 0 && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(185) > 0) {
+      console.log('[samira]没有钓鱼次数, 但是有体力, 开始钓鱼');
       com.modules.feisheng.FeiShengCenter.sendC2S_FisherActionMessage(5);
       return;
     }
     else {
+      console.log('[samira]没有次数或者没有已经在钓鱼');
       if (com.modules.feisheng.FeiShengCenter.diaoyu_end - com.game.core.utils.ServerTime.getServerTime() < 0) {
+        console.log('[samira]钓鱼时间到, 结束钓鱼');
         com.modules.feisheng.FeiShengCenter.sendC2S_FisherActionMessage(4);
       }
     }
