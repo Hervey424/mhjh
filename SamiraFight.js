@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '0102-0939';
+  SamiraFight.version = '0102-0944';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -260,7 +260,7 @@ var SamiraFight = (function () {
 
   // 自动钓鱼
   SamiraFight.autoFisher = function () { 
-    if (SamiraFight.config.autoFisher != '1') { 
+    if (SamiraFight.config.fisher != '1') { 
       return;
     }
 
