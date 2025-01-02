@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '0102-0950';
+  SamiraFight.version = '0102-1051';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -275,7 +275,7 @@ var SamiraFight = (function () {
     }
     else {
       console.log('[samira]没有次数或者没有已经在钓鱼');
-      if (com.modules.feisheng.FeiShengCenter.diaoyu_end - com.game.core.utils.ServerTime.getServerTime() < 0) {
+      if (com.modules.feisheng.FeiShengCenter.diaoyu_end != 0 && com.modules.feisheng.FeiShengCenter.diaoyu_end - com.game.core.utils.ServerTime.getServerTime() < 0) {
         console.log('[samira]钓鱼时间到, 结束钓鱼');
         com.modules.feisheng.FeiShengCenter.sendC2S_FisherActionMessage(4);
       }
