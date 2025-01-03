@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '0102-1231';
+  SamiraFight.version = '0103-1655';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -2751,25 +2751,14 @@ var SamiraFight = (function () {
       // 三国小怪每日信物
       if (SamiraFight.config.sanguoXiaoguaiMeiriXinwu === '1' && SamiraFight.config.sanguoXiaoguaiMeiriXinwuIndexs.length > 0) {
         const mapIds = SamiraFight.getSanguoMapIds(SamiraFight.config.sanguoXiaoguaiMeiriXinwuIndexs);
-        const map = JSON.parse(com.App.dataMgr.q_globalContainer.getDataBean(45027).q_string_value);
         for (const mapId of mapIds) {
           // 如果已经完成了, 就退出
           if ((SamiraFight.sanguoXiaoguaiMeiriComplateMapIds || []).includes(mapId)) {
             continue;
           }
-          const itemId = map[mapId].id;
-          const info = com.modules.zuoqi.ZuoQiCenter.getDrop(itemId);
-          if (!info) {
-            SamiraFight.tp(mapId);
-            return;
-          }
-          const num = info ? info.num : 0;
-          const max = info ? info.maxNum : 0;
-          if (num < max) {
-            SamiraFight.currentStatus = 'sanguoxiaoguaimeiri';
-            SamiraFight.sanguoXiaoguaiMeiriMapId = mapId;
-            return;
-          }
+          SamiraFight.currentStatus = 'sanguoxiaoguaimeiri';
+          SamiraFight.sanguoXiaoguaiMeiriMapId = mapId;
+          return;
         }
       }
       
@@ -3432,6 +3421,11 @@ var SamiraFight = (function () {
       // 开启自动攻击
       com.App.openAutoFight();
     } else if (SamiraFight.currentStatus === 'sanguoxiaoguaimeiri') {
+      if (playerMapId != SamiraFight.sanguoXiaoguaiMeiriMapId) {
+        SamiraFight.tp(SamiraFight.sanguoXiaoguaiMeiriMapId);
+        return;
+      }
+
       const map = JSON.parse(App.dataMgr.q_globalContainer.getDataBean(45027).q_string_value);
       const itemId = map[SamiraFight.sanguoXiaoguaiMeiriMapId].id;
       const info = ZuoQiCenter.getDrop(itemId);
