@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '0103-1655';
+  SamiraFight.version = '0104-0955';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -227,9 +227,9 @@ var SamiraFight = (function () {
       SamiraFight.sanguoXiaoguaiMeiriComplateMapIds = [];
     }
 
-    // 追杀别人
-    if (secende % 2 === 0 && SamiraFight.config.track == '1') { 
-      com.logic.connect.sender.BossCommandSender.sendC2S_AliveWildBossMessage(SamiraFight.getCanIntoMapIds(), 0, false);
+    // 每天晚上21点46, 自动刷新
+    if (hours == 21 && minutes == 46 && secende < 20) { 
+      location.reload();
     }
 
     SamiraFight.autoRichang();
@@ -2289,7 +2289,7 @@ var SamiraFight = (function () {
       }
 
       // 3v3
-      if (SamiraFight.config.a3v3 === '1' && (hours == 11 || hours == 21) && (minutes >= 17 && minutes <= 44) && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(187) > 0) {
+      if (SamiraFight.config.a3v3 === '1' && (hours == 21) && (minutes >= 17 && minutes <= 44) && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(187) > 0) {
         com.App.returnCity();
         console.log('[samira]准备3v30');
         SamiraFight.currentStatus = '3v3';
