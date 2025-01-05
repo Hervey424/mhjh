@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '0105-2122';
+  SamiraFight.version = '0105-2147';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -229,7 +229,7 @@ var SamiraFight = (function () {
 
     // 每天晚上21点46, 自动刷新
     if (hours == 21 && minutes == 46 && secende < 20) { 
-      location.reload();
+      // location.reload();
     }
 
     SamiraFight.autoRichang();
