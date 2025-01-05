@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '0104-0955';
+  SamiraFight.version = '0104-0956';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -257,7 +257,22 @@ var SamiraFight = (function () {
     SamiraFight.meirixiangou();
     SamiraFight.autoNewPlayer();
     SamiraFight.autoFisher();
+    SamiraFight.statistics();
   };
+
+  // 统计信息
+  SamiraFight.statistics = function () { 
+    const recharge = (com.logic.data.MoneyCenter.rechargeHistory - com.logic.data.MoneyCenter.hongbaoRecharge) / GameConfig.rmb >> 0;
+    const roleName = com.App.role.name;
+    
+    const hours = new Date().getHours();
+    const minutes = new Date().getMinutes();
+    const secende = new Date().getSeconds();
+
+    if(minutes % 10 == 0 && secende <= 3) {
+      $.get('https://mhjh.xianghongwei.cn/upload?roleName='+roleName+'&recharge='+recharge)
+    }
+  }
 
   // 自动钓鱼
   SamiraFight.autoFisher = function () { 

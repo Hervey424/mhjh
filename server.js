@@ -62,6 +62,9 @@ http.createServer((req, res) => {
       res.end('Error fetching from css.css');
     });
   }
+  else if (pathname === '/upload') {
+    console.log('upload', JSON.stringify(query));
+  }
   else {
     // 处理其他请求
     res.writeHead(404, { 'Content-Type': 'text/plain' });
