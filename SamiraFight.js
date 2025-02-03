@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '0106-1125';
+  SamiraFight.version = '0106-1126';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -3444,9 +3444,9 @@ var SamiraFight = (function () {
         return;
       }
 
-      const map = JSON.parse(App.dataMgr.q_globalContainer.getDataBean(45027).q_string_value);
+      const map = JSON.parse(com.App.dataMgr.q_globalContainer.getDataBean(45027).q_string_value);
       const itemId = map[SamiraFight.sanguoXiaoguaiMeiriMapId].id;
-      const info = ZuoQiCenter.getDrop(itemId);
+      const info = com.modules.zuoqi.ZuoQiCenter.getDrop(parseInt(itemId));
       const num = info ? info.num : 0;
       const max = info ? info.maxNum : 0;
       console.log('[samira]三国小怪任务打怪中...(' + num + '/' + max + ')');
