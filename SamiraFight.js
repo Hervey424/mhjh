@@ -2,7 +2,7 @@ var SamiraFight = (function () {
   function SamiraFight() {}
   __class(SamiraFight, 'com.modules.map.model.auto.SamiraFight');
 
-  SamiraFight.version = '0106-1126';
+  SamiraFight.version = '0211-1146';
   SamiraFight.isInit = false;
   SamiraFight.personId = '';
   SamiraFight.autoOpenTimer = 0;
@@ -31,7 +31,8 @@ var SamiraFight = (function () {
     lilian: '历练任务',
     sanguoxiaoguai: '三国小怪',
     sanguoxiaoguaiXinwu: '三国小怪信物',
-    feishengmijing: '飞升秘境'
+    feishengmijing: '飞升秘境',
+    nvwashendian: '女娲神殿'
   };
   // 当前boss
   SamiraFight.currentBoss = null;
@@ -1698,6 +1699,14 @@ var SamiraFight = (function () {
     config.newPlayer = config.newPlayer || '0';
     config.fisher = config.fisher || '0';
     config.fsmj = config.fsmj || '0';
+    config.sgnvwa = config.sgnvwa || '0';
+    config.sgfuxi = config.sgfuxi || '0';
+    config.sgdonghuang = config.sgdonghuang || '0';
+    config.sgpangu = config.sgpangu || '0';
+    config.sgnvwaIndexs = config.sgnvwaIndexs || [];
+    config.sgfuxiIndexs = config.sgfuxiIndexs || [];
+    config.sgdonghuangIndexs = config.sgdonghuangIndexs || [];
+    config.sgpanguIndexs = config.sgpanguIndexs || [];
 
     $('.samira-fsboss').prop('checked', config.fsboss === '1');
     $('.samira-fsboss-indexs').val(config.fsbossIndexs.join('|'));
@@ -1780,6 +1789,14 @@ var SamiraFight = (function () {
     $('.samira-new').prop('checked', config.newPlayer === '1');
     $('.samira-fisher').prop('checked', config.fisher === '1');
     $('.samira-fsmj').prop('checked', config.fsmj === '1');
+    $('.samira-sgmvwa').prop('checked', config.sgnvwa === '1');
+    $('.samira-sgfuxi').prop('checked', config.sgfuxi === '1');
+    $('.samira-sgdonghuang').prop('checked', config.sgdonghuang === '1');
+    $('.samira-sgpangu').prop('checked', config.sgpangu === '1');
+    $('.samira-sgmvwa-indexs').val(config.sgnvwaIndexs.join('|'));
+    $('.samira-sgfuxi-indexs').val(config.sgfuxiIndexs.join('|'));
+    $('.samira-sgdonghuang-indexs').val(config.sgdonghuangIndexs.join('|'));
+    $('.samira-sgpangu-indexs').val(config.sgpanguIndexs.join('|'));
   };
 
   // 从ui获取配置
@@ -1944,6 +1961,15 @@ var SamiraFight = (function () {
     const fisher = $('.samira-fisher').prop('checked') ? '1' : '0';
     // 飞升秘境
     const fsmj = $('.samira-fsmj').prop('checked') ? '1' : '0';
+    // 上古神域
+    const sgnvwa = $('.samira-sgmvwa').prop('checked') ? '1' : '0';
+    const sgfuxi = $('.samira-sgfuxi').prop('checked') ? '1' : '0';
+    const sgdonghuang = $('.samira-sgdonghuang').prop('checked') ? '1' : '0';
+    const sgpangu = $('.samira-sgpangu').prop('checked') ? '1' : '0';
+    const sgnvwaIndexs = $('.samira-sgmvwa-indexs').val().split('|').filter(x => x != null && x != undefined && x != '').map(x => parseInt(x));
+    const sgfuxiIndexs = $('.samira-sgfuxi-indexs').val().split('|').filter(x => x != null && x != undefined && x != '').map(x => parseInt(x));
+    const sgdonghuangIndexs = $('.samira-sgdonghuang-indexs').val().split('|').filter(x => x != null && x != undefined && x != '').map(x => parseInt(x));
+    const sgpanguIndexs = $('.samira-sgpangu-indexs').val().split('|').filter(x => x != null && x != undefined && x != '').map(x => parseInt(x));
 
     SamiraFight.config = {
       xiuluoCengshu: xiuluoCengshu,
@@ -2028,7 +2054,15 @@ var SamiraFight = (function () {
       autoBoss: autoBoss,
       newPlayer: newPlayer,
       fisher: fisher,
-      fsmj: fsmj
+      fsmj: fsmj,
+      sgnvwa: sgnvwa,
+      sgfuxi: sgfuxi,
+      sgdonghuang: sgdonghuang,
+      sgpangu: sgpangu,
+      sgnvwaIndexs: sgnvwaIndexs,
+      sgfuxiIndexs: sgfuxiIndexs,
+      sgdonghuangIndexs: sgdonghuangIndexs,
+      sgpanguIndexs:sgpanguIndexs
     };
 
     return SamiraFight.config;
@@ -2743,6 +2777,33 @@ var SamiraFight = (function () {
           SamiraFight.currentcheckTimes = 0;
           SamiraFight.currentStatus = 'fight';
           return;
+        }
+      }
+
+      // 女娲神殿
+      if (SamiraFight.config.sgnvwa == '1' && com.logic.data.zone.boss.BossDataCenter.instance.getTiliNum(147) >= 10) { 
+        // 获取指定的怪物id
+        const minfos = SamiraFight.getNvwaMonsterIds(SamiraFight.config.sgnvwaIndexs || []);
+        if (minfos && minfos.length > 0) { 
+          // 获取或者的怪物
+          const liveMonsters = [];
+          for (const item of minfos) { 
+            const mapBosses = com.logic.data.zone.boss.BossDataCenter.instance.getBossListByMapId(item.mapId)
+              .filter(boss => (boss.owner === playerName || boss.owner == '' || boss.owner == null) && boss.remainTime === 0)
+              .filter(boss => boss.monsterModelId == item.monsterId)
+
+            for (const m of mapBosses) {
+              liveMonsters.push(m);
+            }
+          }
+          if (liveMonsters.length > 0) {
+            const boss = liveMonsters[0];
+            SamiraFight.currentBoss = boss;
+            console.log('[samira]找到女娲神殿boss:', boss);
+            SamiraFight.currentcheckTimes = 0;
+            SamiraFight.currentStatus = 'fight';
+            return;
+          }
         }
       }
     
@@ -3535,6 +3596,35 @@ var SamiraFight = (function () {
     }
   };
 
+  // 获取女娲boss
+  SamiraFight.getNvwaMonsterIds = function (indexs) { 
+    const data = com.App.dataMgr.q_fightBossContainer.getListBy(17);
+    const bosses = [];
+    for (const item of data) {
+      const mapId = JSON.parse(item.q_refresh_maps)[0];
+      const map = com.App.dataMgr._q_mapContainer.map[mapId];
+      const canEnter = com.game.core.utils.ConditionUtil.isMapCanEnter(map);
+      if (!canEnter) {
+        continue;
+      }
+      const monsterIds = JSON.parse(item.q_monster_id);
+      for (const m of monsterIds) {
+        bosses.push({ mapId: mapId, monsterId: m })
+      }
+    }
+
+    const result = [];
+    for (const index of indexs) { 
+      const i = index < 0 ? bosses.length + index : index - 1;
+      if (i < 0 || i >= bosses.length) { 
+        continue;
+      }
+      result.push(bosses[i]);
+    }
+
+    return result;
+  }
+
   // 获取飞升地图
   SamiraFight.getFeishengMapIds = function (indexs) { 
     const allMapIds = (com.modules.feisheng.FeiShengCenter.fs_datas || []).filter(x => x.isEnter)
@@ -4084,6 +4174,24 @@ var SamiraFight = (function () {
 																<label><input type="checkbox" class="samira-fsboss" />飞升BOSS</label>
 																<input type="input" style="width: 60px;" class="samira-fsboss-indexs" />
 														</div>
+                            <div class="samira-settings-item">
+																<label><input type="checkbox" class="samira-sgmvwa" />女娲神殿</label>
+																<input type="input" style="width: 60px;" class="samira-sgmvwa-indexs" />
+														</div>
+                            <div style="display: none;">
+                              <div class="samira-settings-item">
+                                  <label><input type="checkbox" class="samira-sgfuxi" />伏羲神墓</label>
+                                  <input type="input" style="width: 60px;" class="samira-sgfuxi-indexs" />
+                              </div>
+                              <div class="samira-settings-item">
+                                  <label><input type="checkbox" class="samira-sgdonghuang" />东皇地宫</label>
+                                  <input type="input" style="width: 60px;" class="samira-sgdonghuang-indexs" />
+                              </div>
+                              <div class="samira-settings-item">
+                                  <label><input type="checkbox" class="samira-sgpangu" />盘古神界</label>
+                                  <input type="input" style="width: 60px;" class="samira-sgpangu-indexs" />
+                              </div>
+                            </div>
                         </div>
                         <div class="samira-settings-items-group">
                             <div class="samira-settings-item"><label><input type="checkbox" class="samira-shanggu" />上古禁地BOSS</label></div>
